@@ -127,6 +127,20 @@ class DrawUtils {
                                                                         const Matrix4 &transform,
                                                                         const Color4b &color,
                                                                         DTfloat size);
+
+		/// Draw a box
+		/// \param draw_batcher Draw batcher to use
+		/// \param camera Camera to use
+		/// \param material Material to use
+		/// \param shader Shader to use
+		/// \param transform Transform to use
+		/// \param size Size of selection box
+        static void                     draw_cube                   (   DrawBatcher &draw_batcher,
+                                                                        const std::shared_ptr<CameraObject> &camera,
+                                                                        const std::shared_ptr<MaterialResource> &material,
+                                                                        const std::shared_ptr<ShaderResource> &shader,
+                                                                        const Matrix4 &transform,
+                                                                        DTfloat size);
     
 		/// Draw a cone
 		/// \param draw_batcher Draw batcher to use

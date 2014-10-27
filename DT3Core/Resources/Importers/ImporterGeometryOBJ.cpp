@@ -128,18 +128,18 @@ DTerr	ImporterGeometryOBJ::import(GeometryResource *target, std::string args)
     std::vector<Vector3>	vertices_stream;
     std::vector<Vector3>	normals_stream;
     std::vector<Vector2>	uvs_stream;
-    std::vector<Triangle>	indices_stream;
+    std::vector<Triangle>	index_stream;
 
 	vertices_stream.resize(_faces.size() * 3);
 	normals_stream.resize(_faces.size() * 3);
 	uvs_stream.resize(_faces.size() * 3);
-	indices_stream.resize(_faces.size());
+	index_stream.resize(_faces.size());
 	
 	DTint index = 0;
 	for (std::size_t f = 0; f < _faces.size(); ++f) {
-		indices_stream[f].v[0] = index+0;
-		indices_stream[f].v[1] = index+1;
-		indices_stream[f].v[2] = index+2;
+		index_stream[f].v[0] = index+0;
+		index_stream[f].v[1] = index+1;
+		index_stream[f].v[2] = index+2;
 
 		for (DTint v = 0; v < 3; ++v) {
 			vertices_stream[index] = _vertices[ _faces[f]._v[v]];
@@ -155,7 +155,7 @@ DTerr	ImporterGeometryOBJ::import(GeometryResource *target, std::string args)
 	mesh->set_vertex_stream(vertices_stream);
 	mesh->set_normals_stream(normals_stream);
 	mesh->set_uv_stream0(uvs_stream);
-	mesh->set_index_stream(indices_stream);
+	mesh->set_index_stream(index_stream);
 	    
     target->add_mesh(mesh);
 

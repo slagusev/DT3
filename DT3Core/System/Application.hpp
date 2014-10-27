@@ -12,7 +12,7 @@
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseClass.hpp"
-#include "DT3Core/Types/Utility/TimerLores.hpp"
+#include "DT3Core/Types/Utility/TimerHires.hpp"
 #include "DT3Core/Types/FileBuffer/FilePath.hpp"
 
 namespace DT3 {
@@ -146,7 +146,7 @@ class Application: public BaseClass {
 		
 		DTboolean						_done;
 		
-		TimerLores						_game_time;
+		TimerHires						_game_time;
 				
 		DTboolean						_show_console;
 		DTboolean						_show_profiler;

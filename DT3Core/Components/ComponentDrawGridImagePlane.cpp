@@ -219,7 +219,7 @@ void ComponentDrawGridImagePlane::draw (const std::shared_ptr<CameraObject> &cam
         }
 
         _b.batch_end();
-        _b.flush();
+        _b.draw();
     }
     
 }

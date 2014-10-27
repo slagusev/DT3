@@ -244,6 +244,13 @@ namespace DT3 {
 //==============================================================================
 //==============================================================================
 
+#ifndef DT3_ENABLE_TASK_QUEUE
+#define DT3_ENABLE_TASK_QUEUE 1
+#endif
+
+//==============================================================================
+//==============================================================================
+
 #if DT3_OS == DT3_IOS || DT3_OS == DT3_MACOSX
     #define DT3_HAL_INCLUDE_PATH "DT3Apple/HAL.hpp"
 #elif DT3_OS == DT3_ANDROID
@@ -431,6 +438,10 @@ inline void S(T var_)			{	V = var_;				}
 #define DEFINE_ACCESSORS_STATIC(G,S,T,V)                        \
 inline static T G(void)			{	return V;				}	\
 inline static void S(T var_)    {	V = var_;				}
+
+#define DEFINE_ACCESSORS_STATIC_REFERENCED(G,S,T,V)                     \
+inline static T& G(void)                {	return V;				}	\
+inline static void S(const T &var_)     {	V = var_;				}
 
 #define DEFINE_ACCESSORS_RANGED(G,S,T,V,LOW,HI)                 \
 inline T G(void) const			{	return V;				}	\

@@ -44,14 +44,14 @@ class System {
 
 	public:
     
-        DEFINE_ACCESSORS_STATIC(renderer, set_renderer, std::shared_ptr<DeviceGraphics>, _renderer)
-        DEFINE_ACCESSORS_STATIC(audio_renderer, set_audio_renderer, std::shared_ptr<DeviceAudio>, _audio_device)
-        DEFINE_ACCESSORS_STATIC(music_renderer, set_music_renderer, std::shared_ptr<DeviceMusic>, _music_device)
+        DEFINE_ACCESSORS_STATIC_REFERENCED(renderer, set_renderer, std::shared_ptr<DeviceGraphics>, _renderer)
+        DEFINE_ACCESSORS_STATIC_REFERENCED(audio_renderer, set_audio_renderer, std::shared_ptr<DeviceAudio>, _audio_device)
+        DEFINE_ACCESSORS_STATIC_REFERENCED(music_renderer, set_music_renderer, std::shared_ptr<DeviceMusic>, _music_device)
     
-        DEFINE_ACCESSORS_STATIC(input_manager, set_input_manager, std::shared_ptr<DeviceInput>, _input_manager)
-        DEFINE_ACCESSORS_STATIC(network_manager, set_network_manager, std::shared_ptr<DeviceNetwork>, _network_manager)
+        DEFINE_ACCESSORS_STATIC_REFERENCED(input_manager, set_input_manager, std::shared_ptr<DeviceInput>, _input_manager)
+        DEFINE_ACCESSORS_STATIC_REFERENCED(network_manager, set_network_manager, std::shared_ptr<DeviceNetwork>, _network_manager)
 
-        DEFINE_ACCESSORS_STATIC(application, set_application, std::shared_ptr<Application>, _application)
+        DEFINE_ACCESSORS_STATIC_REFERENCED(application, set_application, std::shared_ptr<Application>, _application)
 		
 	private:
 		// Renderer

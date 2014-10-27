@@ -1,15 +1,15 @@
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFFDataSourceBase.cpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFFDataSourceBase.cpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "HWVideoPlayerFFDataSourceBase.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFDataSourceBase.hpp"
 
 //==============================================================================
 //==============================================================================
@@ -21,13 +21,6 @@ namespace DT3 {
 //==============================================================================
 
 HWVideoPlayerFFDataSourceBase::HWVideoPlayerFFDataSourceBase (void)
-    :   _buffer                 (NULL),
-        _av_io_context          (NULL),
-        _format_context         (NULL),
-        _video_stream_index     (-1),
-        _audio_stream_index     (-1),
-        _video_codec_context    (NULL),
-        _audio_codec_context    (NULL)
 {
 
 }

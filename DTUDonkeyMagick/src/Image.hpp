@@ -1,3 +1,5 @@
+#ifndef IMAGE
+#define IMAGE
 //==============================================================================
 ///	
 ///	File: Image.hpp
@@ -7,13 +9,6 @@
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
 ///	
-//==============================================================================
-
-#ifndef IMAGE
-#define IMAGE
-
-//==============================================================================
-/// Includes
 //==============================================================================
 
 #include <string>
@@ -55,22 +50,32 @@ class Image {
 		/// Description
 		/// \param param description
 		/// \return description
-		Pixel&					getPixel	(int x, int y) const;
+		Pixel&					pixel   	(int x, int y) const;
 
 		/// Description
 		/// \param param description
 		/// \return description
-		void					setPixel	(int x, int y, Pixel &p);
+		Pixel&					pixel_clamped   (int x, int y) const;
 
 		/// Description
 		/// \param param description
 		/// \return description
-		int						getWidth	(void) const		{	return _data_width;	}
+		Pixel&					pixel_wrapped   (int x, int y) const;
 
 		/// Description
 		/// \param param description
 		/// \return description
-		int						getHeight	(void) const		{	return _data_height;	}
+		void					set_pixel	(int x, int y, Pixel &p);
+
+		/// Description
+		/// \param param description
+		/// \return description
+		int						width	    (void) const		{	return _data_width;	}
+
+		/// Description
+		/// \param param description
+		/// \return description
+		int						height  	(void) const		{	return _data_height;	}
 
 	private:
 		int				_data_width;

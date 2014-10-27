@@ -143,11 +143,17 @@ DTerr	ImporterGeometryTWM::import(GeometryResource *target, std::string args)
             }
         }
 
-			
+        mesh->set_vertex_stream(vertex_stream);
+        mesh->set_normals_stream(normals_stream);
+        mesh->set_uv_stream0(uvs_stream_0);
+        mesh->set_uv_stream1(uvs_stream_1);
+        mesh->set_index_stream(indices);
+        mesh->set_weights_index_stream(weights_index);
+        mesh->set_weights_strength_stream(weights_strength);
 
         // Some stuff we can generate
         if (normals_stream.size() == 0)     mesh->generate_normals();
-        if (uvs_stream_0.size() == 0)       mesh->generate_tangents();
+        if (uvs_stream_0.size() != 0)       mesh->generate_tangents();
         
         // Add the mesh
         target->add_mesh(mesh);
@@ -237,11 +243,15 @@ void ImporterGeometryTWM::read_mesh_positions(BinaryFileStream &file, DTuint rem
 	
 	LOG_MESSAGE << "Reading positions: " << (DTsize) positions.size();
 
+#if DT3_BYTEORDER == DT3_LIL_ENDIAN
+    file.read_raw( (DTubyte*) &positions[0], sizeof(Vector3) * positions.size());
+#else
 	for (DTuint i = 0; i < positions.size(); ++i) {
 		file >> positions[i].x;
 		file >> positions[i].y;
 		file >> positions[i].z;
 	}
+#endif
 }
 
 void ImporterGeometryTWM::read_mesh_normals(BinaryFileStream &file, DTuint remaining_size, std::vector<Vector3> &normals)
@@ -253,11 +263,15 @@ void ImporterGeometryTWM::read_mesh_normals(BinaryFileStream &file, DTuint remai
 	
 	LOG_MESSAGE << "Reading normals: " << (DTsize) normals.size();
 
+#if DT3_BYTEORDER == DT3_LIL_ENDIAN
+    file.read_raw( (DTubyte*) &normals[0], sizeof(Vector3) * normals.size());
+#else
 	for (DTuint i = 0; i < normals.size(); ++i) {
 		file >> normals[i].x;
 		file >> normals[i].y;
 		file >> normals[i].z;
 	}
+#endif
 }
 
 //==============================================================================
@@ -272,10 +286,14 @@ void ImporterGeometryTWM::read_mesh_uvs(BinaryFileStream &file, DTuint remaining
 	
 	LOG_MESSAGE << "Reading uvs: " << (DTsize) uvs.size();
 
+#if DT3_BYTEORDER == DT3_LIL_ENDIAN
+        file.read_raw( (DTubyte*) &uvs[0], sizeof(Vector2) * uvs.size());
+#else
 	for (DTuint i = 0; i < uvs.size(); ++i) {
 		file >> uvs[i].u;
 		file >> uvs[i].v;
 	}
+#endif
 }
 
 void ImporterGeometryTWM::read_mesh_uv_sets(BinaryFileStream &file, DTuint remaining_size, std::vector<UVset> &uvs_sets)

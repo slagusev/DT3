@@ -154,6 +154,10 @@ class MaterialResource: public Resource {
         DEFINE_ACCESSORS_TEXTURE_SLOT(texture_2D,set_texture_2D,std::shared_ptr<TextureResource2D>,_texture_2D)
         DEFINE_ACCESSORS_TEXTURE_SLOT(texture_3D,set_texture_3D,std::shared_ptr<TextureResource3D>,_texture_3D)
         DEFINE_ACCESSORS_TEXTURE_SLOT(texture_cube,set_texture_cube,std::shared_ptr<TextureResourceCube>,_texture_cube)
+
+        DEFINE_ACCESSORS_TEXTURE_SLOT(texture_2D_res,set_texture_2D_res,std::shared_ptr<DT3GLTexture2DResource>,_texture_2D_res)
+        DEFINE_ACCESSORS_TEXTURE_SLOT(texture_3D_res,set_texture_3D_res,std::shared_ptr<DT3GLTexture3DResource>,_texture_3D_res)
+        DEFINE_ACCESSORS_TEXTURE_SLOT(texture_cube_res,set_texture_cube_res,std::shared_ptr<DT3GLTextureCubeResource>,_texture_cube_res)
     
         DEFINE_ACCESSORS_SAMPLER(filter,set_filter,DT3GLFilterMode,filter)
         DEFINE_ACCESSORS_SAMPLER(address_u,set_address_u,DT3GLAddressMode,address_u)
@@ -204,6 +208,10 @@ class MaterialResource: public Resource {
             std::shared_ptr<TextureResource2D>      _texture_2D;
             std::shared_ptr<TextureResource3D>      _texture_3D;
             std::shared_ptr<TextureResourceCube>    _texture_cube;
+
+            std::shared_ptr<DT3GLTexture2DResource>      _texture_2D_res;
+            std::shared_ptr<DT3GLTexture3DResource>      _texture_3D_res;
+            std::shared_ptr<DT3GLTextureCubeResource>    _texture_cube_res;
             
             DT3GLSamplerState                       _sampler_state;
             DTboolean                               _sampler_state_dirty;

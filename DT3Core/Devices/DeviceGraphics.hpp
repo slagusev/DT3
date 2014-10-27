@@ -109,6 +109,7 @@ enum DT3GLTextelFormat {
     DT3GL_FORMAT_RGBA_4444,
     DT3GL_FORMAT_RGB,
     DT3GL_FORMAT_RGB_565,
+    DT3GL_FORMAT_RGBA_HALF_FLOAT,
     DT3GL_FORMAT_LUM_8,
     DT3GL_FORMAT_BGRA,
     
@@ -121,8 +122,9 @@ enum DT3GLTextelFormat {
 
     DT3GL_FORMAT_DEPTH_16,
     DT3GL_FORMAT_DEPTH_24,
-    DT3GL_FORMAT_DEPTH_24_STENCIL_8
+    DT3GL_FORMAT_DEPTH_24_STENCIL_8,
 
+    DT3GL_FORMAT_UNKNOWN
 };
 
 enum DT3GLRenderBufferFormat {
@@ -138,7 +140,8 @@ enum DT3GLBufferFormat {
     DT3GL_BUFFER_FORMAT_3_FLOAT,
     DT3GL_BUFFER_FORMAT_4_FLOAT,
     DT3GL_BUFFER_FORMAT_4_UBYTE,
-    DT3GL_BUFFER_FORMAT_4_USHORT
+    DT3GL_BUFFER_FORMAT_4_USHORT,
+    DT3GL_BUFFER_FORMAT_1_UINT
 };
 
 enum DT3GLUniformFormat {
@@ -244,6 +247,7 @@ enum DT3GLStandardAttrib {
     DT3GL_ATTRIB_TEXCOORD0,
     DT3GL_ATTRIB_TEXCOORD1,
     DT3GL_ATTRIB_COLOR,
+    DT3GL_ATTRIB_TANGENT,
     
     DT3GL_ATTRIB_NUM
 };
@@ -345,10 +349,10 @@ class DT3GLAttribBufferResource {
         virtual     ~DT3GLAttribBufferResource      (void)  {}
 };
 
-class DT3GLElementsResource {
+class DT3GLElementBufferResource {
     public:
-                    DT3GLElementsResource           (void)  {}
-        virtual     ~DT3GLElementsResource          (void)  {}
+                    DT3GLElementBufferResource      (void)  {}
+        virtual     ~DT3GLElementBufferResource     (void)  {}
 };
 
 class DT3GLUniformResource {
@@ -541,6 +545,9 @@ class DeviceGraphics: public DeviceBase {
         virtual std::shared_ptr<DT3GLAttribBufferResource>  create_buffer                   (DTubyte *buffer_data, DTsize buffer_size, DT3GLBufferFormat buffer_format, DTuint flags = DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_READ) = 0;
         virtual void                                        update_buffer                   (const std::shared_ptr<DT3GLAttribBufferResource> &res, DTubyte *buffer_data, DTsize buffer_size, DTsize buffer_offset) = 0;
     
+        virtual std::shared_ptr<DT3GLElementBufferResource> create_index_buffer             (DTubyte *buffer_data, DTsize buffer_size, DT3GLBufferFormat buffer_format, DTuint flags = DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_READ) = 0;
+        virtual void                                        update_index_buffer             (const std::shared_ptr<DT3GLElementBufferResource> &res, DTubyte *buffer_data, DTsize buffer_size, DTsize buffer_offset) = 0;
+
         //
         // Uniforms
         //
@@ -601,17 +608,19 @@ class DeviceGraphics: public DeviceBase {
 
         virtual void                                        draw_arrays                     (DT3GLPrimitiveType primitive_type, DTuint num_elements) = 0;
         virtual void                                        draw_arrays_ranged              (DT3GLPrimitiveType primitive_type, DTuint start_element, DTuint num_elements) = 0;
+        virtual void                                        draw_indexed_arrays             (const std::shared_ptr<DT3GLElementBufferResource> &elements, DT3GLPrimitiveType primitive_type, DTuint num_elements) = 0;
 
         //
         // Framebuffers
         //
     
         virtual std::shared_ptr<DT3GLFramebufferResource>   create_framebuffer              (void) = 0;
-    
-        virtual void                                        attach_framebuffer_color        (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, const std::shared_ptr<DT3GLTexture2DResource> &tex) = 0;
+        virtual void                                        activate_framebuffer            (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer) = 0;
+
+        virtual void                                        attach_framebuffer_color        (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, const std::shared_ptr<DT3GLTexture2DResource> &tex, DTuint target_index = 0) = 0;
         virtual void                                        attach_framebuffer_depth_stencil(const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, const std::shared_ptr<DT3GLTexture2DResource> &tex) = 0;
     
-        virtual void                                        attach_renderbuffer_color       (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, DTint width, DTint height, DT3GLRenderBufferFormat format) = 0;
+        virtual void                                        attach_renderbuffer_color       (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, DTint width, DTint height, DT3GLRenderBufferFormat format, DTuint target_index = 0) = 0;
         virtual void                                        attach_renderbuffer_depth_stencil(const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, DTint width, DTint height, DT3GLRenderBufferFormat format) = 0;
 
 		/// Copies the current screen to a TextureResource2D
@@ -619,6 +628,14 @@ class DeviceGraphics: public DeviceBase {
 		/// \param rect source rectangle
         virtual void                                        screenshot                      (const std::shared_ptr<TextureResource2D> &tex, const Rectangle &rect) = 0;
     
+        //
+        // Performance Queries
+        //
+
+        virtual void                                        begin_frame                     (void)  {}
+        virtual void                                        end_frame                       (void)  {}
+        virtual DTdouble                                    perf_lag                        (void)  {   return 0.0; }
+
         /// Description
 		/// \param param description
 		/// \return description

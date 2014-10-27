@@ -26,13 +26,6 @@
 #include "DT3Core/Objects/CameraObject.hpp"
 #include <algorithm>
 
-//#ifdef DT3_DEBUG
-#if 0
-    #define VALIDATE validate();
-#else
-    #define VALIDATE
-#endif
-
 //==============================================================================
 //==============================================================================
 
@@ -90,9 +83,7 @@ void World::archive (const std::shared_ptr<Archive> &archive)
     DTsize node_count = _nodes.size();
     *archive << ARCHIVE_DATA(node_count,DATA_PERSISTENT);
     _nodes.resize(node_count, NULL);
-    
-    LOG_MESSAGE << node_count;
-    
+        
     FOR_EACH (i,_nodes) {
         archive->add_post_process(ARCHIVE_PROCESS_POINTERS(archive,*i));
     }
@@ -132,8 +123,6 @@ void World::archive_done (const std::shared_ptr<Archive> &archive)
     auto gg = std::remove(_groups.begin(), _groups.end(), nullptr);
     _groups.erase(gg, _groups.end());
 
-    VALIDATE
-
     //
     // Add objects
     //
@@ -155,9 +144,7 @@ void World::archive_done (const std::shared_ptr<Archive> &archive)
 		}
         
 	}
-    
-    VALIDATE
-    
+        
     //
     // Add groups
     //
@@ -168,8 +155,6 @@ void World::archive_done (const std::shared_ptr<Archive> &archive)
             i->add_to_world(this);
     }
     
-    VALIDATE
-
     //
     // Default camera
     //
@@ -192,8 +177,6 @@ void World::archive_done (const std::shared_ptr<Archive> &archive)
     }
 
     clean();
-    
-    VALIDATE
 }
 
 //==============================================================================
@@ -230,8 +213,6 @@ void World::add_node (const std::shared_ptr<WorldNode> &node)
 	node->add_to_world(this);
 
 	_nodes.push_back(node);
-    
-    VALIDATE
 }
 
 
@@ -255,8 +236,6 @@ void World::add_node_unique_name (const std::shared_ptr<WorldNode> &node)
     }
     
     add_node(node);
-    
-    VALIDATE
 }
 
 void World::remove_node	(const std::shared_ptr<WorldNode> node)
@@ -297,8 +276,6 @@ void World::remove_node	(const std::shared_ptr<WorldNode> node)
         
         _nodes.erase(j);
     }
-    
-    VALIDATE
 }
 
 void World::remove_all_nodes (void)
@@ -306,8 +283,6 @@ void World::remove_all_nodes (void)
     while (_nodes.size() > 0) {
         remove_node(_nodes.front());
     }
-    
-    VALIDATE
 }
 
 //==============================================================================
@@ -319,8 +294,6 @@ void World::add_group (const std::shared_ptr<Group> &group)
     
     // Add the group to the world
     group->add_to_world(this);
-    
-    VALIDATE
 }
 
 void World::add_group_unique_name (const std::shared_ptr<Group> &group)
@@ -342,8 +315,6 @@ void World::add_group_unique_name (const std::shared_ptr<Group> &group)
     }
     
     add_group(group);
-    
-    VALIDATE
 }
 
 void World::remove_group (const std::shared_ptr<Group> group)
@@ -353,8 +324,6 @@ void World::remove_group (const std::shared_ptr<Group> group)
 
     auto i = std::remove(_groups.begin(), _groups.end(), group);
     _groups.erase(i,_groups.end());
-    
-    VALIDATE
 }
 			
 void World::remove_all_groups (void)
@@ -363,8 +332,6 @@ void World::remove_all_groups (void)
 	while (_groups.size() > 0) {
 		remove_group(_groups.front());
 	}
-    
-    VALIDATE
 }
 
 //==============================================================================
@@ -383,8 +350,6 @@ std::shared_ptr<WorldNode> World::node_by_name (std::string name)
         }
     );
 
-    VALIDATE
-
     return i == _nodes.end() ? NULL : *i;
 }
 
@@ -395,8 +360,6 @@ std::shared_ptr<WorldNode> World::node_by_id (DTuint unique_id)
             return unique_id == n->unique_id();
         }
     );
-
-    VALIDATE
     
     return i == _nodes.end() ? NULL : *i;
 }
@@ -412,8 +375,6 @@ std::shared_ptr<Group> World::group_by_name (std::string name)
         }
     );
     
-    VALIDATE
-
     return i == _groups.end() ? NULL : *i;
 }
 
@@ -434,9 +395,7 @@ const std::shared_ptr<CameraObject>& World::camera (void) const
 //==============================================================================
 
 void World::draw (const DTfloat lag)
-{
-    VALIDATE
-    
+{    
     PROFILER(DRAW);
 
     clean();
@@ -463,14 +422,10 @@ void World::draw (const DTfloat lag)
 //#endif
         
     }
-    
-    VALIDATE
 }
 
 void World::draw_diagnostics (const DTfloat lag)
-{
-    VALIDATE
-    
+{    
     PROFILER(DRAW_DIAGNOSTICS);
 
     clean();
@@ -481,17 +436,13 @@ void World::draw_diagnostics (const DTfloat lag)
     for (auto draw_iterator = _draw_diagnostics_callbacks.begin(); draw_iterator != _draw_diagnostics_callbacks.end(); ++draw_iterator) {
         (*draw_iterator)(_camera, lag);
     }
-    
-    VALIDATE
 }
 
 //==============================================================================
 //==============================================================================
 
 void World::tick (const DTfloat dt)
-{
-    VALIDATE
-    
+{    
     PROFILER(TICK);
 
     clean();
@@ -499,17 +450,13 @@ void World::tick (const DTfloat dt)
     for (auto tick_iterator = _tick_callbacks.begin(); tick_iterator != _tick_callbacks.end(); ++tick_iterator) {
         (*tick_iterator)(dt);
     }
-    
-    VALIDATE
 }
 
 //==============================================================================
 //==============================================================================
 
 void World::clean (void)
-{
-    VALIDATE
-    
+{    
     //
     // Clean up nodes
     //
@@ -563,8 +510,6 @@ void World::clean (void)
             ++i;
         }
     }
-
-    VALIDATE
 }
 
 //==============================================================================
@@ -644,7 +589,6 @@ void World::validate (void)
 {
     const std::list<std::shared_ptr<WorldNode>> &objects = nodes();
 
-    // Add the new cameras to the list
     FOR_EACH (i,objects) {
         ASSERT( *i != NULL );           // Check Null
         ASSERT( (**i).unique_id() );    // Just a query

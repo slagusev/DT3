@@ -196,7 +196,7 @@ void ComponentGUIDrawIcon::draw (const std::shared_ptr<CameraObject> &camera, co
         _b.add().v(local_rect.plus_x(),local_rect.minus_y(),0.0F)  .t0(1.0F,0.0F)  .c(c);
     
         _b.batch_end();
-        _b.flush();
+        _b.draw();
     }
 
 

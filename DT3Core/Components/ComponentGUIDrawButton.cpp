@@ -279,7 +279,7 @@ void ComponentGUIDrawButton::draw (const std::shared_ptr<CameraObject> &camera, 
         tex_transform._m24 = _offset_y;
         
         std::string label = Globals::substitute_global(gui->label());
-        LOG_MESSAGE << "Rendering: " << label;
+        //LOG_MESSAGE << "Rendering: " << label;
         
         DTfloat screen_width = System::renderer()->screen_width();
         DTfloat screen_height = System::renderer()->screen_height();
@@ -348,7 +348,7 @@ void ComponentGUIDrawButton::draw (const std::shared_ptr<CameraObject> &camera, 
         _b.add().v(local_rect.plus_x(),local_rect.minus_y(),0.0F)  .t0(1.0F,0.0F)  .c(c);
     
         _b.batch_end();
-        _b.flush();
+        _b.draw();
     }
     
     if (_text_image) {
@@ -371,7 +371,7 @@ void ComponentGUIDrawButton::draw (const std::shared_ptr<CameraObject> &camera, 
         _b.add().v(_bounds.plus_x(),_bounds.minus_y(),0.0F)  .t0(1.0F,0.0F)  .c(c);
         
         _b.batch_end();
-        _b.flush();
+        _b.draw();
     }
     
 }

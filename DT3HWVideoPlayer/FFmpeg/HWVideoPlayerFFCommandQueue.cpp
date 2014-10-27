@@ -1,15 +1,15 @@
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFFCommandQueue.cpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFFCommandQueue.cpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "HWVideoPlayerFFCommandQueue.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFCommandQueue.hpp"
 
 //==============================================================================
 //==============================================================================
@@ -33,29 +33,29 @@ HWVideoPlayerFFCommandQueue::~HWVideoPlayerFFCommandQueue (void)
 //==============================================================================
 //==============================================================================
 
-void HWVideoPlayerFFCommandQueue::pushPlay (void)
+void HWVideoPlayerFFCommandQueue::push_play (void)
 {
     CommandEntry ce;
     ce._command = CMD_PLAY;
     ce._parameter = 0.0;
     
     _lock.lock();
-    _commands.pushBack(ce);
+    _commands.push_back(ce);
     _lock.unlock();
 }
 
-void HWVideoPlayerFFCommandQueue::pushPause (void)
+void HWVideoPlayerFFCommandQueue::push_pause (void)
 {
     CommandEntry ce;
     ce._command = CMD_PAUSE;
     ce._parameter = 0.0;
     
     _lock.lock();
-    _commands.pushBack(ce);
+    _commands.push_back(ce);
     _lock.unlock();
 }
 
-void HWVideoPlayerFFCommandQueue::pushSeek (DTdouble time)
+void HWVideoPlayerFFCommandQueue::push_seek (DTdouble time)
 {
     CommandEntry ce;
     ce._command = CMD_SEEK;
@@ -77,18 +77,18 @@ void HWVideoPlayerFFCommandQueue::pushSeek (DTdouble time)
     }
     
     // Push new seek command
-    _commands.pushBack(ce);
+    _commands.push_back(ce);
     
     _lock.unlock();
 }
 
-DTboolean HWVideoPlayerFFCommandQueue::popCommand (Command &command, DTdouble &param)
+DTboolean HWVideoPlayerFFCommandQueue::pop_command (Command &command, DTdouble &param)
 {
     _lock.lock();
 
     if (_commands.size() > 0) {
-        CommandEntry ce;
-        _commands.popFront(ce);
+        CommandEntry ce = _commands.front();
+        _commands.pop_front();
     
         command = ce._command;
         param = ce._parameter;

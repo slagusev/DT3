@@ -15,6 +15,8 @@
 
 #if DT3_OS != DT3_ANDROID && DT3_OS != DT3_IOS
 
+#include <memory>
+
 #include "OVR.h"
 
 //==============================================================================
@@ -60,14 +62,15 @@ class OCOculusBase {
 
         enum Camera {
             CAMERA_LEFT,
-            CAMERA_RIGHT
+            CAMERA_RIGHT,
+            CAMERA_NONE
         };
     
         /// Update a stereo camera given a center camera.
         /// \param center_camera source camera
         /// \param stereo_camera destination camera
         /// \param c which camera to generate
-        static void                         calculate_stereo_camera     (const CameraObject *center_camera, CameraObject *stereo_camera, Camera c);
+        static void                         calculate_stereo_camera     (const std::shared_ptr<CameraObject> center_camera, std::shared_ptr<CameraObject> stereo_camera, Camera c);
     
     
         /// Return the actual resolution of the screen

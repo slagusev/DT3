@@ -211,13 +211,17 @@ struct DT3OpenGLSamplerResource: public DT3GLSamplerResource {
 struct DT3OpenGLTexture2DResource: public DT3GLTexture2DResource {
     public:
                     DT3OpenGLTexture2DResource        (void)    {}
-        virtual     ~DT3OpenGLTexture2DResource       (void)    {   ::glDeleteTextures (1, &name);  }
+        virtual     ~DT3OpenGLTexture2DResource       (void)    {   ::glDeleteTextures (1, &name); ::glDeleteBuffers(1, &pbo); }
 
     public:
         DTuint                          flags;
         GLuint                          name;
         DT3GLTextelFormat               format;
         DTboolean                       mipmapped;
+    
+        // For Streaming textures (i.e. created with DT3GL_ACCESS_CPU_WRITE)
+        GLuint                          pbo;
+        GLuint                          size;
     
         std::shared_ptr<DT3OpenGLSamplerResource>   sampler;
 };
@@ -263,6 +267,17 @@ struct DT3OpenGLAttribBufferResource: public DT3GLAttribBufferResource {
     public:
                     DT3OpenGLAttribBufferResource   (void)  {}
         virtual     ~DT3OpenGLAttribBufferResource  (void)  {   ::glDeleteBuffers(1, &name); }
+
+    public:
+        DTuint                          flags;
+        DT3GLBufferFormat               format;
+        GLuint                          name;
+};
+
+struct DT3OpenGLElementBufferResource: public DT3GLElementBufferResource {
+    public:
+                    DT3OpenGLElementBufferResource  (void)  {}
+        virtual     ~DT3OpenGLElementBufferResource (void)  {   ::glDeleteBuffers(1, &name); }
 
     public:
         DTuint                          flags;
@@ -376,6 +391,8 @@ struct DT3OpenGLFramebufferResource: public DT3GLFramebufferResource {
 
     public:
         GLuint                          name;
+    
+        GLuint                          num_targets;
         GLuint                          name_rb_color;
         GLuint                          name_rb_depth;
 };

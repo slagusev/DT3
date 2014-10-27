@@ -259,7 +259,7 @@ void ComponentDrawCamera::draw (const std::shared_ptr<CameraObject> &camera, con
     }
     
     b.batch_end();
-	b.flush();
+	b.draw();
 
     // Frustum
     
@@ -291,7 +291,7 @@ void ComponentDrawCamera::draw (const std::shared_ptr<CameraObject> &camera, con
 	b.add().v(near_p2).c(c);
 	b.add().v(near_p3).c(c);
 	b.batch_end();
-	b.flush();
+	b.draw();
 	
     b.batch_begin(  camera,
                     _material,
@@ -305,7 +305,7 @@ void ComponentDrawCamera::draw (const std::shared_ptr<CameraObject> &camera, con
 	b.add().v(far_p2).c(c);
 	b.add().v(far_p3).c(c);
 	b.batch_end();
-	b.flush();
+	b.draw();
 	
     b.batch_begin(  camera,
                     _material,
@@ -319,7 +319,7 @@ void ComponentDrawCamera::draw (const std::shared_ptr<CameraObject> &camera, con
 	b.add().v(far_p1).c(c);
 	b.add().v(far_p0).c(c);
 	b.batch_end();
-	b.flush();
+	b.draw();
 	
     b.batch_begin(  camera,
                     _material,
@@ -333,7 +333,7 @@ void ComponentDrawCamera::draw (const std::shared_ptr<CameraObject> &camera, con
 	b.add().v(far_p3).c(c);
 	b.add().v(far_p2).c(c);
 	b.batch_end();
-	b.flush();
+	b.draw();
 
     
 

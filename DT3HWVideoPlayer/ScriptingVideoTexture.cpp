@@ -2,24 +2,19 @@
 ///	
 ///	File: ScriptingVideoTexture.cpp
 ///	
-/// Copyright (C) 2000-2013 by Smells Like Donkey, Inc. All rights reserved.
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "ScriptingVideoTexture.hpp"
-#include "Factory.hpp"
-#include "Archive.hpp"
-#include "System.hpp"
-#include "DeviceInput.hpp"
-
-#include "System.hpp"
-#include "SystemCallbacks.hpp"
-#include "World.hpp"
-#include "Profiler.hpp"
-#include "ConsoleStream.hpp"
+#include "DT3HWVideoPlayer/ScriptingVideoTexture.hpp"
+#include "DT3Core/System/Factory.hpp"
+#include "DT3Core/System/SystemCallbacks.hpp"
+#include "DT3Core/Types/FileBuffer/ArchiveData.hpp"
+#include "DT3Core/Types/FileBuffer/Archive.hpp"
+#include "DT3Core/World/World.hpp"
 
 //==============================================================================
 //==============================================================================
@@ -33,16 +28,16 @@ namespace DT3 {
 IMPLEMENT_FACTORY_CREATION_SCRIPT(ScriptingVideoTexture,"Video",NULL)
 IMPLEMENT_PLUG_NODE(ScriptingVideoTexture)
 
-IMPLEMENT_PLUG_INFO(_file_or_url)
-IMPLEMENT_PLUG_INFO(_is_playing)
-IMPLEMENT_PLUG_INFO(_out)
-IMPLEMENT_PLUG_INFO(_rectangle)
-IMPLEMENT_PLUG_INFO(_current_time)
-IMPLEMENT_PLUG_INFO(_length)
+IMPLEMENT_PLUG_INFO_INDEX(_file_or_url)
+IMPLEMENT_PLUG_INFO_INDEX(_is_playing)
+IMPLEMENT_PLUG_INFO_INDEX(_out)
+IMPLEMENT_PLUG_INFO_INDEX(_rectangle)
+IMPLEMENT_PLUG_INFO_INDEX(_current_time)
+IMPLEMENT_PLUG_INFO_INDEX(_length)
 
-IMPLEMENT_EVENT_INFO(_play)
-IMPLEMENT_EVENT_INFO(_pause)
-IMPLEMENT_EVENT_INFO(_rewind)
+IMPLEMENT_EVENT_INFO_INDEX(_play)
+IMPLEMENT_EVENT_INFO_INDEX(_pause)
+IMPLEMENT_EVENT_INFO_INDEX(_rewind)
 		
 //==============================================================================
 //==============================================================================
@@ -50,34 +45,34 @@ IMPLEMENT_EVENT_INFO(_rewind)
 BEGIN_IMPLEMENT_PLUGS(ScriptingVideoTexture)
 		
 	PLUG_INIT(_file_or_url,"File_Or_URL")
-		.setInput(true);
+		.set_input(true);
 
 	PLUG_INIT(_out,"Tex_Out")
-		.setOutput(true);
+		.set_output(true);
 
 	PLUG_INIT(_current_time,"Current_time")
-		.setOutput(true);
+		.set_output(true);
 
 	PLUG_INIT(_length,"Length")
-		.setOutput(true);
+		.set_output(true);
 
 	PLUG_INIT(_is_playing,"Is_Playing")
-		.setOutput(true);
+		.set_output(true);
 
 	PLUG_INIT(_rectangle,"Rect")
-		.setOutput(true);
+		.set_output(true);
 
 	EVENT_INIT(_play,"Start")
-        .setInput(true)
-        .setEvent(EventBindCreator(&ScriptingVideoTexture::play));
+        .set_input(true)
+        .set_event(&ScriptingVideoTexture::play);
 
 	EVENT_INIT(_pause,"Stop")
-        .setInput(true)
-        .setEvent(EventBindCreator(&ScriptingVideoTexture::pause));
+        .set_input(true)
+        .set_event(&ScriptingVideoTexture::pause);
 
 	EVENT_INIT(_rewind,"Rewind")
-        .setInput(true)
-        .setEvent(EventBindCreator(&ScriptingVideoTexture::rewind));
+        .set_input(true)
+        .set_event(&ScriptingVideoTexture::rewind);
 
 END_IMPLEMENT_PLUGS
 
@@ -86,15 +81,15 @@ END_IMPLEMENT_PLUGS
 //==============================================================================
 
 ScriptingVideoTexture::ScriptingVideoTexture (void)
-    :	_file_or_url            (PLUG_INFO(_file_or_url)),
-        _out                    (PLUG_INFO(_out)),
-        _current_time           (PLUG_INFO(_current_time), 0.0F),
-        _length                 (PLUG_INFO(_length), 0.0F),
-        _is_playing             (PLUG_INFO(_is_playing), false),
-		_rectangle              (PLUG_INFO(_rectangle), Rectangle(0.0F,1.0F,0.0F,1.0F)),
-        _play                   (EVENT_INFO(_play)),
-        _pause                  (EVENT_INFO(_pause)),
-        _rewind                 (EVENT_INFO(_rewind)),
+    :	_file_or_url            (PLUG_INFO_INDEX(_file_or_url)),
+        _out                    (PLUG_INFO_INDEX(_out)),
+        _current_time           (PLUG_INFO_INDEX(_current_time), 0.0F),
+        _length                 (PLUG_INFO_INDEX(_length), 0.0F),
+        _is_playing             (PLUG_INFO_INDEX(_is_playing), false),
+		_rectangle              (PLUG_INFO_INDEX(_rectangle), Rectangle(0.0F,1.0F,0.0F,1.0F)),
+        _play                   (EVENT_INFO_INDEX(_play)),
+        _pause                  (EVENT_INFO_INDEX(_pause)),
+        _rewind                 (EVENT_INFO_INDEX(_rewind)),
         _hw                     (NULL)
 {
 
@@ -108,9 +103,9 @@ ScriptingVideoTexture::ScriptingVideoTexture (const ScriptingVideoTexture &rhs)
 		_length                 (rhs._length),
 		_is_playing             (rhs._is_playing),
 		_rectangle              (rhs._rectangle),
-        _play                   (EVENT_INFO(_play)),
-        _pause                  (EVENT_INFO(_pause)),
-        _rewind                 (EVENT_INFO(_rewind)),
+        _play                   (EVENT_INFO_INDEX(_play)),
+        _pause                  (EVENT_INFO_INDEX(_pause)),
+        _rewind                 (EVENT_INFO_INDEX(_rewind)),
         _hw                     (NULL)
 {
 
@@ -153,44 +148,31 @@ void ScriptingVideoTexture::initialize (void)
 //==============================================================================
 //==============================================================================
 
-void ScriptingVideoTexture::archive_read (Archive *archive)
+void ScriptingVideoTexture::archive (const std::shared_ptr<Archive> &archive)
 {
-    ScriptingBase::archive_read(archive);
+    ScriptingBase::archive(archive);
 
-	archive->push_domain (getClassID ());
+	archive->push_domain (class_id ());
     
     *archive << ARCHIVE_PLUG(_file_or_url, DATA_PERSISTENT | DATA_SETTABLE);
-    *archive << ARCHIVE_DATA(_autoplay_when_ready, DATA_PERSISTENT | DATA_SETTABLE);
     
     archive->pop_domain ();
 }
 
-void ScriptingVideoTexture::archive_read_done (void)
+void ScriptingVideoTexture::archive_done (const std::shared_ptr<Archive> &archive)
 {
 
     // Kickstart opening and getting the first frame of video
     _last_file_or_url = _file_or_url;
     
     // Check if we have a URL
-    if (URL::isURL(_file_or_url)) {
+    if (URL::is_URL(_file_or_url)) {
         open(URL(_file_or_url));
     } else {
         open(FilePath(_file_or_url));
     }
 
-    _out = Video::getFrame(_hw);
-}
-
-void ScriptingVideoTexture::archive_write (Archive *archive)
-{
-    ScriptingBase::archive_write(archive);
-
-    archive->push_domain (getClassID ());
-    
-    *archive << ARCHIVE_PLUG(_file_or_url, DATA_PERSISTENT | DATA_SETTABLE);
-    *archive << ARCHIVE_DATA(_autoplay_when_ready, DATA_PERSISTENT | DATA_SETTABLE);
-
-    archive->pop_domain ();
+    _out = Video::frame(_hw);
 }
 
 //==============================================================================
@@ -266,13 +248,13 @@ void ScriptingVideoTexture::seek (DTfloat time)
 void ScriptingVideoTexture::tick (const DTfloat dt)
 {
     // Check for path change
-    if (_last_file_or_url != _file_or_url) {
+    if (_last_file_or_url != *_file_or_url) {
         _last_file_or_url = _file_or_url;
     
         close();
         
         // Check if we have a URL
-        if (URL::isURL(_file_or_url)) {
+        if (URL::is_URL(_file_or_url)) {
             open(URL(_file_or_url));
         } else {
             open(FilePath(_file_or_url));
@@ -283,21 +265,17 @@ void ScriptingVideoTexture::tick (const DTfloat dt)
     if (!_hw)
         return;
     
-    Video::State state = Video::getState(_hw);
+    Video::State state = Video::state(_hw);
     
     if (state == Video::STATE_PAUSED || state == Video::STATE_PLAYING) {
-        std::shared_ptr<TextureResource> tex = Video::getFrame(_hw);
+        std::shared_ptr<TextureResource2D> tex = Video::frame(_hw);
         
-        // If there was a frame
-        if (tex.isValid()) {
-            _out = tex;
-            _rectangle->set(0.0F, 1.0F, 0.0F, 1.0F);
-            
-            _rectangle.setDirty();
-        }
+        _out = tex;
+        _rectangle->set(0.0F, 1.0F, 0.0F, 1.0F);
+        _rectangle.set_dirty();
     }
     
-    _current_time = Video::currentTime(_hw);
+    _current_time = Video::current_time(_hw);
     _length = Video::length(_hw);
     _is_playing = (state == Video::STATE_PLAYING);
 }
@@ -305,18 +283,18 @@ void ScriptingVideoTexture::tick (const DTfloat dt)
 //==============================================================================
 //==============================================================================
 
-void ScriptingVideoTexture::addToWorld (World *world)
+void ScriptingVideoTexture::add_to_world (World *world)
 {
-    ScriptingBase::addToWorld(world);
+    ScriptingBase::add_to_world(world);
     
-    world->registerForTick(this, makeCallback(this, &type::tick));
+    world->register_for_tick(this, make_callback(this, &type::tick));
 }
 
-void ScriptingVideoTexture::removeFromWorld (void)
+void ScriptingVideoTexture::remove_from_world (void)
 {
-    getWorld()->unregisterForTick(this, makeCallback(this, &type::tick));
+    world()->unregister_for_tick(this, make_callback(this, &type::tick));
 
-    ScriptingBase::removeFromWorld();
+    ScriptingBase::remove_from_world();
 }
 
 //==============================================================================

@@ -140,7 +140,7 @@ CommandResult ScriptingKeyframes_cmd::do_set_keyframe (CommandContext &ctx, cons
     if (event) {
     
         // Search for keyframes node        
-        const std::vector<Event*>& events = event->incoming_connections();
+        const std::vector<Event*> events = event->incoming_connections();
                 
         std::shared_ptr<ScriptingKeyframesEvent> key_node;
 

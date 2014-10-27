@@ -12,6 +12,7 @@
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
+#include "DT3Core/Types/Utility/TimerHires.hpp"
 #include "DT3Core/Devices/DeviceAudio.hpp"
 #include <mutex>
 #include <vector>
@@ -58,6 +59,7 @@ void    CheckALMsg    (const DTcharacter* file, const DTcharacter* func, const D
 
 class SoundResource;
 class SoundSource;
+class SoundPushSource;
 class CameraObject;
 class ScriptingSound;
 
@@ -147,6 +149,9 @@ class DeviceAudioOpenAL: public DeviceAudio {
 		/// \param sound source
         virtual void                            remove_bus              (const std::shared_ptr<SoundSource> &source);
 
+		/// Calculates the current playback time
+		/// \return playback time in seconds
+        virtual DTdouble                        playback_time           (const std::shared_ptr<SoundSource> &source);
 
         // Tick device
         /// \param dt delta time
@@ -168,6 +173,14 @@ class DeviceAudioOpenAL: public DeviceAudio {
             ALuint                              _al_source;
             ALuint                              _buffer[3];
             DTboolean                           _buffer_in_use[3];
+            DTsize                              _buffer_size[3];
+
+            // For accurate timing info
+            DTsize                              _size_chunks_completed;                            
+            DTsize                              _size_total;
+            
+            TimerHires                          _audio_timer;
+            DTdouble                            _audio_timer_correction;
 
 			DTboolean                           _ready_to_start;
             DTboolean                           _needs_priming;

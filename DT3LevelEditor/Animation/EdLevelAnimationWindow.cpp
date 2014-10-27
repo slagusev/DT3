@@ -137,7 +137,7 @@ void EdLevelAnimationWindow::scanRoot (const std::shared_ptr<ScriptingKeyframesR
             continue;
 
         // Check each outgoing connection
-        const std::vector<PlugBase*> &connections = (**j).outgoing_connections();
+        const std::vector<PlugBase*> connections = (**j).outgoing_connections();
         for (int k = 0; k < connections.size(); ++k) {
             
             // Get connected keyframes
@@ -316,7 +316,7 @@ void EdLevelAnimationWindow::scanRelevantNodes (const std::list<std::shared_ptr<
                 continue;
                 
             // Get the nodes
-            const std::vector<Event*>& events = (*k)->incoming_connections();
+            const std::vector<Event*> events = (*k)->incoming_connections();
 
             FOR_EACH (i,  events) {
                 std::shared_ptr<PlugNode> node = checked_static_cast<PlugNode>((*i)->owner()->shared_from_this());

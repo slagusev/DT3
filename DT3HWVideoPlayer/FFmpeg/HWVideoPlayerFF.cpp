@@ -1,19 +1,17 @@
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFF.cpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFF.cpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "HWVideoPlayerFF.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFF.hpp"
 
-#include "StaticInitializer.hpp"
-
-#include "HWVideoPlayerFFInstance.hpp"
+#include "DT3Core/System/StaticInitializer.hpp"
 
 //==============================================================================
 //==============================================================================
@@ -29,7 +27,7 @@ GLOBAL_STATIC_DESTRUCTION(0,HWVideoPlayerFF::destroy())
 //==============================================================================
 //==============================================================================
 
-int HWVideoPlayerFF::lockManager(void **mutex, enum AVLockOp op)
+int HWVideoPlayerFF::lock_manager(void **mutex, enum AVLockOp op)
 {
     if (mutex == NULL)
         return -1;
@@ -37,25 +35,25 @@ int HWVideoPlayerFF::lockManager(void **mutex, enum AVLockOp op)
     switch(op) {
         case AV_LOCK_CREATE:
         {
-            *mutex = static_cast<void*>(HAL::createMutex());
+            *mutex = static_cast<void*>(new std::mutex());
             break;
         }
         case AV_LOCK_OBTAIN:
         {
-            HAL::MutexType m =  static_cast<HAL::MutexType>(*mutex);
-            HAL::lockMutex(m);
+            std::mutex *m =  static_cast<std::mutex*>(*mutex);
+            m->lock();
             break;
         }
         case AV_LOCK_RELEASE:
         {
-            HAL::MutexType m = static_cast<HAL::MutexType>(*mutex);
-            HAL::unlockMutex(m);
+            std::mutex *m =  static_cast<std::mutex*>(*mutex);
+            m->unlock();
             break;
         }
         case AV_LOCK_DESTROY:
         {
-            HAL::MutexType m = static_cast<HAL::MutexType>(*mutex);
-            HAL::destroyMutex(m);
+            std::mutex *m =  static_cast<std::mutex*>(*mutex);
+            delete m;
             break;
         }
         default:
@@ -68,7 +66,7 @@ void HWVideoPlayerFF::initialize (void)
 {
 #ifndef DT3_EDITOR
     ::av_register_all();
-    ::av_lockmgr_register(&HWVideoPlayerFF::lockManager);
+    ::av_lockmgr_register(&HWVideoPlayerFF::lock_manager);
     //::av_log_set_level (AV_LOG_DEBUG);
 #endif
 }
@@ -84,8 +82,11 @@ void HWVideoPlayerFF::destroy (void)
 HWVideoPlayerFF::HWVideoPlayerType HWVideoPlayerFF::open (const FilePath &path)
 {
 #ifndef DT3_EDITOR
-    HWVideoPlayerFFInstance* hwvpi = new HWVideoPlayerFFInstance;
-    hwvpi->open(path);
+    auto hwvpi = std::make_shared<HWVideoPlayerFFInstance>();
+    DTerr err = hwvpi->open(path);
+    if (err != DT3_ERR_NONE) {
+        return NULL;
+    }
     
     return hwvpi;
 #else
@@ -96,8 +97,11 @@ HWVideoPlayerFF::HWVideoPlayerType HWVideoPlayerFF::open (const FilePath &path)
 HWVideoPlayerFF::HWVideoPlayerType HWVideoPlayerFF::open (const URL &url)
 {
 #ifndef DT3_EDITOR
-    HWVideoPlayerFFInstance* hwvpi = new HWVideoPlayerFFInstance;
-    hwvpi->open(url);
+    auto hwvpi = std::make_shared<HWVideoPlayerFFInstance>();
+    DTerr err = hwvpi->open(url);
+    if (err != DT3_ERR_NONE) {
+        return NULL;
+    }
 
     return hwvpi;
 #else
@@ -108,21 +112,19 @@ HWVideoPlayerFF::HWVideoPlayerType HWVideoPlayerFF::open (const URL &url)
 void HWVideoPlayerFF::close (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    if (!hwvpi)
+    if (!hwvp)
         return;
     
-    hwvpi->close();
-    RELEASE(hwvpi);
+    hwvp->close();
 #endif
 }
 
 //==============================================================================
 //==============================================================================
 
-DTboolean HWVideoPlayerFF::isPlaybackLikelyToKeepUp (HWVideoPlayerType hwvp)
+DTboolean HWVideoPlayerFF::is_playback_likely_to_keep_up (HWVideoPlayerType hwvp)
 {
-    Assert(hwvp);
+    ASSERT(hwvp);
 
     //HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
 
@@ -135,26 +137,24 @@ DTboolean HWVideoPlayerFF::isPlaybackLikelyToKeepUp (HWVideoPlayerType hwvp)
 void HWVideoPlayerFF::play (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
+    ASSERT(hwvp);
 
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    hwvpi->play();
+    hwvp->play();
 #endif
 }
 
 void HWVideoPlayerFF::pause (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
+    ASSERT(hwvp);
 
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    hwvpi->pause();
+    hwvp->pause();
 #endif
 }
 
 void HWVideoPlayerFF::rewind (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
-    Assert(hwvp);
+    ASSERT(hwvp);
 
     seek(hwvp, 0.0F);
 }
@@ -162,24 +162,18 @@ void HWVideoPlayerFF::rewind (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 DTfloat HWVideoPlayerFF::length (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
-
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    
-    return hwvpi->length();
+    ASSERT(hwvp);
+    return hwvp->length();
 #else
     return 0.0F;
 #endif
 }
 
-DTfloat HWVideoPlayerFF::currentTime (HWVideoPlayerFF::HWVideoPlayerType hwvp)
+DTfloat HWVideoPlayerFF::current_time (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
-
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    
-    return hwvpi->currentTime();
+    ASSERT(hwvp);
+    return hwvp->current_time();
 #else
     return 0.0F;
 #endif
@@ -188,39 +182,33 @@ DTfloat HWVideoPlayerFF::currentTime (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 void HWVideoPlayerFF::seek (HWVideoPlayerFF::HWVideoPlayerType hwvp, DTfloat time)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
-
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    hwvpi->seek(time);
+    ASSERT(hwvp);
+    hwvp->seek(time);
 #endif
 }
 
 //==============================================================================
 //==============================================================================
 
-void HWVideoPlayerFF::getSize (HWVideoPlayerType hwvp, DTuint &width, DTuint &height)
+void HWVideoPlayerFF::size (HWVideoPlayerType hwvp, DTuint &width, DTuint &height)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
+    ASSERT(hwvp);
     
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    
-    width = hwvpi->width();
-    height = hwvpi->height();
+    width = hwvp->width();
+    height = hwvp->height();
 #else
     width = 0;
     height = 0;
 #endif
 }
 
-HWVideoPlayerFF::State HWVideoPlayerFF::getState (HWVideoPlayerFF::HWVideoPlayerType hwvp)
+HWVideoPlayerFF::State HWVideoPlayerFF::state (HWVideoPlayerFF::HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    Assert(hwvp);
+    ASSERT(hwvp);
     
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-
-    switch (hwvpi->getState()) {
+    switch (hwvp->state()) {
         case HWVideoPlayerFFInstance::STATE_IDLE:       return STATE_IDLE;
         case HWVideoPlayerFFInstance::STATE_PAUSED:     return STATE_PAUSED;
         case HWVideoPlayerFFInstance::STATE_PLAYING:    return STATE_PLAYING;
@@ -235,15 +223,26 @@ HWVideoPlayerFF::State HWVideoPlayerFF::getState (HWVideoPlayerFF::HWVideoPlayer
 //==============================================================================
 //==============================================================================
 
-std::shared_ptr<TextureResource> HWVideoPlayerFF::getFrame (HWVideoPlayerType hwvp)
+std::shared_ptr<TextureResource2D> HWVideoPlayerFF::frame (HWVideoPlayerType hwvp)
 {
 #ifndef DT3_EDITOR
-    HWVideoPlayerFFInstance* hwvpi = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
     
-    return hwvpi->getTexture();
+    if (hwvp)
+        return hwvp->texture();
+    else
+        return std::shared_ptr<TextureResource2D>();
+
 #else
-    return std::shared_ptr<TextureResource>();
+    return std::shared_ptr<TextureResource2D>();
 #endif
+}
+
+//==============================================================================
+//==============================================================================
+
+Color4f HWVideoPlayerFF::sample_pixel (HWVideoPlayerType hwvp, DTint x, DTint y)
+{
+    return hwvp->sample_pixel(x,y);
 }
 
 //==============================================================================

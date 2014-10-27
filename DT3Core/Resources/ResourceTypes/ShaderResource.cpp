@@ -327,12 +327,16 @@ DTint ShaderResource::uniform_slot (DT3GLStandardUniform standard_uniform)
 
 void ShaderResource::attach_attribute_buffer (DTint attribute_slot, std::shared_ptr<DT3GLAttribBufferResource> res)
 {
+    ASSERT(attribute_slot >= 0);
+    
     MappingAttribute &m = _attribs[attribute_slot];
     System::renderer()->attach_attribute_buffer(_shader, m._index, res);
 }
 
 void ShaderResource::attach_uniform_buffer (DTint uniform_slot, std::shared_ptr<DT3GLUniformResource> res)
 {
+    ASSERT(uniform_slot >= 0);
+
     MappingUniform &m = _uniforms[uniform_slot];
     System::renderer()->attach_uniform_buffer (_shader, m._index, res);
 }

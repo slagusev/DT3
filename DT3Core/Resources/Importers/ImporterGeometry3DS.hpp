@@ -52,7 +52,7 @@ class ImporterGeometry3DS: public ImporterGeometry {
 		/// Imports an geometry into an GeometryResource
 		/// \param target object to import geometry into
 		/// \param args arguments to importer
-        /// \return error code
+        /// \retrun error code
 		virtual DTerr					import				(GeometryResource *target, std::string args);
 
     private:	
@@ -116,7 +116,7 @@ class ImporterGeometry3DS: public ImporterGeometry {
 		std::vector<Vector2>        _uvs_stream_1;
 		std::vector<WeightsIndex>   _weights_index_stream;
 		std::vector<Vector4>        _weights_strength_stream;
-		std::vector<Triangle>       _indices_stream;
+		std::vector<Triangle>       _index_stream;
 
 		DTint                       _current_obj_id;
 		DTint                       _current_hier_id;

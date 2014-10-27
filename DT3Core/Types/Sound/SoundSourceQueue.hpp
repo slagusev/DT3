@@ -43,22 +43,23 @@ class SoundSourceQueue: public SoundSource {
                 
 	public:
     
-        /// Push a packet into the queue. Note: Surrounded with a
-        /// spin lock so it's thread safe
+        /// Push a packet into the queue.
 		/// \param packet Packet to push into the queue
         void                        push_packet         (SoundPacket& packet);
 
-        /// Clears the packets from the queue. Note: Surrounded with a
-        /// spin lock so it's thread safe
+        /// Clears the packets from the queue.
         void                        clear_packets       (void);
 
+        /// Returns the number of packets in the queue.
+        DTsize                      num_packets         (void)  {   return _packet_count;   }
+
 		/// Returns the next sound packet for playing from this source.
-        /// Note: Surrounded with a spin lock so it's thread safe
         virtual const SoundPacket&  next_sound_packet   (void);
         
 	private:
         std::mutex                  _lock;
         std::list<SoundPacket>      _packets;
+        DTsize                      _packet_count;
 };
 
 //==============================================================================

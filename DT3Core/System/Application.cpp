@@ -178,6 +178,7 @@ void Application::run_event_loop (void)
     //
     // Draw Game
     //
+    System::renderer()->begin_frame ();
 
     clear();
     
@@ -250,7 +251,9 @@ void Application::run_event_loop (void)
         // draw application
         draw_game(0.0F);
     }
-                            
+    
+    System::renderer()->end_frame ();
+
     SystemCallbacks::screen_swap_cb().fire();
                         
     Profiler::mark_frame();
@@ -258,7 +261,7 @@ void Application::run_event_loop (void)
 
     DTfloat sleep_time = DT3_UPDATE_RATE_PERIOD - static_cast<DTfloat>(_game_time.abs_time());
     if (sleep_time > 0.0F) {
-        ::usleep(sleep_time*1000*1000);
+        ::usleep(sleep_time*(1000*1000));
     }
 
 }

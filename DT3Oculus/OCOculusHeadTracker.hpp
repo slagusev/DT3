@@ -38,6 +38,9 @@ class OCOculusHeadTracker: public ScriptingBase {
     
         virtual void                archive                 (const std::shared_ptr<Archive> &archive);
 		
+		/// Called to initialize the object
+		virtual void				initialize              (void);
+
 		/// Object was added to a world
 		/// world world that object was added to
         virtual void                add_to_world            (World *world);
@@ -62,6 +65,8 @@ class OCOculusHeadTracker: public ScriptingBase {
 
 		Plug<DTboolean>             _is_calibrating;
 		Plug<DTboolean>             _is_calibrated;
+
+		Plug<DTboolean>             _has_hmd;
 
 		Plug<Matrix3>               _orientation;
 		Plug<Vector3>               _acceleration;

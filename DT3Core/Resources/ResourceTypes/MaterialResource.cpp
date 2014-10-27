@@ -320,6 +320,7 @@ void MaterialResource::activate (void)
     
         TextureSlot &ts = _textures[i];
         
+        // Texture Resources
         if (ts._texture_2D) {
             ts._texture_2D->activate(i);
             System::renderer()->attach_sampler(i,ts._sampler_state_resource);
@@ -328,6 +329,17 @@ void MaterialResource::activate (void)
             System::renderer()->attach_sampler(i,ts._sampler_state_resource);
         } else if (ts._texture_cube) {
             ts._texture_cube->activate(i);
+            System::renderer()->attach_sampler(i,ts._sampler_state_resource);
+            
+        // Direct Renderer Resource attachments
+        } else if (ts._texture_2D_res) {
+            System::renderer()->attach_texture(i, ts._texture_2D_res);
+            System::renderer()->attach_sampler(i,ts._sampler_state_resource);
+        } else if (ts._texture_3D_res) {
+            System::renderer()->attach_texture(i, ts._texture_3D_res);
+            System::renderer()->attach_sampler(i,ts._sampler_state_resource);
+        } else if (ts._texture_cube_res) {
+            System::renderer()->attach_texture(i, ts._texture_cube_res);
             System::renderer()->attach_sampler(i,ts._sampler_state_resource);
         }
         

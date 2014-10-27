@@ -15,7 +15,6 @@
 #include "DT3Core/Types/Node/Plug.hpp"
 #include "DT3Core/Types/Node/Event.hpp"
 #include "DT3Core/Types/Math/Vector3.hpp"
-#include "DT3Core/Types/Sound/SoundSource.hpp"
 #include "DT3Core/Types/Sound/SoundPacket.hpp"
 
 //==============================================================================

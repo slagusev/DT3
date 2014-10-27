@@ -157,7 +157,7 @@ void ScriptingKeyframesGridImageData::set_key (void)
 {
 	PROFILER(SCRIPTING);
 
-	const std::vector<PlugBase*> &outgoing = _out.outgoing_connections();
+	const std::vector<PlugBase*> outgoing = _out.outgoing_connections();
 	if (outgoing.size() > 0) {
 		// get first connected plug
 		Plug<GridImageData> *outplug = static_cast<Plug<GridImageData>*>(*(outgoing.begin()));

@@ -18,7 +18,10 @@
 #include "DT3Core/Types/Math/Triangle.hpp"
 #include "DT3Core/Types/Math/Matrix4.hpp"
 #include "DT3Core/Types/Animation/SkeletonJoint.hpp"
+#include "DT3Core/Types/FileBuffer/FilePath.hpp"
+#include "DT3Core/Types/Graphics/Mesh.hpp"
 #include <vector>
+#include <list>
 
 //==============================================================================
 //==============================================================================
@@ -53,9 +56,9 @@ class ImporterGeometryTWM: public ImporterGeometry {
 		/// Imports an geometry into an GeometryResource
 		/// \param target object to import geometry into
 		/// \param args arguments to importer
-        /// \return error code
+        /// \retrun error code
 		virtual DTerr					import				(GeometryResource *target, std::string args);
-
+    
     private:	
 	
 		enum {
@@ -124,26 +127,26 @@ class ImporterGeometryTWM: public ImporterGeometry {
 		DTuint                              _weights_count;
 		
 		
-		void	read_mesh_name		(BinaryFileStream &file, DTuint remaining_size, std::string &name);
-		void	read_mesh_positions	(BinaryFileStream &file, DTuint remaining_size, std::vector<Vector3> &positions);
-		void	read_mesh_normals   (BinaryFileStream &file, DTuint remaining_size, std::vector<Vector3> &normals);
-		void	read_mesh_uvs       (BinaryFileStream &file, DTuint remaining_size, std::vector<Vector2> &uvs);
-		void	read_mesh_uv_sets   (BinaryFileStream &file, DTuint remaining_size, std::vector<UVset> &uvs_sets);
-		void	read_mesh_joints    (BinaryFileStream &file, DTuint remaining_size, std::vector<std::string> &joints);
-		void	read_mesh_influences(BinaryFileStream &file, DTuint remaining_size, std::vector<Weights> &weights);
-		void	read_mesh_skinning	(BinaryFileStream &file, DTuint remaining_size, std::vector<std::string> &joints, std::vector<Weights> &weights);
-		void	read_mesh_indices   (BinaryFileStream &file, DTuint remaining_size, std::vector<Triangle> &indices);
-		void	read_mesh			(BinaryFileStream &file, DTuint remaining_size, MeshData &mesh);
-		void	read_meshes			(BinaryFileStream &file, DTuint remaining_size, std::vector<MeshData> &meshes);
+		void            read_mesh_name		(BinaryFileStream &file, DTuint remaining_size, std::string &name);
+		void            read_mesh_positions	(BinaryFileStream &file, DTuint remaining_size, std::vector<Vector3> &positions);
+		void            read_mesh_normals   (BinaryFileStream &file, DTuint remaining_size, std::vector<Vector3> &normals);
+		void            read_mesh_uvs       (BinaryFileStream &file, DTuint remaining_size, std::vector<Vector2> &uvs);
+		void            read_mesh_uv_sets   (BinaryFileStream &file, DTuint remaining_size, std::vector<UVset> &uvs_sets);
+		void            read_mesh_joints    (BinaryFileStream &file, DTuint remaining_size, std::vector<std::string> &joints);
+		void            read_mesh_influences(BinaryFileStream &file, DTuint remaining_size, std::vector<Weights> &weights);
+		void            read_mesh_skinning	(BinaryFileStream &file, DTuint remaining_size, std::vector<std::string> &joints, std::vector<Weights> &weights);
+		void            read_mesh_indices   (BinaryFileStream &file, DTuint remaining_size, std::vector<Triangle> &indices);
+		void            read_mesh			(BinaryFileStream &file, DTuint remaining_size, MeshData &mesh);
+		void            read_meshes			(BinaryFileStream &file, DTuint remaining_size, std::vector<MeshData> &meshes);
 		
-		void	read_skeleton_joints(BinaryFileStream &file, DTuint remaining_size, std::vector<Joint> &joints);
-		void	read_skeleton		(BinaryFileStream &file, DTuint remaining_size, SkeletonData &skeleton);
+		void            read_skeleton_joints(BinaryFileStream &file, DTuint remaining_size, std::vector<Joint> &joints);
+		void            read_skeleton		(BinaryFileStream &file, DTuint remaining_size, SkeletonData &skeleton);
 		
-		void	read_file			(BinaryFileStream &file, DTuint remaining_size);
+		void            read_file			(BinaryFileStream &file, DTuint remaining_size);
 
 
 		// Recursive function to build the skeleton
-		void	build_skeleton		(std::vector<std::string> &joint_names, std::vector<Joint> &src_joints, std::vector<SkeletonJoint> &dst_joints);
+		void            build_skeleton		(std::vector<std::string> &joint_names, std::vector<Joint> &src_joints, std::vector<SkeletonJoint> &dst_joints);
 
 };
 

@@ -72,7 +72,7 @@ void TransitionFadeOutIn::end_new_world (void)
     _b.add().v(2.0F, -1.0F, 0.0F).c(c);
 
     _b.batch_end();
-    _b.flush();
+    _b.draw();
 }
 
 DTboolean TransitionFadeOutIn::begin_old_world (void)
@@ -104,7 +104,7 @@ void TransitionFadeOutIn::end_old_world (void)
     _b.add().v(2.0F, -1.0F, 0.0F).c(c);
 
     _b.batch_end();
-    _b.flush();
+    _b.draw();
 }
 
 void TransitionFadeOutIn::transition (const DTfloat t)

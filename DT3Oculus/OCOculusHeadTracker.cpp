@@ -13,6 +13,8 @@
 #include "DT3Oculus/OCOculusBase.hpp"
 #include "DT3Core/System/Factory.hpp"
 #include "DT3Core/Types/FileBuffer/Archive.hpp"
+#include "DT3Core/Types/FileBuffer/ArchiveData.hpp"
+#include "DT3Core/Types/Utility/ConsoleStream.hpp"
 #include "DT3Core/World/World.hpp"
 
 //==============================================================================
@@ -34,6 +36,7 @@ IMPLEMENT_PLUG_INFO_INDEX(_is_calibrated)
 IMPLEMENT_PLUG_INFO_INDEX(_orientation)
 IMPLEMENT_PLUG_INFO_INDEX(_acceleration)
 IMPLEMENT_PLUG_INFO_INDEX(_angular_velocity)
+IMPLEMENT_PLUG_INFO_INDEX(_has_hmd)
 
 IMPLEMENT_EVENT_INFO_INDEX(_begin_auto_calibration)
 		
@@ -62,6 +65,9 @@ BEGIN_IMPLEMENT_PLUGS(OCOculusHeadTracker)
 
 	PLUG_INIT(_angular_velocity, "Angular_Velocity")
 		.set_output(true);
+
+	PLUG_INIT(_has_hmd, "Has_HMD")
+		.set_output(true);
     
     EVENT_INIT(_begin_auto_calibration,"Begin_Auto_Calibration")
         .set_input(true)
@@ -81,6 +87,7 @@ OCOculusHeadTracker::OCOculusHeadTracker (void)
 		_orientation            (PLUG_INFO_INDEX(_orientation), Matrix3::identity()),
 		_acceleration           (PLUG_INFO_INDEX(_acceleration), Vector3(0.0F,0.0F,0.0F)),
 		_angular_velocity       (PLUG_INFO_INDEX(_angular_velocity), Vector3(0.0F,0.0F,0.0F)),
+		_has_hmd                (PLUG_INFO_INDEX(_has_hmd), false),
         _begin_auto_calibration (EVENT_INFO_INDEX(_begin_auto_calibration))
 {
 
@@ -95,6 +102,7 @@ OCOculusHeadTracker::OCOculusHeadTracker (const OCOculusHeadTracker &rhs)
 		_orientation            (rhs._orientation),
 		_acceleration           (rhs._acceleration),
 		_angular_velocity       (rhs._angular_velocity),
+        _has_hmd                (rhs._has_hmd),
         _begin_auto_calibration (rhs._begin_auto_calibration)
 {   
 
@@ -115,6 +123,8 @@ OCOculusHeadTracker & OCOculusHeadTracker::operator = (const OCOculusHeadTracker
 		_orientation = rhs._orientation;
 		_acceleration = rhs._acceleration;
 		_angular_velocity = rhs._angular_velocity;
+        
+        _has_hmd = rhs._has_hmd;
 	}
     return (*this);
 }
@@ -127,11 +137,27 @@ OCOculusHeadTracker::~OCOculusHeadTracker (void)
 //==============================================================================
 //==============================================================================
 
+void OCOculusHeadTracker::initialize (void)
+{
+#if DT3_OS != DT3_ANDROID && DT3_OS != DT3_IOS
+    _has_hmd = OCOculusBase::has_valid_hmd();
+#else
+    _has_hmd = false;
+#endif
+}
+
+//==============================================================================
+//==============================================================================
+
 void OCOculusHeadTracker::archive (const std::shared_ptr<Archive> &archive)
 {
     ScriptingBase::archive(archive);
 
     archive->push_domain (class_id ());
+    
+	*archive << ARCHIVE_PLUG(_gravity_enabled, DATA_PERSISTENT | DATA_SETTABLE);
+	*archive << ARCHIVE_PLUG(_yaw_correction_enabled, DATA_PERSISTENT | DATA_SETTABLE);
+
     archive->pop_domain ();
 }
 
@@ -148,7 +174,7 @@ void OCOculusHeadTracker::tick (const DTfloat dt)
     OVR::Matrix4f ovr_orientation = (OVR::Matrix4f) _sensor_fusion.GetOrientation();
     OVR::Vector3f ovr_acceleration = _sensor_fusion.GetAcceleration();
     OVR::Vector3f ovr_angular_velocity = _sensor_fusion.GetAngularVelocity();
-    
+        
     Matrix3 orientation (   ovr_orientation.M[0][0], ovr_orientation.M[0][1], ovr_orientation.M[0][2],
                             ovr_orientation.M[1][0], ovr_orientation.M[1][1], ovr_orientation.M[1][2],
                             ovr_orientation.M[2][0], ovr_orientation.M[2][1], ovr_orientation.M[2][2]);

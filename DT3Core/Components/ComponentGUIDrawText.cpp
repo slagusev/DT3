@@ -275,7 +275,7 @@ void ComponentGUIDrawText::draw (const std::shared_ptr<CameraObject> &camera, co
         _b.add().v(_bounds.plus_x(),_bounds.minus_y(),0.0F)  .t0(1.0F,0.0F)  .c(c);
         
         _b.batch_end();
-        _b.flush();
+        _b.draw();
     }
     
 }

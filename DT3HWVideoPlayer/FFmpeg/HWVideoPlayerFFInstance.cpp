@@ -1,23 +1,26 @@
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFFInstance.cpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFFInstance.cpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFInstance.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFDataSourceFile.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFDataSourceURL.hpp"
 
-#include "HWVideoPlayerFFInstance.hpp"
+#include "DT3Core/Types/Utility/Assert.hpp"
+#include "DT3Core/Types/Utility/ConsoleStream.hpp"
+#include "DT3Core/Types/Utility/TimerHires.hpp"
+#include "DT3Core/Types/Math/MoreMath.hpp"
+#include "DT3Core/System/System.hpp"
+#include "DT3Core/Devices/DeviceAudio.hpp"
+#include "DT3Core/Devices/DeviceGraphics.hpp"
 
-#include "Assert.hpp"
-#include "ConsoleStream.hpp"
-#include "System.hpp"
-#include "DeviceAudio.hpp"
-
-#include "HWVideoPlayerFFDataSourceFile.hpp"
-#include "HWVideoPlayerFFDataSourceURL.hpp"
+#include <chrono>
 
 //==============================================================================
 //==============================================================================
@@ -27,40 +30,40 @@ namespace DT3 {
 //==============================================================================
 //==============================================================================
 
-const DTint COMMAND_INDEX_PLAY = -1;
-const DTint COMMAND_INDEX_PAUSE = -2;
-const DTint COMMAND_INDEX_SEEK = -3;
+const DTint     MIN_NUM_PACKETS_TARGET = 2048;
 
-const DTint AUDIO_FREQUENCY = 44100;
-const DTdouble AUDIO_READ_AHEAD = 0.5;
-const DTdouble AUDIO_PRE_BUFFER_THRESH = 0.2;
-const DTint AUDIO_BUFFER_SIZE = AUDIO_PRE_BUFFER_THRESH * AUDIO_FREQUENCY;
-
+const DTint     AUDIO_FREQUENCY = 44100;
+const DTint     AUDIO_BUFFER_SIZE = 1024*32;    // 32k chunks of audio data
+const DTdouble  AUDIO_READ_AHEAD = 1.0;         // How much audio is read ahead of time
+const DTdouble  VIDEO_READ_AHEAD = 1.0/30.0;    // How much video is read ahead of time
 
 //==============================================================================
 /// Standard class constructors/destructors
 //==============================================================================
 
 HWVideoPlayerFFInstance::HWVideoPlayerFFInstance (void)
-    :   _data_source            (NULL),
-        _src_frame              (NULL),
-        _dst_frame              (NULL),
-        _src_audio_frame        (NULL),
-        _state                  (STATE_IDLE),
-        _buffer_start           (0),
-        _buffer_end             (0),
-        _playback_thread        (NULL),
-        _data_thread            (NULL),
-        _playback_speed         (1.0),
-        _img_convert_ctx        (NULL),
-        _snd_convert_ctx        (NULL),
-        _video_timestamp        (-1.0),
-        _audio_timestamp        (-1.0)
+    :   _data_source                    (NULL),
+        _src_frame                      (NULL),
+        _src_audio_frame                (NULL),
+        _state                          (STATE_IDLE),
+        _img_convert_ctx                (NULL),
+        _snd_convert_ctx                (NULL),
+        _current_time                   (0.0),
+        _first_audio_timestamp          (0.0),
+        _first_audio_timestamp_set      (false),
+        _dst_frame_read_buffer_index    (0),
+        _dst_frame_buffer_dirty         (false),
+        _playback_thread_running        (false),
+        _data_thread_running            (false)
 {
-    _sound_source.setEndsOnEmpty(false);
-    
-    _dst_sound_packet.setFormat(SoundResource::FORMAT_STEREO16);
-    _dst_sound_packet.setFrequency(AUDIO_FREQUENCY);
+    _dst_frame[0] = NULL;
+    _dst_frame[1] = NULL;
+
+    _dst_frame_buffer[0] = NULL;
+    _dst_frame_buffer[1] = NULL;
+
+    _sound_source = SoundSourceQueue::create();
+    _sound_source->set_ends_on_empty(false);
 }
 
 HWVideoPlayerFFInstance::~HWVideoPlayerFFInstance (void)
@@ -73,76 +76,106 @@ HWVideoPlayerFFInstance::~HWVideoPlayerFFInstance (void)
 
 DTerr HWVideoPlayerFFInstance::open (const FilePath &path)
 {
-    _data_source = new HWVideoPlayerFFDataSourceFile(path);   // Create doesn't accept parameters
+    close();
     
-    DTerr err = setup();
+    // Open Data source
+    auto data_source = std::shared_ptr<HWVideoPlayerFFDataSourceFile>::make_shared();
+    DTerr err = data_source->open(path);
     if (err != DT3_ERR_NONE) {
         _state = STATE_ERROR;
         return err;
-    } else {
-        _state = STATE_PAUSED;
     }
     
-    HAL::createThread(dataThread, this, _data_thread);
-    Assert(_data_thread);
 
-    HAL::createThread(playbackThread, this, _playback_thread);
-    Assert(_playback_thread);
+    // Data source is opened, open player
+    err = open_common(data_source);
+    if (err != DT3_ERR_NONE) {
+        _state = STATE_ERROR;
+        return err;
+    }
     
+    // Final setup
+    _data_source = data_source;
+    
+    // Spool up worker threads
+    _data_thread_running = true;
+    _playback_thread_running = true;
+
+    _data_thread = std::thread(&HWVideoPlayerFFInstance::data_thread, this);
+    _playback_thread = std::thread(&HWVideoPlayerFFInstance::playback_thread, this);
+
     pause();
-        
+    
     return DT3_ERR_NONE;
 }
 
 DTerr HWVideoPlayerFFInstance::open (const URL &url)
 {
-    _data_source = new HWVideoPlayerFFDataSourceURL(url);   // Create doesn't accept parameters
-
-    DTerr err = setup();
+    close();
+    
+    // Open Data source
+    auto data_source = std::shared_ptr<HWVideoPlayerFFDataSourceURL>::make_shared();
+    DTerr err = data_source->open(url);
     if (err != DT3_ERR_NONE) {
         _state = STATE_ERROR;
         return err;
-    } else {
-        _state = STATE_PAUSED;
     }
 
-    HAL::createThread(dataThread, this, _data_thread);
-    Assert(_data_thread);
+    // Data source is opened, open player
+    err = open_common(data_source);
+    if (err != DT3_ERR_NONE) {
+        _state = STATE_ERROR;
+        return err;
+    }
+
+    // Final setup
+    _data_source = data_source;
     
-    HAL::createThread(playbackThread, this, _playback_thread);
-    Assert(_playback_thread);
+    // Spool up worker threads
+    _data_thread_running = true;
+    _playback_thread_running = true;
+
+    _data_thread = std::thread(&HWVideoPlayerFFInstance::data_thread, this);
+    _playback_thread = std::thread(&HWVideoPlayerFFInstance::playback_thread, this);
 
     pause();
 
     return DT3_ERR_NONE;
 }
 
+void HWVideoPlayerFFInstance::close (void)
+{
+    pause();
+    
+    
+    close_common();
+
+    if (_data_source) {
+        _data_source->close();
+        _data_source.reset();
+    }
+}
+
 //==============================================================================
 //==============================================================================
 
-DTerr HWVideoPlayerFFInstance::setup (void)
+DTerr HWVideoPlayerFFInstance::open_common (std::shared_ptr<HWVideoPlayerFFDataSourceBase> data_source)
 {
     //
     // Open the stream
     //
     
-    // FFMpeg stream information
-    DTerr err = _data_source->open();
-    if (err != DT3_ERR_NONE)
-        return err;
-    
-    AVFormatContext *format_context = _data_source->formatContext();
-    AVCodecContext *video_codec_context = _data_source->videoCodecContext();
-    AVCodecContext *audio_codec_context = _data_source->audioCodecContext();
-    AVStream *video_stream = _data_source->videoStream();
-    AVStream *audio_stream = _data_source->audioStream();
+    AVFormatContext *format_context = data_source->format_context();
+    AVCodecContext *video_codec_context = data_source->video_codec_context();
+    AVCodecContext *audio_codec_context = data_source->audio_codec_context();
+    AVStream *video_stream = data_source->video_stream();
+    AVStream *audio_stream = data_source->audio_stream();
 
     //
     // Get video parameters
     //
     
     // Reset the playhead and get movie duration
-    _current_time = 0.0F;
     _length = (DTdouble) format_context->duration / (DTdouble) AV_TIME_BASE;
     
     // Timebase
@@ -165,7 +198,7 @@ DTerr HWVideoPlayerFFInstance::setup (void)
     
     // Software scaler
     _img_convert_ctx = ::sws_getContext(    _width, _height, video_codec_context->pix_fmt,
-                                            _width, _height, AV_PIX_FMT_RGB24,
+                                            _width, _height, AV_PIX_FMT_RGBA,
                                             SWS_POINT,
                                             NULL, NULL, NULL);
 
@@ -200,30 +233,33 @@ DTerr HWVideoPlayerFFInstance::setup (void)
     // Allocate destination frame
     //
 
-    _dst_frame = ::avcodec_alloc_frame();
-    if (!_dst_frame) {
-        return DT3_ERR_FILE_OPEN_FAILED;
-    }
-    
     // Allocate a texture to hold the final frames
-    DTsize size = ::avpicture_get_size(PIX_FMT_RGB24, _width, _height);
-    
-    _tex_buffer = makeSmartPtr(ArrayBlock<DTubyte>::create());
-    _tex_buffer->resize(size, 0);
+    DTsize size = ::avpicture_get_size(AV_PIX_FMT_RGBA, _width, _height);
 
-    _tex = makeSmartPtr(TextureResource::create());
-    _tex->setTextels2D(_width, _height, _tex_buffer, DT3GL_FORMAT_RGB, false, DT3GL_ACCESS_CPU_WRITE | DT3GL_ACCESS_GPU_READ);
+    for (DTuint i = 0; i < 2; ++i) {
+        _dst_frame[i] = ::avcodec_alloc_frame();
+        if (!_dst_frame[i]) {
+            return DT3_ERR_FILE_OPEN_FAILED;
+        }
     
-    // Associate frame to buffer
-    ::avpicture_fill( (AVPicture *) _dst_frame, _tex_buffer->getBuffer(), AV_PIX_FMT_RGB24, _width, _height);
+        // Aligned allocator
+        _dst_frame_buffer[i] = ::av_mallocz(size);
+
+        // Associate frame to buffer
+        ::avpicture_fill( (AVPicture *) _dst_frame[i], (DTubyte*) _dst_frame_buffer[i], AV_PIX_FMT_RGBA, _width, _height);
     
-    // Flip the frame
-    for (int i = 0; i < 4; i++) {
-        _dst_frame->data[i] += _dst_frame->linesize[i] * (_height-1);
-        _dst_frame->linesize[i] = -_dst_frame->linesize[i];
+        // Flip the frame
+        for (DTint j = 0; j < 4; ++j) {
+            _dst_frame[i]->data[j] += _dst_frame[i]->linesize[j] * (_height-1);
+            _dst_frame[i]->linesize[j] = -_dst_frame[i]->linesize[j];
+        }
     }
-
     
+    // Setup textures manually for low level access
+    _tex_raw = System::renderer()->create_texture_2D(_width, _height, (DTubyte*) _dst_frame_buffer[0], DT3GL_FORMAT_RGBA, false, DT3GL_ACCESS_CPU_WRITE | DT3GL_ACCESS_GPU_READ);
+    _tex_resource = TextureResource2D::create();
+    _tex_resource->set_resource_textels(_tex_raw);
+
     //
     // Allocate destination audio frame
     //
@@ -239,44 +275,76 @@ DTerr HWVideoPlayerFFInstance::setup (void)
     return DT3_ERR_NONE;
 }
 
-//==============================================================================
-//==============================================================================
-
-DTdouble HWVideoPlayerFFInstance::bufferStartTime (void) const
+void HWVideoPlayerFFInstance::close_common (void)
 {
-    return (DTdouble) (_buffer_start - _video_time_start) * _video_time_base;
-}
+    if (_data_source) {
+        AVCodecContext *audio_codec_context = _data_source->audio_codec_context();
+        if (audio_codec_context) {
+            System::audio_renderer()->stop(_sound_source);
+            _sound_source->clear_packets();
+        }
+    }
 
-DTdouble HWVideoPlayerFFInstance::bufferEndTime (void) const
-{
-    return (DTdouble) (_buffer_end - _video_time_start) * _video_time_base;
+    // Set state to closing
+    _state = STATE_CLOSING;
+    
+    while (_playback_thread_running || _playback_thread.joinable()) {
+        _playback_thread_condition.notify_one();
+        if (_playback_thread.joinable())
+            _playback_thread.join();
+    }
+    
+    while (_data_thread_running || _data_thread.joinable()) {
+        _data_thread_condition.notify_one();
+        if (_data_thread.joinable())
+            _data_thread.join();
+    }
+    
+    _video_packet_queue.clear();
+    _audio_packet_queue.clear();
+
+    // Free scaler context
+    if (_img_convert_ctx)   {   ::sws_freeContext(_img_convert_ctx);    _img_convert_ctx = NULL;    }
+    if (_snd_convert_ctx)   {   ::swr_free(&_snd_convert_ctx);          _snd_convert_ctx = NULL;    }
+
+    // Free the frames
+    ::av_frame_free(&_src_frame);
+    ::av_frame_free(&_src_audio_frame);
+
+    for (DTuint i = 0; i < 2; ++i) {
+        ::av_frame_free(&_dst_frame[i]);
+
+        ::av_free(_dst_frame_buffer[i]);
+        _dst_frame_buffer[i] = NULL;
+    }
+    
+    _data_source.reset();
+    
+    _tex_resource.reset();
+    _tex_raw.reset();
+
+    _state = STATE_IDLE;
 }
 
 //==============================================================================
 // This is the data thread!!
 //==============================================================================
 
-void HWVideoPlayerFFInstance::dataThread (void *hwvp)
+void HWVideoPlayerFFInstance::data_thread (void)
 {
-    HWVideoPlayerFFInstance* inst = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    Assert(inst);
-
     //
     // Fill up the packet queue
     //
     
-    AVFormatContext *format_context = inst->_data_source->formatContext();
+    AVFormatContext *format_context = _data_source->format_context();
     
-    AVCodecContext *video_codec_context = inst->_data_source->videoCodecContext();
-    AVCodecContext *audio_codec_context = inst->_data_source->audioCodecContext();
-
-    DTint video_stream_index = inst->_data_source->videoStreamIndex();
-    DTint audio_stream_index = inst->_data_source->audioStreamIndex();
+    DTint video_stream_index = _data_source->video_stream_index();
+    DTint audio_stream_index = _data_source->audio_stream_index();
 
     AVPacket packet;
     ::av_init_packet(&packet);
     
-    while (inst->_state != STATE_CLOSING) {
+    while (_state != STATE_CLOSING) {
     
         DTboolean command_processed = false;
         DTboolean packet_processed = false;
@@ -288,45 +356,76 @@ void HWVideoPlayerFFInstance::dataThread (void *hwvp)
         HWVideoPlayerFFCommandQueue::Command command;
         DTdouble param;
         
-        while (inst->_data_command_queue.popCommand(command, param)) {
+        while (_data_command_queue.pop_command(command, param)) {
         
             switch (command) {
             
                 case HWVideoPlayerFFCommandQueue::CMD_PLAY: {
-                    inst->_playback_command_queue.pushPlay();
+                    
+                    // Seeking cases all of the packets to be flushed
+                    _video_packet_queue.clear();
+                    _audio_packet_queue.clear();
+                    
+                    _video_packet_queue.push_back_flush();
+                    _audio_packet_queue.push_back_flush();
+                    
+                    // Seek the data source
+                    int64_t tc_pos = (_current_time + _first_audio_timestamp) * AV_TIME_BASE;
+                    
+                    DTint err = ::av_seek_frame(    format_context, -1,
+                                                    tc_pos,
+                                                    (param < current_time() ?  AVSEEK_FLAG_BACKWARD : 0));    // Should flag be AVSEEK_FLAG_BACKWARD?
+                    if (err < 0) {
+                        LOG_MESSAGE << "Unable to seek";
+                    }
+                    
+                    _state = STATE_PLAYING;
+
+                    // Bump the playback thread so it'll process the data packet
+                    _playback_thread_condition.notify_one();
+                    
                 } break;
 
                 case HWVideoPlayerFFCommandQueue::CMD_PAUSE: {
-                    inst->_playback_command_queue.pushPause();
+                    _state = STATE_PAUSED;
+                    
+                    // Seeking cases all of the packets to be flushed
+                    _video_packet_queue.clear();
+                    _audio_packet_queue.clear();
+                    
+                    _video_packet_queue.push_back_flush();
+                    _audio_packet_queue.push_back_flush();
+
+                    // Bump the playback thread so it'll process the data packet
+                    _playback_thread_condition.notify_one();
+
                 } break;
 
                 case HWVideoPlayerFFCommandQueue::CMD_SEEK: {
 
                     // Seeking cases all of the packets to be flushed
-                    inst->_video_packet_queue.clear();
-                    inst->_audio_packet_queue.clear();
+                    _video_packet_queue.clear();
+                    _audio_packet_queue.clear();
                     
-                    ::avcodec_flush_buffers(video_codec_context);
-                    
-                    if (audio_codec_context)
-                        ::avcodec_flush_buffers(audio_codec_context);
+                    _video_packet_queue.push_back_flush();
+                    _audio_packet_queue.push_back_flush();
                     
                     // Seek the data source
-                    int64_t pos = param * AV_TIME_BASE;
-                    DTint err = ::av_seek_frame(format_context, -1, pos, AVSEEK_FLAG_ANY | AVSEEK_FLAG_BACKWARD);    // Should flag be AVSEEK_FLAG_BACKWARD?
+                    int64_t tc_pos = param * AV_TIME_BASE;
+                    
+                    DTint err = ::av_seek_frame(    format_context, -1,
+                                                    tc_pos,
+                                                    (param < current_time() ?  AVSEEK_FLAG_BACKWARD : 0));    // Should flag be AVSEEK_FLAG_BACKWARD?
                     if (err < 0) {
                         LOG_MESSAGE << "Unable to seek";
                     }
                     
-                    inst->_playback_command_queue.pushSeek(param);
+                    // Bump the playback thread so it'll process the data packet
+                    _playback_thread_condition.notify_one();
 
                 } break;
 
             }
-            
-            // Bump the playback thread so it'll process the command packet
-            if (inst->_playback_thread)
-                HAL::resumeThread(inst->_playback_thread);
             
             command_processed = true;
         }
@@ -335,23 +434,23 @@ void HWVideoPlayerFFInstance::dataThread (void *hwvp)
         // Read in more packets
         //
         
-        DTint err;
-        if ( (err = ::av_read_frame(format_context, &packet)) >= 0) {
-        
-            if (packet.pts < inst->_buffer_start) inst->_buffer_start = packet.pts;
-            if (packet.pts < inst->_buffer_end)   inst->_buffer_end = packet.pts;
+        if (_video_packet_queue.size() < MIN_NUM_PACKETS_TARGET && _audio_packet_queue.size() < MIN_NUM_PACKETS_TARGET) {
             
-            // Insert into packet queue
-            if (packet.stream_index == video_stream_index)
-                inst->_video_packet_queue.pushBack(&packet);
-            else if (packet.stream_index == audio_stream_index)
-                inst->_audio_packet_queue.pushBack(&packet);
+            DTint err = ::av_read_frame(format_context, &packet);
+            if (err == 0) {
             
-            // Bump the playback thread so it'll process the command packet
-            if (inst->_playback_thread)
-                HAL::resumeThread(inst->_playback_thread);
+                // Insert into packet queue
+                if (packet.stream_index == video_stream_index)
+                    _video_packet_queue.push_back(&packet);
+                else if (packet.stream_index == audio_stream_index)
+                    _audio_packet_queue.push_back(&packet);
+                
+                // Bump the playback thread so it'll process the data packet
+                _playback_thread_condition.notify_one();
 
-            packet_processed = true;
+                packet_processed = true;
+            }
+            
         }
         
         //
@@ -359,29 +458,32 @@ void HWVideoPlayerFFInstance::dataThread (void *hwvp)
         //
         
         if (!command_processed && !packet_processed) {
-            // If there's no more packets, suspend the thread
-            HAL::suspendThread(inst->_data_thread);
+            // If there's no more packets or commands, suspend the thread
+            std::unique_lock<std::mutex> lock(_data_thread_mutex);
+            _data_thread_condition.wait(lock);
         }
         
     }
     
+    //::av_free_packet(&packet);
+   
+    _data_thread_running = false;
+
 }
 
 //==============================================================================
 // This is the playback thread!!
 //==============================================================================
 
-void HWVideoPlayerFFInstance::playbackThread (void *hwvp)
+void HWVideoPlayerFFInstance::playback_thread (void)
 {
-    HWVideoPlayerFFInstance* inst = reinterpret_cast<HWVideoPlayerFFInstance*>(hwvp);
-    Assert(inst);
 
     //
     // Process playback queue
     //
     
-    AVCodecContext *video_codec_context = inst->_data_source->videoCodecContext();
-    AVCodecContext *audio_codec_context = inst->_data_source->audioCodecContext();
+    AVCodecContext *video_codec_context = _data_source->video_codec_context();
+    AVCodecContext *audio_codec_context = _data_source->audio_codec_context();
 
     AVPacket packet;
     ::av_init_packet(&packet);
@@ -389,203 +491,254 @@ void HWVideoPlayerFFInstance::playbackThread (void *hwvp)
     
     // Flag for determining if the output texture contains valid frame data. The
     // loop tries to keep this true after seeking and loading
-    DTboolean valid_frame = false;
-
-
-    // Loop until done
-    while (inst->_state != STATE_CLOSING) {
-
-        //
-        // Read in commands
-        //
-
-        HWVideoPlayerFFCommandQueue::Command command;
-        DTdouble param;
-        
-        while (inst->_playback_command_queue.popCommand(command, param)) {
-        
-            switch (command) {
-            
-                case HWVideoPlayerFFCommandQueue::CMD_PLAY: {
-                
-                    if (inst->_state == STATE_PAUSED) {
-                        inst->_state = STATE_PLAYING;
-                        inst->_timer.getDeltaTime();    // Just to reset delta time
-                        
-                        inst->_sound_source.clearPackets();
-                        
-                        inst->_audio_timestamp = -1.0;
-                        inst->_video_timestamp = -1.0;
-                        
-                        if (audio_codec_context)
-                            System::getAudioRenderer()->play(&inst->_sound_source, NULL);
-
-                    }
-                    
-                } break;
-
-                case HWVideoPlayerFFCommandQueue::CMD_PAUSE: {
-                
-                    if (inst->_state == STATE_PLAYING) {
-                        inst->_state = STATE_PAUSED;
-
-                        inst->_sound_source.clearPackets();
-                        
-                        if (audio_codec_context)
-                            System::getAudioRenderer()->stop(&inst->_sound_source);
-                        
-                        HAL::suspendThread(inst->_playback_thread);
-                    }
-                    
-                } break;
-
-                case HWVideoPlayerFFCommandQueue::CMD_SEEK: {
-                    if (audio_codec_context && inst->_state == STATE_PLAYING) {
-                        System::getAudioRenderer()->stop(&inst->_sound_source);
-                    }
-                    
-                    inst->_current_time = param;
-                    valid_frame = false;
-                    
-                    inst->_audio_timestamp = -1.0;
-                    inst->_video_timestamp = -1.0;
-                    
-                    inst->_sound_source.clearPackets();
-
-                    if (audio_codec_context && inst->_state == STATE_PLAYING) {
-                        System::getAudioRenderer()->play(&inst->_sound_source, NULL);
-                    }
-
-                } break;
-
-            }
-            
-        }
+    DTboolean valid_video_frame = false;
+    DTboolean valid_audio_frame = false;
     
+    DTdouble video_timestamp = 0.0;
+    DTdouble audio_timestamp = 0.0;
+    
+    DTboolean is_sound_playing = false;
 
+    SoundPacket dst_sound_packet;
+    dst_sound_packet.set_format(SoundResource::FORMAT_STEREO16);
+    dst_sound_packet.set_frequency(AUDIO_FREQUENCY);
+    
+    DTsize dst_sound_packet_count = 0;
+    DTsize dst_sound_byte_count = 0;
+    
+    // Loop until done
+    while (_state == STATE_PAUSED || _state == STATE_PLAYING) {
+        
         //
         // Read in more packets if playing or if we need a valid frame
         //
         
-        if (inst->_state == STATE_PLAYING || !valid_frame) {
-        
-            // Increment playback timer
-            inst->_current_time += inst->_timer.getDeltaTime() * inst->_playback_speed * (inst->_state == STATE_PLAYING ? 1.0 : 0.0);
+        // Check for flush coming down the pipe. Reset all timing info.
+        if (_audio_packet_queue.peek_front(&packet) && _audio_packet_queue.is_flush(&packet)) {
+            audio_timestamp = 0.0;
+            video_timestamp = 0.0;
+            _first_audio_timestamp_set = false;
+            _first_audio_timestamp = 0.0;
+            _current_time = 0.0;
             
-            // Force to pause when done
-            if (inst->_current_time >= inst->_length) {
-                inst->_playback_command_queue.pushPause();
-            }
+            // Stop sound on flush
+            System::audio_renderer()->stop(_sound_source);
+            _sound_source->clear_packets();
+            dst_sound_packet.set_num_bytes(0);
 
+            is_sound_playing = false;
+        }
+
+        if (_state == STATE_PLAYING || !valid_video_frame) {
+        
+            //
+            // Process Audio Frame
+            //
+            
+            // Queue up audio to the end of the read packets if we are playing
+            while ( audio_timestamp < (_first_audio_timestamp + _current_time + AUDIO_READ_AHEAD) &&
+                    _audio_packet_queue.pop_front(&packet) ) {
+                
+                // Check for flush
+                if (_audio_packet_queue.is_flush(&packet)) {
+                
+                    // Stop source and flush buffers
+                    if (audio_codec_context)
+                        ::avcodec_flush_buffers(audio_codec_context);
+                    
+                    valid_audio_frame = false;
+                    
+                    // Reset timing due to race condition with queue
+                    audio_timestamp = 0.0;
+                    video_timestamp = 0.0;
+                    _first_audio_timestamp_set = false;
+                    _first_audio_timestamp = 0.0;
+                    _current_time = 0.0;
+
+                    // Stop sound on flush
+                    System::audio_renderer()->stop(_sound_source);
+                    _sound_source->clear_packets();
+                    dst_sound_packet.set_num_bytes(0);
+
+                    is_sound_playing = false;
+
+                } else {
+                
+                    ::avcodec_get_frame_defaults(_src_audio_frame);
+
+                    // Decode audio frame
+                    int got_frame = 0;
+                    ::avcodec_decode_audio4(audio_codec_context, _src_audio_frame, &got_frame, &packet);
+
+                    if (got_frame) {
+
+                        // Get the best timestamp
+                        int64_t presentation_time_stamp = packet.pts;
+                        audio_timestamp = (DTdouble) (presentation_time_stamp - _audio_time_start) * _audio_time_base;
+
+                        // Record the first audio timestamp because the sound source was reset
+                        if (!_first_audio_timestamp_set) {
+                            _first_audio_timestamp = audio_timestamp;
+                            _first_audio_timestamp_set = true;
+                        }
+                        
+                        DTsize old_num_samples = dst_sound_packet.num_samples();
+                        
+                        // Append new samples
+                        dst_sound_packet.set_num_samples(old_num_samples + _src_audio_frame->nb_samples);
+                        
+                        const uint8_t **in_buf = (const uint8_t**) _src_audio_frame->extended_data;
+                        uint8_t* out_buf[SWR_CH_MAX] = { (uint8_t*) dst_sound_packet.buffer() + old_num_samples*4, NULL};  // 4 bytes per sample
+
+                        DTint num_samples = ::swr_convert(	_snd_convert_ctx,
+                                                            out_buf,
+                                                            _src_audio_frame->nb_samples,
+                                                            in_buf,
+                                                            _src_audio_frame->nb_samples);
+                        
+                        // Readjust num samples
+                        dst_sound_packet.set_num_samples(old_num_samples + num_samples);
+                        
+                        // Queue up dound data
+                        if (dst_sound_packet.num_samples() >= AUDIO_BUFFER_SIZE) {
+                            // Sync timer here because adding audio packets seems to cause contention in OpenAL
+                            _sound_source->push_packet(dst_sound_packet);
+                            
+                            dst_sound_byte_count += dst_sound_packet.num_bytes();
+                            ++dst_sound_packet_count;
+                            
+//                            LOG_MESSAGE << "OpenAL Buffers Submitted: " << dst_sound_packet_count << " (ts=" << audio_timestamp << " bytes=" << dst_sound_byte_count << ")";
+
+                            dst_sound_packet.set_num_bytes(0);
+                            
+                            // We now have a valid frame
+                            valid_audio_frame = true;
+                            
+                        }
+                        
+                    }
+                    
+                    if(audio_codec_context->refcounted_frames == 1)
+                        ::av_frame_unref(_src_audio_frame);
+
+                    ::av_free_packet(&packet);
+
+                    // Bump the data thread so it'll process the data packet
+                    _data_thread_condition.notify_one();
+
+                }
+            }
+            
+            //
+            // Calculate video timestamp based on audio position when playing. When seeking it
+            // is set directly until audio packets are read.
+            //
+        
+            if (audio_codec_context && _first_audio_timestamp_set) {
+                _current_time = System::audio_renderer()->playback_time(_sound_source);
+            }
+        
             //
             // Process video frames
             //
 
-            while ( (inst->_video_timestamp < inst->_current_time) && inst->_video_packet_queue.popFront(&packet)) {
+            while ( video_timestamp < (_first_audio_timestamp + _current_time + VIDEO_READ_AHEAD) &&
+                    _video_packet_queue.pop_front(&packet)) {
             
-                // Decode video frame
-                int got_frame;
-                ::avcodec_decode_video2(video_codec_context, inst->_src_frame, &got_frame, &packet);
+                // Check for flush
+                if (_video_packet_queue.is_flush(&packet)) {
                 
-                // Did we get a video frame?
-                if(got_frame) {
-                
-                    // Get the best timestamp
-                    int64_t presentation_time_stamp = ::av_frame_get_best_effort_timestamp(inst->_src_frame);
-                    inst->_video_timestamp = (DTdouble) (presentation_time_stamp - inst->_video_time_start) * inst->_video_time_base;
-                    
-                    //LOG_MESSAGE << "Video Playback Time: " << inst->_current_time << " Presentation Time: " << inst->_video_timestamp;
-                
-                    // Convert the image from its native format to RGB
-                    ::sws_scale(    inst->_img_convert_ctx,
-                                    inst->_src_frame->data,
-                                    inst->_src_frame->linesize,
-                                    0,
-                                    inst->_height,
-                                    inst->_dst_frame->data,
-                                    inst->_dst_frame->linesize);
-                    
-                    // We now have a valid frame
-                    valid_frame = true;
-                }
-            
-                if(video_codec_context->refcounted_frames == 1)
-                    ::av_frame_unref(inst->_src_frame);
-                
-                ::av_free_packet(&packet);
-            }
-            
-            //
-            // Process Audio Frames
-            //
+                    // Stop source and flush buffers
+                    if (video_codec_context)
+                        ::avcodec_flush_buffers(video_codec_context);
 
-            // Note: Queue up audio a bit ahead
-            while ((inst->_audio_timestamp < (inst->_current_time + AUDIO_READ_AHEAD) ) && inst->_audio_packet_queue.popFront(&packet)) {
-                
-                ::avcodec_get_frame_defaults(inst->_src_audio_frame);
+                    valid_video_frame = false;
 
-                // Decode audio frame
-                int got_frame;
-                ::avcodec_decode_audio4(audio_codec_context, inst->_src_audio_frame, &got_frame, &packet);
+                } else {
 
-                if (got_frame) {
+                    // Decode video frame
+                    int got_frame = 0;
+                    ::avcodec_decode_video2(video_codec_context, _src_frame, &got_frame, &packet);
+                    
+                    // Did we get a video frame?
+                    if(got_frame) {
+                    
+                        // Get the best timestamp
+                        int64_t presentation_time_stamp = ::av_frame_get_best_effort_timestamp(_src_frame);
+                        video_timestamp = (DTdouble) (presentation_time_stamp - _video_time_start) * _video_time_base;
+                        
+//                        LOG_MESSAGE << "Audio Time: " << current_time() << "(" << audio_timestamp << ")"
+//                                    << " Presentation Time: " << video_timestamp;
 
-                    // Get the best timestamp
-                    int64_t presentation_time_stamp = packet.pts;
-                    inst->_audio_timestamp = (DTdouble) (presentation_time_stamp - inst->_audio_time_start) * inst->_audio_time_base;
+                        //
+                        // Unlocked writes to back buffer.
+                        //
+                        
+                        // Convert the image from its native format to RGBA
+                        ::sws_scale(    _img_convert_ctx,
+                                        _src_frame->data,
+                                        _src_frame->linesize,
+                                        0,
+                                        _height,
+                                        _dst_frame[1-_dst_frame_read_buffer_index]->data,
+                                        _dst_frame[1-_dst_frame_read_buffer_index]->linesize);
+                        
+                        //
+                        // Swap this to the front only if not currently reading elsewhere
+                        //
 
-                    LOG_MESSAGE << "Audio Playback Time: " << inst->_current_time << " Presentation Time: " << inst->_audio_timestamp;
+                        _dst_frame_mutex.lock();
 
-//                    DTint data_size = ::av_samples_get_buffer_size( NULL, 2 /* two channels */,
-//                                                                    inst->_src_audio_frame->nb_samples,
-//                                                                    AV_SAMPLE_FMT_S16, 0);
-                    
-                    
-                    DTsize old_num_samples = inst->_dst_sound_packet.getNumSamples();
-                    
-                    // Append new samples
-                    inst->_dst_sound_packet.setNumSamples(old_num_samples + inst->_src_audio_frame->nb_samples);
-                    
-                    const uint8_t **in_buf = (const uint8_t**) inst->_src_audio_frame->extended_data;
-                    uint8_t* out_buf[SWR_CH_MAX] = { (uint8_t*) inst->_dst_sound_packet.getBuffer() + old_num_samples*4, NULL};  // 4 bytes per sample
-
-                    DTint num_samples = ::swr_convert(	inst->_snd_convert_ctx,
-                                                        out_buf,
-                                                        inst->_src_audio_frame->nb_samples,
-                                                        in_buf,
-                                                        inst->_src_audio_frame->nb_samples);
-                    
-                    // Readjust num samples
-                    inst->_dst_sound_packet.setNumSamples(old_num_samples + num_samples);
-                    
-                    // Queue up dound data
-                    if (inst->_dst_sound_packet.getNumSamples() > AUDIO_BUFFER_SIZE ) {
-                        inst->_sound_source.pushPacket(inst->_dst_sound_packet);
-                        inst->_dst_sound_packet.setNumBytes(0);
+                        _dst_frame_buffer_dirty = true; 
+                        _dst_frame_read_buffer_index = 1 - _dst_frame_read_buffer_index;  
+                     
+                        _dst_frame_mutex.unlock();
+                        
+                        // We now have a valid frame
+                        valid_video_frame = true;
                     }
+                
+                    if(video_codec_context->refcounted_frames == 1)
+                        ::av_frame_unref(_src_frame);
                     
+                    ::av_free_packet(&packet);
+                    
+                    // Bump the data thread so it'll process the data packet
+                    _data_thread_condition.notify_one();
+
                 }
+                
+            }
             
-                ::av_free_packet(&packet);
+            // If in preroll, then switch out if audio data is queued up
+            if (_state == STATE_PLAYING && !is_sound_playing && valid_video_frame && valid_audio_frame) {
+                System::audio_renderer()->play(_sound_source, NULL, NULL);
+                is_sound_playing = true;
+            }
+        
+            //
+            // Figure out if we can sleep
+            //
+
+            DTdouble video_delay = video_timestamp - _current_time;
+            if (video_delay > 0.0 && video_delay < 0.5) {
+                std::this_thread::sleep_for(std::chrono::milliseconds( (DTint) (video_delay*1000) ));
             }
 
-        } else if (inst->_state == STATE_CLOSING) {
-            // Dont suspend
         } else {
-            HAL::suspendThread(inst->_playback_thread);
-        }
         
-        
-        // Figure out if we can sleep
-        DTfloat video_delay = inst->_video_timestamp - inst->_current_time;
-        DTfloat audio_delay = inst->_audio_timestamp - (inst->_current_time + AUDIO_PRE_BUFFER_THRESH);
-        DTfloat delay = min2(video_delay, audio_delay);
-        if (delay > 0.0) {
-            HAL::sleepThread(delay * 1000);
+            // Don't pause thread if closing
+            if (_state != STATE_CLOSING) {
+                // Pause the thread
+                std::unique_lock<std::mutex> lock(_playback_thread_mutex);
+                _playback_thread_condition.wait(lock);
+            }
+            
         }
         
     }
     
+    _playback_thread_running = false;
 }
 
 //==============================================================================
@@ -596,8 +749,10 @@ void HWVideoPlayerFFInstance::play (void)
     if (_state != STATE_PAUSED && _state != STATE_PLAYING)
         return;
 
-    _data_command_queue.pushPlay();
-    HAL::resumeThread(_data_thread);    // Make sure thread is going
+    _data_command_queue.push_play();
+
+    _data_thread_condition.notify_one();        // Make sure thread is going
+    _playback_thread_condition.notify_one();    // Make sure thread is going
 }
 
 void HWVideoPlayerFFInstance::pause (void)
@@ -605,8 +760,10 @@ void HWVideoPlayerFFInstance::pause (void)
     if (_state != STATE_PAUSED && _state != STATE_PLAYING)
         return;
 
-    _data_command_queue.pushPause();
-    HAL::resumeThread(_data_thread);    // Make sure thread is going
+    _data_command_queue.push_pause();
+
+    _data_thread_condition.notify_one();        // Make sure thread is going
+    _playback_thread_condition.notify_one();    // Make sure thread is going
 }
 
 void HWVideoPlayerFFInstance::seek (DTdouble t)
@@ -614,49 +771,39 @@ void HWVideoPlayerFFInstance::seek (DTdouble t)
     if (_state != STATE_PAUSED && _state != STATE_PLAYING)
         return;
 
-    _data_command_queue.pushSeek(t);
-    HAL::resumeThread(_data_thread);    // Make sure thread is going
+    _data_command_queue.push_seek(t);
+
+    _data_thread_condition.notify_one();        // Make sure thread is going
+    _playback_thread_condition.notify_one();    // Make sure thread is going
 }
 
 //==============================================================================
 //==============================================================================
 
-void HWVideoPlayerFFInstance::close (void)
+std::shared_ptr<TextureResource2D> HWVideoPlayerFFInstance::texture (void)
 {
-    if (_data_source) {
-        AVCodecContext *audio_codec_context = _data_source->audioCodecContext();
-        if (audio_codec_context)
-            System::getAudioRenderer()->stop(&_sound_source);
+    // Upload frame data if we have a new frame
+    _dst_frame_mutex.lock();
+
+    if (_dst_frame_buffer_dirty) {
+        System::renderer()->update_texture_2D (_tex_raw, 0, 0, _width, _height, (DTubyte*) _dst_frame_buffer[_dst_frame_read_buffer_index]);
+        _dst_frame_buffer_dirty = false;
     }
 
-    // Set state to closing
-    _state = STATE_CLOSING;
+    _dst_frame_mutex.unlock();
     
-    if (_playback_thread) {
-        HAL::resumeThread(_playback_thread);
-        HAL::joinThread(_playback_thread);
-        _playback_thread = NULL;
-    }
-    
-    if (_data_thread) {
-        HAL::resumeThread(_data_thread);
-        HAL::joinThread(_data_thread);
-        _data_thread = NULL;
-    }
+    return _tex_resource;
+}
 
-    // Free scaler context
-    if (_img_convert_ctx)   {   ::sws_freeContext(_img_convert_ctx);    _img_convert_ctx = NULL;    }
-    if (_snd_convert_ctx)   {   ::swr_free(&_snd_convert_ctx);          _snd_convert_ctx = NULL;    }
+//==============================================================================
+//==============================================================================
 
-    // Free the frames
-    ::av_frame_free(&_src_frame);
-    ::av_frame_free(&_dst_frame);
-    ::av_frame_free(&_src_audio_frame);
-    
+Color4f HWVideoPlayerFFInstance::sample_pixel (DTint x, DTint y)
+{
+    DTubyte *base_address = (DTubyte*) _dst_frame_buffer[_dst_frame_read_buffer_index];
+    base_address += (y * _width + x) * 4;  // Skip to pixel
 
-    RELEASE(_data_source);
-    
-    _state = STATE_IDLE;
+    return Color4f(base_address[0], base_address[1], base_address[2], 0);
 }
 
 //==============================================================================

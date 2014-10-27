@@ -2,32 +2,25 @@
 ///	
 ///	File: ComponentGUIVideoPlayer.cpp
 ///	
-/// Copyright (C) 2000-2013 by Smells Like Donkey, Inc. All rights reserved.
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "ComponentGUIVideoPlayer.hpp"
-#include "ArchiveObjectQueue.hpp"
-#include "Factory.hpp"
-#include "MaterialResource.hpp"
-#include "TextureResource.hpp"
-#include "FontResource.hpp"
-#include "World.hpp"
-#include "GUIObject.hpp"
-#include "DrawBatcher.hpp"
-#include "DrawBatcherQuads.hpp"
-#include "MoreMath.hpp"
-#include "TextRenderer.hpp"
-#include "System.hpp"
-#include "SystemCallbacks.hpp"
-#include "DeviceGraphics.hpp"
-#include "Globals.hpp"
-#include "DrawUtils.hpp"
-#include "GlyphCache.hpp"
-#include <cmath>
+#include "DT3HWVideoPlayer/ComponentGUIVideoPlayer.hpp"
+#include "DT3Core/System/Factory.hpp"
+#include "DT3Core/System/System.hpp"
+#include "DT3Core/System/SystemCallbacks.hpp"
+#include "DT3Core/Types/FileBuffer/ArchiveData.hpp"
+#include "DT3Core/Types/FileBuffer/Archive.hpp"
+#include "DT3Core/Types/Math/MoreMath.hpp"
+#include "DT3Core/Types/Math/Color4f.hpp"
+#include "DT3Core/Types/Network/URL.hpp"
+#include "DT3Core/World/World.hpp"
+#include "DT3Core/Objects/GUIObject.hpp"
+#include "DT3Core/Objects/ObjectBase.hpp"
 
 //==============================================================================
 //==============================================================================
@@ -41,23 +34,23 @@ namespace DT3 {
 IMPLEMENT_FACTORY_CREATION_COMPONENT(ComponentGUIVideoPlayer,"GUI","ComponentAdapter")
 IMPLEMENT_PLUG_NODE(ComponentGUIVideoPlayer)
 
-IMPLEMENT_PLUG_INFO(_file_or_url)
+IMPLEMENT_PLUG_INFO_INDEX(_file_or_url)
 
-IMPLEMENT_PLUG_INFO(_is_playing)
-IMPLEMENT_PLUG_INFO(_current_time)
-IMPLEMENT_PLUG_INFO(_length)
+IMPLEMENT_PLUG_INFO_INDEX(_is_playing)
+IMPLEMENT_PLUG_INFO_INDEX(_current_time)
+IMPLEMENT_PLUG_INFO_INDEX(_length)
 
-IMPLEMENT_PLUG_INFO(_video_material)
-IMPLEMENT_PLUG_INFO(_play_material)
-IMPLEMENT_PLUG_INFO(_pause_material)
-IMPLEMENT_PLUG_INFO(_thumb_material)
-IMPLEMENT_PLUG_INFO(_track_loaded)
-IMPLEMENT_PLUG_INFO(_track_unloaded)
-IMPLEMENT_PLUG_INFO(_background)
+IMPLEMENT_PLUG_INFO_INDEX(_video_material)
+IMPLEMENT_PLUG_INFO_INDEX(_play_material)
+IMPLEMENT_PLUG_INFO_INDEX(_pause_material)
+IMPLEMENT_PLUG_INFO_INDEX(_thumb_material)
+IMPLEMENT_PLUG_INFO_INDEX(_track_loaded)
+IMPLEMENT_PLUG_INFO_INDEX(_track_unloaded)
+IMPLEMENT_PLUG_INFO_INDEX(_background)
 
-IMPLEMENT_EVENT_INFO(_play)
-IMPLEMENT_EVENT_INFO(_pause)
-IMPLEMENT_EVENT_INFO(_rewind)
+IMPLEMENT_EVENT_INFO_INDEX(_play)
+IMPLEMENT_EVENT_INFO_INDEX(_pause)
+IMPLEMENT_EVENT_INFO_INDEX(_rewind)
 
 //==============================================================================
 //==============================================================================
@@ -65,49 +58,49 @@ IMPLEMENT_EVENT_INFO(_rewind)
 BEGIN_IMPLEMENT_PLUGS(ComponentGUIVideoPlayer)
     
 	PLUG_INIT(_file_or_url,"File_Or_URL")
-		.setInput(true);
+		.set_input(true);
 
 	PLUG_INIT(_current_time,"Current_time")
-		.setOutput(true);
+		.set_output(true);
 
 	PLUG_INIT(_length,"Length")
-		.setOutput(true);
+		.set_output(true);
 
 	PLUG_INIT(_is_playing,"Is_Playing")
-		.setOutput(true);
+		.set_output(true);
 
     PLUG_INIT(_video_material, "Video_Material")
-		.setInput(true);
+		.set_input(true);
 
     PLUG_INIT(_play_material, "Play_Material")
-		.setInput(true);
+		.set_input(true);
     
     PLUG_INIT(_pause_material, "Pause_Material")
-		.setInput(true);
+		.set_input(true);
                 
     PLUG_INIT(_thumb_material, "Thumb_Material")
-		.setInput(true);
+		.set_input(true);
         
     PLUG_INIT(_track_loaded, "Track_Loaded")
-		.setInput(true);
+		.set_input(true);
 
     PLUG_INIT(_track_unloaded, "Track_Unloaded")
-		.setInput(true);
+		.set_input(true);
 
     PLUG_INIT(_background, "Background")
-		.setInput(true);
+		.set_input(true);
     
 	EVENT_INIT(_play,"Start")
-        .setInput(true)
-        .setEvent(EventBindCreator(&ComponentGUIVideoPlayer::play));
+        .set_input(true)
+        .set_event(&ComponentGUIVideoPlayer::play);
 
 	EVENT_INIT(_pause,"Stop")
-        .setInput(true)
-        .setEvent(EventBindCreator(&ComponentGUIVideoPlayer::pause));
+        .set_input(true)
+        .set_event(&ComponentGUIVideoPlayer::pause);
 
 	EVENT_INIT(_rewind,"Rewind")
-        .setInput(true)
-        .setEvent(EventBindCreator(&ComponentGUIVideoPlayer::rewind));
+        .set_input(true)
+        .set_event(&ComponentGUIVideoPlayer::rewind);
 
 END_IMPLEMENT_PLUGS
 
@@ -116,20 +109,20 @@ END_IMPLEMENT_PLUGS
 //==============================================================================
 
 ComponentGUIVideoPlayer::ComponentGUIVideoPlayer (void)
-    :   _file_or_url    (PLUG_INFO(_file_or_url)),
-        _current_time   (PLUG_INFO(_current_time), 0.0F),
-        _length         (PLUG_INFO(_length), 0.0F),
-        _is_playing     (PLUG_INFO(_is_playing), false),
-        _video_material (PLUG_INFO(_video_material)),
-        _play_material  (PLUG_INFO(_play_material)),
-        _pause_material (PLUG_INFO(_pause_material)),
-        _thumb_material (PLUG_INFO(_thumb_material)),
-        _track_loaded   (PLUG_INFO(_track_loaded)),
-        _track_unloaded (PLUG_INFO(_track_unloaded)),
-        _background     (PLUG_INFO(_background)),
-        _play           (EVENT_INFO(_play)),
-        _pause          (EVENT_INFO(_pause)),
-        _rewind         (EVENT_INFO(_rewind)),
+    :   _file_or_url    (PLUG_INFO_INDEX(_file_or_url)),
+        _current_time   (PLUG_INFO_INDEX(_current_time), 0.0F),
+        _length         (PLUG_INFO_INDEX(_length), 0.0F),
+        _is_playing     (PLUG_INFO_INDEX(_is_playing), false),
+        _video_material (PLUG_INFO_INDEX(_video_material)),
+        _play_material  (PLUG_INFO_INDEX(_play_material)),
+        _pause_material (PLUG_INFO_INDEX(_pause_material)),
+        _thumb_material (PLUG_INFO_INDEX(_thumb_material)),
+        _track_loaded   (PLUG_INFO_INDEX(_track_loaded)),
+        _track_unloaded (PLUG_INFO_INDEX(_track_unloaded)),
+        _background     (PLUG_INFO_INDEX(_background)),
+        _play           (EVENT_INFO_INDEX(_play)),
+        _pause          (EVENT_INFO_INDEX(_pause)),
+        _rewind         (EVENT_INFO_INDEX(_rewind)),
         _controls_size  (0.02F),
         _track_size     (0.005F),
         _thumb_size     (0.01F),
@@ -151,9 +144,9 @@ ComponentGUIVideoPlayer::ComponentGUIVideoPlayer (const ComponentGUIVideoPlayer 
         _track_loaded       (rhs._track_loaded),
         _track_unloaded     (rhs._track_unloaded),
         _background         (rhs._background),
-        _play               (EVENT_INFO(_play)),
-        _pause              (EVENT_INFO(_pause)),
-        _rewind             (EVENT_INFO(_rewind)),
+        _play               (EVENT_INFO_INDEX(_play)),
+        _pause              (EVENT_INFO_INDEX(_pause)),
+        _rewind             (EVENT_INFO_INDEX(_rewind)),
         _controls_size      (rhs._controls_size),
         _track_size         (rhs._track_size),
         _thumb_size         (rhs._thumb_size),
@@ -206,11 +199,11 @@ void ComponentGUIVideoPlayer::initialize (void)
 //==============================================================================
 //==============================================================================
 
-void ComponentGUIVideoPlayer::archive_read (Archive *archive)
+void ComponentGUIVideoPlayer::archive (const std::shared_ptr<Archive> &archive)
 {
-    ComponentBase::archive_read(archive);
+    ComponentBase::archive(archive);
 
-	archive->push_domain (getClassID ());
+	archive->push_domain (class_id ());
     
 	*archive << ARCHIVE_PLUG(_file_or_url, DATA_PERSISTENT | DATA_SETTABLE);
 
@@ -229,103 +222,80 @@ void ComponentGUIVideoPlayer::archive_read (Archive *archive)
     archive->pop_domain ();
 }
 
-void ComponentGUIVideoPlayer::archive_read_done (void)
+void ComponentGUIVideoPlayer::archive_done (const std::shared_ptr<Archive> &archive)
 {
 
     // Kickstart opening and getting the first frame of video
     _last_file_or_url = _file_or_url;
     
     // Check if we have a URL
-    if (URL::isURL(_file_or_url)) {
+    if (URL::is_URL(_file_or_url)) {
         open(URL(_file_or_url));
     } else {
         open(FilePath(_file_or_url));
     }
     
     
-    // Tie video texture to material
-    if (_hw && _video_material->isValid()) {
-    
-        std::shared_ptr<TextureResource> tex = Video::getFrame(_hw);
-        (**_video_material).setCurrentUnit(0);
-        (**_video_material).setTexture(tex);
-    }
+//    // Tie video texture to material
+//    if (_hw && _video_material->is_valid()) {
+//    
+//        std::shared_ptr<TextureResource2D> tex = Video::get_frame(_hw);
+//        (**_video_material).set_current_unit(0);
+//        (**_video_material).set_texture(tex);
+//    }
 
-}
-
-void ComponentGUIVideoPlayer::archive_write (Archive *archive)
-{
-    ComponentBase::archive_write(archive);
-
-    archive->push_domain (getClassID ());
-	
-	*archive << ARCHIVE_PLUG(_file_or_url, DATA_PERSISTENT | DATA_SETTABLE);
-
-	*archive << ARCHIVE_PLUG(_video_material, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_PLUG(_play_material, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_PLUG(_pause_material, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_PLUG(_thumb_material, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_PLUG(_track_loaded, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_PLUG(_track_unloaded, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_PLUG(_background, DATA_PERSISTENT | DATA_SETTABLE);
-
-	*archive << ARCHIVE_DATA(_controls_size, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_DATA(_track_size, DATA_PERSISTENT | DATA_SETTABLE);
-	*archive << ARCHIVE_DATA(_thumb_size, DATA_PERSISTENT | DATA_SETTABLE);
-
-    archive->pop_domain ();
 }
 
 //==============================================================================
 //==============================================================================
 
-Rectangle ComponentGUIVideoPlayer::calcPlayPauseRect (const Rectangle &rect)
+Rectangle ComponentGUIVideoPlayer::calc_play_pause_rect (const Rectangle &rect)
 {
-    DTfloat aspect = System::getRenderer()->getScreenAspect();
+    DTfloat aspect = System::renderer()->screen_aspect();
     
-    return Rectangle (  rect.getMinusX(), rect.getMinusX() + _controls_size / aspect,
-                        rect.getMinusY(), rect.getMinusY() + _controls_size);
+    return Rectangle (  rect.minus_x(), rect.minus_x() + _controls_size / aspect,
+                        rect.minus_y(), rect.minus_y() + _controls_size);
 }
 
-Rectangle ComponentGUIVideoPlayer::calcSeekRect (const Rectangle &rect)
+Rectangle ComponentGUIVideoPlayer::calc_seek_rect (const Rectangle &rect)
 {
-    DTfloat aspect = System::getRenderer()->getScreenAspect();
+    DTfloat aspect = System::renderer()->screen_aspect();
     
-    return Rectangle (  rect.getMinusX() + _controls_size / aspect, rect.getPlusX(),
-                        rect.getMinusY(), rect.getMinusY() + _controls_size);
+    return Rectangle (  rect.minus_x() + _controls_size / aspect, rect.plus_x(),
+                        rect.minus_y(), rect.minus_y() + _controls_size);
 }
 
-Rectangle ComponentGUIVideoPlayer::calcTrackRect (const Rectangle &rect)
+Rectangle ComponentGUIVideoPlayer::calc_track_rect (const Rectangle &rect)
 {
-    DTfloat aspect = System::getRenderer()->getScreenAspect();
+    DTfloat aspect = System::renderer()->screen_aspect();
     DTfloat pad = (_controls_size - _track_size) * 0.5F;
     
-    return Rectangle (  rect.getMinusX() + (_controls_size + pad) / aspect, rect.getPlusX() - pad / aspect,
-                        rect.getMinusY() + pad, rect.getMinusY() + _controls_size - pad);
+    return Rectangle (  rect.minus_x() + (_controls_size + pad) / aspect, rect.plus_x() - pad / aspect,
+                        rect.minus_y() + pad, rect.minus_y() + _controls_size - pad);
 
 }
 
-Rectangle ComponentGUIVideoPlayer::calcThumbRect (const Rectangle &rect, DTfloat current, DTfloat length)
+Rectangle ComponentGUIVideoPlayer::calc_thumb_rect (const Rectangle &rect, DTfloat current, DTfloat length)
 {
-    DTfloat aspect = System::getRenderer()->getScreenAspect();
+    DTfloat aspect = System::renderer()->screen_aspect();
     DTfloat pad = (_controls_size - _track_size) * 0.5F;
     
-    DTfloat min_x = rect.getMinusX() + (_controls_size + pad) / aspect;
-    DTfloat max_x = rect.getPlusX() - pad / aspect;
+    DTfloat min_x = rect.minus_x() + (_controls_size + pad) / aspect;
+    DTfloat max_x = rect.plus_x() - pad / aspect;
     
-    DTfloat t = MoreMath::clampZeroOne(current / length);
+    DTfloat t = MoreMath::clamp_zero_one(current / length);
     
     DTfloat x = (max_x - min_x) * t + min_x;
-    DTfloat y = rect.getMinusY() + _controls_size * 0.5F;
+    DTfloat y = rect.minus_y() + _controls_size * 0.5F;
     
     return Rectangle (x - _thumb_size*0.5F/aspect, x + _thumb_size*0.5F/aspect, y - _thumb_size * 0.5F, y + _thumb_size*0.5F);
     
 }
 
-Rectangle ComponentGUIVideoPlayer::calcBackgroundRect (const Rectangle &rect)
+Rectangle ComponentGUIVideoPlayer::calc_background_rect (const Rectangle &rect)
 {
-    return Rectangle (  rect.getMinusX(), rect.getPlusX(),
-                        rect.getMinusY(), rect.getMinusY() + _controls_size);
+    return Rectangle (  rect.minus_x(), rect.plus_x(),
+                        rect.minus_y(), rect.minus_y() + _controls_size);
 }
 
 //==============================================================================
@@ -382,13 +352,13 @@ void ComponentGUIVideoPlayer::rewind (PlugNode *sender)
 void ComponentGUIVideoPlayer::tick (const DTfloat dt)
 {
     // Check for path change
-    if (_last_file_or_url != _file_or_url) {
+    if (_last_file_or_url != *_file_or_url) {
         _last_file_or_url = _file_or_url;
     
         close();
         
         // Check if we have a URL
-        if (URL::isURL(_file_or_url)) {
+        if (URL::is_URL(_file_or_url)) {
             open(URL(_file_or_url));
         } else {
             open(FilePath(_file_or_url));
@@ -396,104 +366,104 @@ void ComponentGUIVideoPlayer::tick (const DTfloat dt)
     
     }
     
-    _current_time = Video::currentTime(_hw);
+    _current_time = Video::current_time(_hw);
     _length = Video::length(_hw);
-    _is_playing = (Video::getState(_hw) == Video::STATE_PLAYING);
+    _is_playing = (Video::state(_hw) == Video::STATE_PLAYING);
 }
 
 //==============================================================================
 //==============================================================================
 
-void ComponentGUIVideoPlayer::draw (CameraObject* camera, const Color &parent_color)
+void ComponentGUIVideoPlayer::draw (const std::shared_ptr<CameraObject> &camera, const Color4f &parent_color)
 {
-    GUIObject *gui = checkedCast<GUIObject*>(getOwner());
+    GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
     
-    if (gui->getColor().getA() * parent_color.getA() <= 0.0F)
+    if (gui->color().a_as_float() * parent_color.a_as_float() <= 0.0F)
         return;
        
-    Rectangle local_rect = gui->getRectangle();
-    Matrix4 transform = gui->getDrawTransform();
-    Color c = gui->getColor() * parent_color;
+    Rectangle local_rect = gui->rectangle();
+    Matrix4 transform = gui->draw_transform();
+    Color4f c = gui->color() * parent_color;
     
     
     // Video
-    if ( _video_material->isValid() ) {
-        DrawBatcherQuads b;
-        
-        b.batchBegin(_video_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
-        
-        b.vertex(Vector3(local_rect.getMinusX(), local_rect.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
-        b.vertex(Vector3(local_rect.getPlusX(), local_rect.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
-        b.vertex(Vector3(local_rect.getPlusX(), local_rect.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
-        b.vertex(Vector3(local_rect.getMinusX(), local_rect.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
-        
-        b.batchEnd();
-    }
+//    if ( _video_material->valid() ) {
+//        DrawBatcherQuads b;
+//        
+//        b.batchBegin(_video_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
+//        
+//        b.vertex(Vector3(local_rect.getMinusX(), local_rect.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
+//        b.vertex(Vector3(local_rect.getPlusX(), local_rect.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
+//        b.vertex(Vector3(local_rect.getPlusX(), local_rect.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
+//        b.vertex(Vector3(local_rect.getMinusX(), local_rect.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
+//        
+//        b.batchEnd();
+//    }
 
     // Background
-    if ( _background->isValid() ) {
-        DrawBatcherQuads b;
-        Rectangle r = calcBackgroundRect(local_rect);
-        
-        b.batchBegin(_background->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
-        
-        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
-        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
-        
-        b.batchEnd();
-    }
+//    if ( _background->valid() ) {
+//        DrawBatcherQuads b;
+//        Rectangle r = calc_background_rect(local_rect);
+//        
+//        b.batchBegin(_background->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
+//        
+//        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
+//        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
+//        
+//        b.batchEnd();
+//    }
 
     // Play/Pause
-    if ( _play_material->isValid() && _pause_material->isValid()) {
-        DrawBatcherQuads b;
-        Rectangle r = calcPlayPauseRect(local_rect);
-        
-        if (Video::getState(_hw) == Video::STATE_PLAYING)
-            b.batchBegin(_pause_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
-        else
-            b.batchBegin(_play_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
-        
-        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
-        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
-        
-        b.batchEnd();
-    }
+//    if ( _play_material->is_valid() && _pause_material->is_valid()) {
+//        DrawBatcherQuads b;
+//        Rectangle r = calc_play_pause_rect(local_rect);
+//        
+//        if (Video::get_state(_hw) == Video::STATE_PLAYING)
+//            b.batchBegin(_pause_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
+//        else
+//            b.batchBegin(_play_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
+//        
+//        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
+//        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
+//        
+//        b.batchEnd();
+//    }
 
     // Track
-    if ( _track_unloaded->isValid() ) {
-        DrawBatcherQuads b;
-        Rectangle r = calcTrackRect(local_rect);
-        
-        b.batchBegin(_track_unloaded->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
-        
-        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
-        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
-        
-        b.batchEnd();
-    }
+//    if ( _track_unloaded->is_valid() ) {
+//        DrawBatcherQuads b;
+//        Rectangle r = calc_track_rect(local_rect);
+//        
+//        b.batchBegin(_track_unloaded->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
+//        
+//        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
+//        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
+//        
+//        b.batchEnd();
+//    }
 
     // Thumb
-    if ( _thumb_material->isValid() ) {
-        DrawBatcherQuads b;
-        Rectangle r = calcThumbRect(local_rect, _current_time, _length);
-        
-        b.batchBegin(_thumb_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
-        
-        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
-        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
-        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
-        
-        b.batchEnd();
-    }
+//    if ( _thumb_material->is_valid() ) {
+//        DrawBatcherQuads b;
+//        Rectangle r = calc_thumb_rect(local_rect, _current_time, _length);
+//        
+//        b.batchBegin(_thumb_material->get(), transform, DrawBatcherQuads::FMT_V | DrawBatcherQuads::FMT_T1 | DrawBatcherQuads::FMT_C);
+//        
+//        b.vertex(Vector3(r.getMinusX(), r.getMinusY(), 0.0F), Texcoord2(0.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getMinusY(), 0.0F), Texcoord2(1.0F,0.0F), c);
+//        b.vertex(Vector3(r.getPlusX(), r.getPlusY(), 0.0F), Texcoord2(1.0F,1.0F), c);
+//        b.vertex(Vector3(r.getMinusX(), r.getPlusY(), 0.0F), Texcoord2(0.0F,1.0F), c);
+//        
+//        b.batchEnd();
+//    }
     
     
     
@@ -502,25 +472,25 @@ void ComponentGUIVideoPlayer::draw (CameraObject* camera, const Color &parent_co
 //==============================================================================
 //==============================================================================
 
-void ComponentGUIVideoPlayer::touchesBegan (GUITouchEvent *event)
+void ComponentGUIVideoPlayer::touches_began (GUITouchEvent *event)
 {
-    GUIObject *gui = checkedCast<GUIObject*>(getOwner());
+    GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
     
 }
 
-void ComponentGUIVideoPlayer::touchesMoved (GUITouchEvent *event)
+void ComponentGUIVideoPlayer::touches_moved (GUITouchEvent *event)
 {
-    GUIObject *gui = checkedCast<GUIObject*>(getOwner());
+    GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
     
 }
 
-void ComponentGUIVideoPlayer::touchesEnded (GUITouchEvent *event)
+void ComponentGUIVideoPlayer::touches_ended (GUITouchEvent *event)
 {
-    GUIObject *gui = checkedCast<GUIObject*>(getOwner());
+    GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
     
@@ -528,17 +498,17 @@ void ComponentGUIVideoPlayer::touchesEnded (GUITouchEvent *event)
         return;
     
     // Transform touches into widget coordinates
-    Vector2 pos = gui->positionToObjectCoord(event->getPosition());
-    Rectangle local_rect = gui->getRectangle();
+    Vector2 pos = gui->position_to_object_coord(event->position());
+    Rectangle local_rect = gui->rectangle();
 
     //
     // Play/Pause
     //
     
-    Rectangle play_pause = calcPlayPauseRect(local_rect);
-    if (play_pause.isTouching(pos)) {
+    Rectangle play_pause = calc_play_pause_rect(local_rect);
+    if (play_pause.is_touching(pos)) {
         
-        if (Video::getState(_hw) == Video::STATE_PLAYING) {
+        if (Video::state(_hw) == Video::STATE_PLAYING) {
             Video::pause(_hw);
         } else {
             Video::play(_hw);
@@ -551,11 +521,11 @@ void ComponentGUIVideoPlayer::touchesEnded (GUITouchEvent *event)
     // Timeline
     //
     
-    Rectangle seek_rect = calcSeekRect(local_rect);
-    if (seek_rect.isTouching(pos)) {
-        Rectangle track_rect = calcTrackRect(local_rect);
+    Rectangle seek_rect = calc_seek_rect(local_rect);
+    if (seek_rect.is_touching(pos)) {
+        Rectangle track_rect = calc_track_rect(local_rect);
 
-        DTfloat t = MoreMath::clampZeroOne( (pos.x - track_rect.getMinusX()) / (track_rect.getPlusX() - track_rect.getMinusX()) );
+        DTfloat t = MoreMath::clamp_zero_one( (pos.x - track_rect.minus_x()) / (track_rect.plus_x() - track_rect.minus_x()) );
         Video::seek(_hw, t * Video::length(_hw));
         
         return;
@@ -563,9 +533,9 @@ void ComponentGUIVideoPlayer::touchesEnded (GUITouchEvent *event)
     
 }
 
-void ComponentGUIVideoPlayer::touchesCancelled (GUITouchEvent *event)
+void ComponentGUIVideoPlayer::touches_cancelled (GUITouchEvent *event)
 {
-    GUIObject *gui = checkedCast<GUIObject*>(getOwner());
+    GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
 
@@ -574,38 +544,38 @@ void ComponentGUIVideoPlayer::touchesCancelled (GUITouchEvent *event)
 //==============================================================================
 //==============================================================================
 
-void ComponentGUIVideoPlayer::addToOwner (ObjectBase *owner)
+void ComponentGUIVideoPlayer::add_to_owner (ObjectBase *owner)
 {
-    ComponentBase::addToOwner(owner);
+    ComponentBase::add_to_owner(owner);
     
-    getOwner()->getWorld()->registerForTick(owner, makeCallback(this, &type::tick));
+    owner->world()->register_for_tick(owner, make_callback(this, &type::tick));
 
-    GUIObject *gui = checkedCast<GUIObject*>(owner);
+    GUIObject *gui = checked_cast<GUIObject*>(owner);
     if (gui) {
-        gui->getTouchesBeganCallbacks().add(makeCallback(this, &type::touchesBegan));
-        gui->getTouchesMovedCallbacks().add(makeCallback(this, &type::touchesMoved));
-        gui->getTouchesEndedCallbacks().add(makeCallback(this, &type::touchesEnded));
-        gui->getTouchesCancelledCallbacks().add(makeCallback(this, &type::touchesCancelled));
+        gui->touches_began_callbacks().add(make_callback(this, &type::touches_began));
+        gui->touches_moved_callbacks().add(make_callback(this, &type::touches_moved));
+        gui->touches_ended_callbacks().add(make_callback(this, &type::touches_ended));
+        gui->touches_cancelled_callbacks().add(make_callback(this, &type::touches_cancelled));
 
-        gui->getDrawGUICallbacks().add(makeCallback(this, &ComponentGUIVideoPlayer::draw));
+        gui->draw_gui_callbacks().add(make_callback(this, &type::draw));
     }
 }
 
-void ComponentGUIVideoPlayer::removeFromOwner (void)
+void ComponentGUIVideoPlayer::remove_from_owner (void)
 {
-    GUIObject *gui = checkedCast<GUIObject*>(getOwner());
+    GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (gui) {
-        gui->getTouchesBeganCallbacks().remove(makeCallback(this, &type::touchesBegan));
-        gui->getTouchesMovedCallbacks().remove(makeCallback(this, &type::touchesMoved));
-        gui->getTouchesEndedCallbacks().remove(makeCallback(this, &type::touchesEnded));
-        gui->getTouchesCancelledCallbacks().remove(makeCallback(this, &type::touchesCancelled));
+        gui->touches_began_callbacks().remove(make_callback(this, &type::touches_began));
+        gui->touches_moved_callbacks().remove(make_callback(this, &type::touches_moved));
+        gui->touches_ended_callbacks().remove(make_callback(this, &type::touches_ended));
+        gui->touches_cancelled_callbacks().remove(make_callback(this, &type::touches_cancelled));
 
-        gui->getDrawGUICallbacks().remove(makeCallback(this, &ComponentGUIVideoPlayer::draw));
+        gui->draw_gui_callbacks().remove(make_callback(this, &type::draw));
     }
 
-    getOwner()->getWorld()->unregisterForTick(getOwner(), makeCallback(this, &type::tick));
+    owner()->world()->unregister_for_tick(owner(), make_callback(this, &type::tick));
 
-    ComponentBase::removeFromOwner();
+    ComponentBase::remove_from_owner();
 }
 
 //==============================================================================

@@ -4,30 +4,26 @@
 ///	
 ///	File: ScriptingVideoTexture.hpp
 ///	
-/// Copyright (C) 2000-2013 by Smells Like Donkey, Inc. All rights reserved.
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "ScriptingBase.hpp"
-#include "Vector.hpp"
-#include "TextureResource.hpp"
-#include "Rectangle.hpp"
+#include "DT3Core/Scripting/ScriptingBase.hpp"
+#include "DT3Core/Types/Math/Vector3.hpp"
+#include "DT3Core/Resources/ResourceTypes/TextureResource2D.hpp"
+#include "DT3Core/Types/Math/Rectangle.hpp"
 
-//#if DT3_OS == DT3_MACOSX || DT3_OS == DT3_IOS
-#include "HWVideoPlayerFF.hpp"
-//#endif
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFF.hpp"
 
 namespace DT3 {
 
 //==============================================================================
 //==============================================================================
 
-//#if DT3_OS == DT3_MACOSX || DT3_OS == DT3_IOS
 typedef HWVideoPlayerFF Video;
-//#endif
 
 //==============================================================================
 /// Video texture source.
@@ -44,16 +40,15 @@ class ScriptingVideoTexture: public ScriptingBase {
         ScriptingVideoTexture &     operator =				(const ScriptingVideoTexture &rhs);
         virtual                     ~ScriptingVideoTexture  (void);
     
-        virtual void                archive_read             (Archive *archive);
-        virtual void                archive_read_done         (void);
-        virtual void                archive_write			(Archive *archive);
+        virtual void                archive                 (const std::shared_ptr<Archive> &archive);
+        virtual void                archive_done            (const std::shared_ptr<Archive> &archive);
 		
 		/// Object was added to a world
 		/// world world that object was added to
-        virtual void                addToWorld              (World *world);
+        virtual void                add_to_world            (World *world);
 
 		/// Object was removed from a world
-        virtual void                removeFromWorld         (void);
+        virtual void                remove_from_world       (void);
 
 	public:
 
@@ -98,8 +93,8 @@ class ScriptingVideoTexture: public ScriptingBase {
 
 	private:
         
-        Plug<String>                        _file_or_url;
-        String                              _last_file_or_url;
+        Plug<std::string>                   _file_or_url;
+        std::string                         _last_file_or_url;
     
         Plug<DTboolean>                     _is_playing;
         Plug<DTfloat>                       _current_time;
@@ -108,14 +103,12 @@ class ScriptingVideoTexture: public ScriptingBase {
 		Event                               _play;
 		Event                               _pause;
 		Event                               _rewind;
-    
-        DTboolean                           _autoplay_when_ready;
-    
-        std::shared_ptr<TextureResource>           _frame;
+        
+        std::shared_ptr<TextureResource2D>  _frame;
         Rectangle                           _frame_rect;
 
-		Plug<std::shared_ptr<TextureResource> >    _out;
-		Plug<Rectangle>                     _rectangle;
+		Plug<std::shared_ptr<TextureResource2D> >   _out;
+		Plug<Rectangle>                             _rectangle;
     
         Video::HWVideoPlayerType            _hw;
 };

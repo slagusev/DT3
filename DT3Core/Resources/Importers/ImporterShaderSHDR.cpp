@@ -266,7 +266,7 @@ void ImporterShaderSHDR::parse_uniform_v (ShaderResource *target)
         std::string num = uniform.substr(open_bracket+1, close_bracket-open_bracket-1);
         array_size = MoreStrings::cast_from_string<DTuint>(num);
         
-        uniform = uniform.substr(open_bracket);
+        uniform = uniform.substr(0,open_bracket);
     }
     
     target->add_uniform (uniform,DT3GL_UNIFORM_FORMAT_4_FLOAT,array_size);
@@ -401,6 +401,7 @@ DTerr ImporterShaderSHDR::import(ShaderResource *target, std::string args)
         "#define ATTRIB_TEXCOORD0 2\n"
         "#define ATTRIB_TEXCOORD1 3\n"
         "#define ATTRIB_COLOR 4\n"
+        "#define ATTRIB_TANGENT 5\n"
         "#define UNIFORM_NONE -1\n"
         "#define UNIFORM_MODELVIEW 0\n"
         "#define UNIFORM_PROJECTION 1\n"

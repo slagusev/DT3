@@ -253,7 +253,8 @@ void TextureResourceCube::set_textels_cube (const DTint width, const DTint heigh
 
 void TextureResourceCube::activate (DTuint texture_slot)
 {
-    if (_resource_cube)  System::renderer()->attach_texture(texture_slot, _resource_cube);
+    if (_resource_cube)
+        System::renderer()->attach_texture(texture_slot, _resource_cube);
 }
 
 //==============================================================================

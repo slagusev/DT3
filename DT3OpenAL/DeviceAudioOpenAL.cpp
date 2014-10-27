@@ -210,7 +210,7 @@ DTboolean DeviceAudioOpenAL::load_chunk (ALuint buffer, Channel &channel)
 	channel._packet = channel._source->next_sound_packet();
     if (channel._packet.num_bytes() == 0)
         return false;
-
+    
 	// Choose appropriate format
 	ALenum format;
 	switch(channel._packet.format()) {
@@ -237,6 +237,23 @@ void DeviceAudioOpenAL::pump_all_streaming (void)
         
         if (!source)
             continue;
+        
+        // Update playback position
+        DTint offset;
+        ::alGetSourcei(channel._al_source, AL_BYTE_OFFSET, &offset);
+        channel._size_total = offset + channel._size_chunks_completed;
+        
+        // Update playback timer
+        DTdouble calculated_value;
+        
+        // Convert bytes to seconds
+        switch(_channels[c]._packet.format()) {
+            case SoundResource::FORMAT_MONO16:      calculated_value = (DTdouble) (channel._size_total / 2) / channel._packet.frequency();   break;
+            case SoundResource::FORMAT_STEREO16:    calculated_value = (DTdouble) (channel._size_total / 4) / channel._packet.frequency();   break;
+        };
+
+        // Calculate how much the high resolution timer differs from the calculated one
+        channel._audio_timer_correction = (0.5 * channel._audio_timer_correction) + (0.5 * (calculated_value - channel._audio_timer.abs_time()));
 
         // Get the number of buffers that have been processed
         ALint num_buffers;
@@ -249,10 +266,20 @@ void DeviceAudioOpenAL::pump_all_streaming (void)
             ALuint buffer;
             ::alSourceUnqueueBuffers(channel._al_source, 1, &buffer );
             CheckAL();
+
+            // Update playback info
+            ALint size, channels, bits;
+            ::alGetBufferi(buffer, AL_SIZE, &size);
+            ::alGetBufferi(buffer, AL_CHANNELS, &channels);
+            ::alGetBufferi(buffer, AL_BITS, &bits);
+            
+            channel._size_chunks_completed += size;
             
             // Toggle use flag
             for (DTint i = 0; i < ARRAY_SIZE(channel._buffer); ++i) {
                 if (channel._buffer[i] == buffer) {
+                    ASSERT(channel._buffer_in_use[i] == true);
+                    ASSERT(channel._buffer_size[i] == size);
                     channel._buffer_in_use[i] = false;
                 }
             }
@@ -269,6 +296,7 @@ void DeviceAudioOpenAL::pump_all_streaming (void)
                     // Enqueue the buffer
                     ::alSourceQueueBuffers(channel._al_source, 1, &channel._buffer[i]);
                     channel._buffer_in_use[i] = true;
+                    channel._buffer_size[i] = channel._packet.num_bytes();
                     
                     CheckAL();
                 }
@@ -287,6 +315,7 @@ void DeviceAudioOpenAL::prime_streaming (Channel &channel)
         if (load_chunk (channel._buffer[i], channel)) {
             ::alSourceQueueBuffers(channel._al_source, 1, &channel._buffer[i]);
             channel._buffer_in_use[i] = true;
+            channel._buffer_size[i] = channel._packet.num_bytes();
 
             CheckAL();
         } else {
@@ -324,7 +353,12 @@ void DeviceAudioOpenAL::play_on_channel (   Channel &channel,
 		channel._ready_to_start = true;
         channel._needs_priming = true;
 		
-		
+        channel._size_chunks_completed = 0;
+        channel._size_total = 0;
+        
+        channel._audio_timer.reset_abs_time();
+        channel._audio_timer_correction = 0.0;
+
 		// NOTE: This happens later
         // primeStreaming();
     }
@@ -377,6 +411,9 @@ void DeviceAudioOpenAL::stop_on_channel (Channel &channel)
         channel._world = NULL;
 
         channel._needs_priming = true;
+
+        channel._size_chunks_completed = 0;
+        channel._size_total = 0;
 	}
 }
 
@@ -489,7 +526,7 @@ DTboolean DeviceAudioOpenAL::is_playing (const std::shared_ptr<SoundSource> &sou
 
 DTshort DeviceAudioOpenAL::channel (const std::shared_ptr<SoundSource> &source)
 {
-    std::unique_lock<std::mutex> lock(_mutex);
+    //std::unique_lock<std::mutex> lock(_mutex);
 
 	PROFILER(SOUND);
 
@@ -564,6 +601,21 @@ void DeviceAudioOpenAL::destroy_channels (void)
     }
 	
     _channels.clear();
+}
+
+//==============================================================================
+//==============================================================================
+
+DTdouble DeviceAudioOpenAL::playback_time (const std::shared_ptr<SoundSource> &source)
+{
+    DTshort c = channel(source);
+    if (c < 0)
+        return 0.0;
+    
+    Channel &channel = _channels[c];
+
+    // Use hires timer as playback time to compensate for lag
+    return channel._audio_timer.abs_time() + channel._audio_timer_correction;
 }
 
 //==============================================================================

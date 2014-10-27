@@ -2,24 +2,26 @@
 #define DT3_HWVIDEOPLAYERFFINSTANCE
 //==============================================================================
 ///	
-///	URL: 			HWVideoPlayerFFInstance.hpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	URL: HWVideoPlayerFFInstance.hpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "HWVideoPlayerFFDataSourceBase.hpp"
-#include "HWVideoPlayerFFPacketQueue.hpp"
-#include "HWVideoPlayerFFCommandQueue.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFDataSourceBase.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFPacketQueue.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFCommandQueue.hpp"
 
-#include "std::shared_ptr.hpp"
-#include "TimerHires.hpp"
-#include "TextureResource.hpp"
+#include "DT3Core/Types/Network/URL.hpp"
+#include "DT3Core/Types/Sound/SoundSourceQueue.hpp"
+#include "DT3Core/Resources/ResourceTypes/TextureResource2D.hpp"
 
-#include "SoundSourceQueue.hpp"
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 //==============================================================================
 /// Namespace
@@ -31,7 +33,7 @@ namespace DT3 {
 /// Class
 //==============================================================================
 
-class HWVideoPlayerFFInstance: public BaseRefCounted {
+class HWVideoPlayerFFInstance: public BaseClass {
     public:
         DEFINE_CREATE
 
@@ -70,6 +72,7 @@ class HWVideoPlayerFFInstance: public BaseRefCounted {
     
         /// Seek the movie
         void                            seek                (DTdouble t);
+        void                            seek_percent        (DTdouble p);
 
 
         //
@@ -85,22 +88,19 @@ class HWVideoPlayerFFInstance: public BaseRefCounted {
         DTint                           height              (void) const    {   return _height; }
     
         /// Returns the texture that is being rendered
-        std::shared_ptr<TextureResource>       getTexture          (void)          {   return _tex;    }
+        std::shared_ptr<TextureResource2D>  texture         (void);
     
-    
+		/// Returns a pixel from the current frame
+        /// \param x x location
+        /// \param y y location
+        /// \return current pixel from the video
+        Color4f                         sample_pixel        (DTint x, DTint y);
+
         /// Returns the Duration of the video
         DTdouble                        length              (void) const    {   return _length;  }
 
         /// Returns the current playback time of the video
-        DTdouble                        currentTime         (void) const    {   return _current_time;  }
-
-
-        /// Returns the start time of the buffer
-        DTdouble                        bufferStartTime     (void) const;
-
-        /// Returns the end time of the buffer
-        DTdouble                        bufferEndTime       (void) const;
-
+        DTdouble                        current_time        (void) const    {   return _first_audio_timestamp + _current_time;  }
     
         enum State {
             STATE_IDLE,
@@ -110,14 +110,15 @@ class HWVideoPlayerFFInstance: public BaseRefCounted {
             STATE_ERROR
         };
     
-        State                           getState            (void) const    {   return _state;  }
+        State                           state               (void) const    {   return _state;  }
 
     private:
     
-        DTerr                           setup               (void);
-    
-        static void                     playbackThread      (void *hwvp);
-        static void                     dataThread          (void *hwvp);
+        DTerr                           open_common         (std::shared_ptr<HWVideoPlayerFFDataSourceBase> data_source);
+        void                            close_common        (void);
+
+        void                            playback_thread     (void);
+        void                            data_thread         (void);
 
     
         // Video meta data
@@ -129,53 +130,62 @@ class HWVideoPlayerFFInstance: public BaseRefCounted {
         DTdouble                            _audio_time_base;
         int64_t                             _audio_time_start;
     
+        DTdouble                            _current_time;
+    
+        DTboolean                           _first_audio_timestamp_set;
+        DTdouble                            _first_audio_timestamp;
+
         DTuint                              _width;
         DTuint                              _height;
     
-        int64_t                             _buffer_start;
-        int64_t                             _buffer_end;
-
         // Instance info
-        HWVideoPlayerFFDataSourceBase       *_data_source;
+        std::shared_ptr<HWVideoPlayerFFDataSourceBase>  _data_source;
     
         AVFrame                             *_src_frame;
-        AVFrame                             *_dst_frame;
-    
+
+        // Two buffers for double buffering
+        AVFrame                             *_dst_frame[2];
+        void                                *_dst_frame_buffer[2];
+
+        // Syncing double buffering
+        DTint                               _dst_frame_read_buffer_index;
+        DTboolean                           _dst_frame_buffer_dirty;
+        std::mutex                          _dst_frame_mutex;
+
         AVFrame                             *_src_audio_frame;
-        SoundPacket                         _dst_sound_packet;
-    
-        DTdouble                            _video_timestamp;
-        DTdouble                            _audio_timestamp;
-    
+            
         SwsContext                          *_img_convert_ctx;
         SwrContext                          *_snd_convert_ctx;
 
         State                               _state;
-        DTdouble                            _current_time;
 
         // Thread references
-        HAL::ThreadType                     _playback_thread;
-        HAL::ThreadType                     _data_thread;
-        
+        std::thread                         _playback_thread;
+        std::mutex                          _playback_thread_mutex;
+        std::condition_variable             _playback_thread_condition;
+        DTboolean                           _playback_thread_running;
+    
+        std::thread                         _data_thread;
+        std::mutex                          _data_thread_mutex;
+        std::condition_variable             _data_thread_condition;
+        DTboolean                           _data_thread_running;
+
         // Packet queue
         HWVideoPlayerFFPacketQueue          _video_packet_queue;
         HWVideoPlayerFFPacketQueue          _audio_packet_queue;
     
         // Command queue
         HWVideoPlayerFFCommandQueue         _data_command_queue;
-        HWVideoPlayerFFCommandQueue         _playback_command_queue;    // This is only filled out after data thread
+        //HWVideoPlayerFFCommandQueue         _playback_command_queue;    // This is only filled out after data thread
                                                                         // processes its command queue
     
         // Output texture
-        std::shared_ptr<TextureResource>           _tex;
-        std::shared_ptr<ArrayBlock<DTubyte> >      _tex_buffer;
-        
-        // System clock
-        TimerHires                          _timer;
-        DTdouble                            _playback_speed;
+
+        std::shared_ptr<DT3GLTexture2DResource> _tex_raw;
+        std::shared_ptr<TextureResource2D>      _tex_resource;
     
         // Audio Packets
-        SoundSourceQueue                    _sound_source;
+        std::shared_ptr<SoundSourceQueue>   _sound_source;
 };
 
 //==============================================================================

@@ -57,8 +57,8 @@ IMPLEMENT_FACTORY_UNIT_TEST (FileHandleUncompressedFD_test)
 
 void FileHandleUncompressedFD_test::file_open_cb (const FilePath &path, std::shared_ptr<FileHandle> &file_handle, DTsize &start, DTsize &length, void *data)
 {
-    if (path.full_path() == "Asset@Kaiser-debug.apk") {
-        std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Kaiser-debug.apk";
+    if (path.full_path() == "Asset@Troika-debug.apk") {
+        std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Troika-debug.apk";
         DTint fd = ::open (pp.c_str(), 0);
         auto fh = FileHandleUncompressedFD::create();
         fh->set_fd(fd);
@@ -68,7 +68,7 @@ void FileHandleUncompressedFD_test::file_open_cb (const FilePath &path, std::sha
         length = 3209107;
 
     } else if (path.full_path() == "Asset@config.txt") {
-        std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Kaiser-debug.apk";
+        std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Troika-debug.apk";
         DTint fd = ::open (pp.c_str(), 0);
         auto fh = FileHandleUncompressedFD::create();
         fh->set_fd(fd);
@@ -86,7 +86,7 @@ void FileHandleUncompressedFD_test::file_open_cb (const FilePath &path, std::sha
         FileManager::start_and_length(path, packagename, file_start, file_length, file_uncompressed_length);
 
         if (file_length == file_uncompressed_length) {
-            std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Kaiser-debug.apk";
+            std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Troika-debug.apk";
             DTint fd = ::open (pp.c_str(), 0);
             auto fh = FileHandleUncompressedFD::create();
             fh->set_fd(fd);
@@ -96,7 +96,7 @@ void FileHandleUncompressedFD_test::file_open_cb (const FilePath &path, std::sha
             length = file_length;
 
         } else {
-            std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Kaiser-debug.apk";
+            std::string pp = "/Users/tod/Documents/GameProjects/kaiser/trunk/install/data/Troika-debug.apk";
             DTint fd = ::open (pp.c_str(), 0);
             auto fh = FileHandleCompressedFD::create();
             fh->set_fd(fd,file_start,file_length,file_uncompressed_length);
@@ -122,7 +122,7 @@ void FileHandleUncompressedFD_test::run_test (void)
 //    outfile << s;
 //    outfile.close();
 
-    Globals::set_global("Kaiser-debug.apk", "Asset@Kaiser-debug.apk", Globals::VOLATILE);
+    Globals::set_global("Troika-debug.apk", "Asset@Troika-debug.apk", Globals::VOLATILE);
     Globals::set_global("config.txt", "Asset@config.txt", Globals::VOLATILE);
 
     FileManager::set_file_open_cb(make_callback(&FileHandleUncompressedFD_test::file_open_cb), NULL);
@@ -139,7 +139,7 @@ void FileHandleUncompressedFD_test::run_test (void)
 //	DTsize size = infile.read_raw(buffer, s.length());
 //    TEST_ASSERTION(size == s.length());
 
-    FileManager::register_package (FilePath("{Kaiser-debug.apk}"));
+    FileManager::register_package (FilePath("{Troika-debug.apk}"));
     Configure::import_config (FilePath("{config.txt}"));
 
 

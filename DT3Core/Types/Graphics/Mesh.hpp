@@ -52,7 +52,9 @@ class Mesh: public BaseClass {
 		DEFINE_ACCESSORS(weights_index_stream, set_weights_index_stream, std::vector<WeightsIndex>, _weights_index_stream);
 		DEFINE_ACCESSORS(weights_strength_stream, set_weights_strength_stream, std::vector<Vector4>, _weights_strength_stream);
 
-		DEFINE_ACCESSORS(index_stream, set_index_stream, std::vector<Triangle>, _indices_stream);
+		DEFINE_ACCESSORS(index_stream, set_index_stream, std::vector<Triangle>, _index_stream);
+
+		DEFINE_ACCESSORS(smoothing_groups, set_smoothing_groups, std::vector<DTuint>, _smoothing_group);
 
 
 		/// Generate some normals for the geometry
@@ -70,12 +72,14 @@ class Mesh: public BaseClass {
 
         // Accessors for mesh name
         DEFINE_ACCESSORS(name, set_name, std::string, _name)
+        DEFINE_ACCESSORS(material, set_material, std::string, _material)
     
 	private:
-        DTuint                          hash_vertex         (DTuint i);
-        DTboolean                       equal_vertex        (DTuint v1, DTuint v2);
+        DTuint                          hash_vertex         (DTuint i, DTboolean vertex_only = false);
+        DTboolean                       equal_vertex        (DTuint v1, DTuint v2, DTboolean vertex_only = false);
 
         std::string                     _name;
+        std::string                     _material;  // Name of imported material
     
 		std::vector<Vector3>            _vertex_stream;
 		std::vector<Vector3>            _normals_stream;
@@ -85,8 +89,9 @@ class Mesh: public BaseClass {
 		std::vector<Vector2>            _uvs_stream_1;
 		std::vector<WeightsIndex>       _weights_index_stream;
 		std::vector<Vector4>            _weights_strength_stream;
-		std::vector<Triangle>           _indices_stream;
+		std::vector<Triangle>           _index_stream;
 
+        std::vector<DTuint>             _smoothing_group;   // Only used on import for normals calculations
 };
 
 //==============================================================================

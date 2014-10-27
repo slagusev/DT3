@@ -2,17 +2,17 @@
 #define DT3_HWVIDEOPLAYERFFPACKETQUEUE
 //==============================================================================
 ///	
-///	URL: 			HWVideoPlayerFFPacketQueue.hpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	URL: HWVideoPlayerFFPacketQueue.hpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
 #include "BaseInclude.hpp"
-#include "Mutex.hpp"
+#include <mutex>
 
 extern "C" {
     #include "libavcodec/avcodec.h"
@@ -43,23 +43,52 @@ class HWVideoPlayerFFPacketQueue {
 	public:
     
 		/// Pushes a packet onto the back of the queue
-        DTerr                           pushBack    (AVPacket *pkt);
+        DTerr                           push_back       (AVPacket *pkt);
 
 		/// Pops a packet from the front of the queue
-        DTboolean                       popFront    (AVPacket *pkt);
+        DTboolean                       pop_front       (AVPacket *pkt);
+    
+		/// Pops a packet from the front of the queue
+        DTboolean                       peek_front      (AVPacket *pkt);
+    
+    
+        /// Pushes a "flush" packet
+        DTerr                           push_back_flush (void);
+    
+        /// Checks if a packet is a "flush" packet
+        DTboolean                       is_flush        (AVPacket *pkt);
+
+
+        /// Pushes a "play" packet
+        DTerr                           push_back_play  (void);
+    
+        /// Checks if a packet is a "flush" packet
+        DTboolean                       is_play         (AVPacket *pkt);
+
+
+        /// Pushes a "pause" packet
+        DTerr                           push_back_pause (void);
+    
+        /// Checks if a packet is a "flush" packet
+        DTboolean                       is_pause        (AVPacket *pkt);
+
 
 		/// Clears the packet queue
-        void                            clear       (void);
+        void                            clear           (void);
 
 		/// Returns the size of the queue
-        DTsize                          size        (void) const    {   return _size;   }
+        DTsize                          size            (void) const    {   return _size;   }
     
     private:
         AVPacketList    *_first_pkt;
         AVPacketList    *_last_pkt;
         DTsize          _size;
+    
+        AVPacket        _flush_pkt;
+        AVPacket        _play_pkt;
+        AVPacket        _pause_pkt;
 
-        Mutex           _lock;
+        std::mutex      _lock;
 };
 
 //==============================================================================

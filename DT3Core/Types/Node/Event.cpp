@@ -147,7 +147,7 @@ std::vector<Event*> Event::outgoing_connections (void) const
     if (_connection_index == 0)
         return std::vector<Event*>();
     
-    return connections()._incoming;
+    return connections()._outgoing;
 }
 
 DTboolean Event::has_outgoing_connection (void) const

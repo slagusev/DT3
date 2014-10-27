@@ -81,7 +81,7 @@ class DeviceAudio: public DeviceBase {
 		/// Plays the sound source
 		/// \param source sound source to play
 		/// \param sound_loader optional sound loader if you want it deleted
-        virtual DTboolean                       play                    (const std::shared_ptr<SoundSource> &source, const std::shared_ptr<World> &world, const std::shared_ptr<ScriptingSound> &sound_loader) {    return false;   }
+        virtual DTboolean                       play                    (const std::shared_ptr<SoundSource> &source, World *world, const std::shared_ptr<ScriptingSound> &sound_loader) {   return false;   }
 
 		/// Returns wether the sound source is playing or not
 		/// \return playing or not
@@ -113,6 +113,10 @@ class DeviceAudio: public DeviceBase {
 		/// Removes a bus
 		/// \param sound source
         virtual void                            remove_bus              (const std::shared_ptr<SoundSource> &source)    {}
+
+		/// Calculates the current playback time
+		/// \return playback time in seconds
+        virtual DTdouble                        playback_time           (const std::shared_ptr<SoundSource> &source)    {   return 0.0;     }
 
         // Tick device
         /// \param dt delta time

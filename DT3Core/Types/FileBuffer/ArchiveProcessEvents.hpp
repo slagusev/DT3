@@ -76,7 +76,7 @@ ArchiveProcessEvents<T>::ArchiveProcessEvents(const std::shared_ptr<Archive> &ar
 {
 	// Writing out pointer immediately
 	if (archive->is_writing()) {
-        const std::vector<Event*>& src_events	= dst_event->incoming_connections();
+        const std::vector<Event*> src_events = dst_event->incoming_connections();
         
         archive->push_domain ("EventConnection");
 

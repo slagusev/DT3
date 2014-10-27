@@ -290,7 +290,7 @@ CommandResult World_cmd::doRemove (CommandContext &ctx, const CommandParams &p)
                 }
                 
                 // Outgoing
-                const std::vector<PlugBase*> &connections = p_iter()->outgoing_connections();
+                const std::vector<PlugBase*> connections = p_iter()->outgoing_connections();
                 for (DTuint k = 0; k < connections.size(); ++k) {
                     if (connections[k]->is_no_draw())   continue;
                     cr.append_undo_command(CommandParams("ConnectPlugs \"" + p_iter()->full_name() + "\" \"" + connections[k]->full_name() + "\"" ));
@@ -303,14 +303,14 @@ CommandResult World_cmd::doRemove (CommandContext &ctx, const CommandParams &p)
                 if (e_iter()->is_no_draw())   continue;
 
                 // Incoming
-                const std::vector<Event*> &connections_in = e_iter()->incoming_connections();
+                const std::vector<Event*> connections_in = e_iter()->incoming_connections();
                 for (DTuint k = 0; k < connections_in.size(); ++k) {
                     if (connections_in[k]->is_no_draw())   continue;
                     cr.append_undo_command(CommandParams("ConnectEvents \"" + connections_in[k]->full_name() + "\" \"" + e_iter()->full_name() + "\"" ));
                 }
                 
                 // Outgoing
-                const std::vector<Event*> &connections_out = e_iter()->outgoing_connections();
+                const std::vector<Event*> connections_out = e_iter()->outgoing_connections();
                 for (DTuint k = 0; k < connections_out.size(); ++k) {
                     if (connections_out[k]->is_no_draw())   continue;
                     cr.append_undo_command(CommandParams("ConnectEvents \"" + e_iter()->full_name() + "\" \"" + connections_out[k]->full_name() + "\"" ));

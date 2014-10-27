@@ -175,6 +175,9 @@ class DT3OpenGL: public DeviceGraphics {
     
         virtual std::shared_ptr<DT3GLAttribBufferResource>  create_buffer                   (DTubyte *buffer_data, DTsize buffer_size, DT3GLBufferFormat buffer_format, DTuint flags = DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_READ);
         virtual void                                        update_buffer                   (const std::shared_ptr<DT3GLAttribBufferResource> &res, DTubyte *buffer_data, DTsize buffer_size, DTsize buffer_offset);
+
+        virtual std::shared_ptr<DT3GLElementBufferResource> create_index_buffer             (DTubyte *buffer_data, DTsize buffer_size, DT3GLBufferFormat buffer_format, DTuint flags = DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_READ);
+        virtual void                                        update_index_buffer             (const std::shared_ptr<DT3GLElementBufferResource> &res, DTubyte *buffer_data, DTsize buffer_size, DTsize buffer_offset);
     
         //
         // Uniforms
@@ -235,25 +238,38 @@ class DT3OpenGL: public DeviceGraphics {
 
         virtual void                                        draw_arrays                     (DT3GLPrimitiveType primitive_type, DTuint num_elements);
         virtual void                                        draw_arrays_ranged              (DT3GLPrimitiveType primitive_type, DTuint start_element, DTuint num_elements);
+        virtual void                                        draw_indexed_arrays             (const std::shared_ptr<DT3GLElementBufferResource> &elements, DT3GLPrimitiveType primitive_type, DTuint num_elements);
 
         //
         // Framebuffers
         //
     
         virtual std::shared_ptr<DT3GLFramebufferResource>   create_framebuffer              (void);
-    
-        virtual void                                        attach_framebuffer_color        (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, const std::shared_ptr<DT3GLTexture2DResource> &tex);
+        virtual void                                        activate_framebuffer            (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer);
+
+        virtual void                                        attach_framebuffer_color        (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, const std::shared_ptr<DT3GLTexture2DResource> &tex, DTuint target_index = 0);
         virtual void                                        attach_framebuffer_depth_stencil(const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, const std::shared_ptr<DT3GLTexture2DResource> &tex);
     
-        virtual void                                        attach_renderbuffer_color       (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, DTint width, DTint height, DT3GLRenderBufferFormat format);
+        virtual void                                        attach_renderbuffer_color       (const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, DTint width, DTint height, DT3GLRenderBufferFormat format, DTuint target_index = 0);
         virtual void                                        attach_renderbuffer_depth_stencil(const std::shared_ptr<DT3GLFramebufferResource> &framebuffer, DTint width, DTint height, DT3GLRenderBufferFormat format);
+
 
 		/// Copies the current screen to a TextureResource2D
 		/// \param tex destination texture
 		/// \param rect source rectangle
         virtual void                                        screenshot                      (const std::shared_ptr<TextureResource2D> &tex, const Rectangle &rect);
     
+        //
+        // Performance Queries
+        //
+
+        virtual void                                        begin_frame                     (void);
+        virtual void                                        end_frame                       (void);
+        virtual DTdouble                                    perf_lag                        (void);
+
+
     private:
+        DTuint                                              textel_byte_size                (DT3GLTextelFormat format);
         void                                                sync_state                      (void);
     
 		DTuint                                              _width;
@@ -309,6 +325,12 @@ class DT3OpenGL: public DeviceGraphics {
     
         Matrix4                                             _current_texture_matrix[16],
                                                             _pending_texture_matrix[16];
+
+//        // Performance query for frame lag
+//        GLuint                                              _frame_lag_query;
+//        DTboolean                                           _frame_query_in_progress;
+//        DTint64                                             _frame_lag_now;
+//        DTint64                                             _frame_lag_last_calculated;
 };
 
 //==============================================================================

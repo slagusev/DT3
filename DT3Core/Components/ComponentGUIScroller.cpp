@@ -449,7 +449,7 @@ void ComponentGUIScroller::draw (const std::shared_ptr<CameraObject> &camera, co
             b.add().v(rect.plus_x(),           rect.minus_y() + rect.height() * top_gap,                0.0F)   .t0(1.0F,1.0F)  .c(c);
             
             b.batch_end();
-            b.flush();
+            b.draw();
         }
 
         if (_scroll_horz && (_contents.plus_x() > rect.plus_x() || _contents.minus_x() < rect.minus_x())) {
@@ -480,7 +480,7 @@ void ComponentGUIScroller::draw (const std::shared_ptr<CameraObject> &camera, co
             b.add().v(rect.minus_x() + rect.width() * right_gap,           rect.minus_y() - V_SIZE,   0.0F)   .t0(1.0F,0.0F)  .c(c);
             
             b.batch_end();
-            b.flush();
+            b.draw();
         }
     }
         

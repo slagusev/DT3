@@ -71,6 +71,9 @@ class TextureResource2D: public Resource {
 		/// \param mipmapped mipmapped
         void                        allocate_rgba_textels   (const DTint width, const DTint height, DTboolean mipmapped);
 
+		/// Sets a 2D texture from a renderer resource bypassing any resource management
+        void                        set_resource_textels     (std::shared_ptr<DT3GLTexture2DResource> tex);
+
 		/// Allocate a 2D texture
 		/// \param width width of texture
 		/// \param height height of texture
@@ -158,11 +161,10 @@ class TextureResource2D: public Resource {
         // Data for 2D and 3D textures
         std::shared_ptr<DTubyte>                _textels;
     
-		DT3GLTextelFormat                        _format;
+		DT3GLTextelFormat                       _format;
     
 		DTint                                   _width;
 		DTint                                   _height;
-		DTint                                   _depth;
     
 		DTboolean                               _mipmapped;
         DTuint                                  _flags;

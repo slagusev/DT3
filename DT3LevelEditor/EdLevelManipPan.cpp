@@ -75,7 +75,7 @@ void EdLevelManipPan::draw (EdLevelToolWindow *parent, const std::shared_ptr<Cam
                             transform * axis,
                             Color4b::white,
                             0.05F);
-    b.flush();
+    b.draw();
     
     DTboolean draw_x =  std::abs( Vector3::dot( Vector3(1.0F,0.0F,0.0F),camera->orientation().z_axis()) ) < 0.97F;
     DTboolean draw_y =  std::abs( Vector3::dot( Vector3(0.0F,1.0F,0.0F),camera->orientation().z_axis()) ) < 0.97F;
@@ -99,7 +99,7 @@ void EdLevelManipPan::draw (EdLevelToolWindow *parent, const std::shared_ptr<Cam
                                 Color4b::red,
                                 0.1F,
                                 0.1F);
-        b.flush();
+        b.draw();
     }
 
     if (draw_y) {
@@ -119,7 +119,7 @@ void EdLevelManipPan::draw (EdLevelToolWindow *parent, const std::shared_ptr<Cam
                                 Color4b::green,
                                 0.1F,
                                 0.1F);
-        b.flush();
+        b.draw();
     }
 
     if (draw_z) {
@@ -139,7 +139,7 @@ void EdLevelManipPan::draw (EdLevelToolWindow *parent, const std::shared_ptr<Cam
                                 Color4b::blue,
                                 0.1F,
                                 0.1F);
-        b.flush();
+        b.draw();
     }
     
     ::glPopName();  // Pop component
@@ -163,7 +163,7 @@ void EdLevelManipPan::draw (EdLevelToolWindow *parent, const std::shared_ptr<Cam
     }
 
     b.batch_end();
-    b.flush();
+    b.draw();
     
 }
 

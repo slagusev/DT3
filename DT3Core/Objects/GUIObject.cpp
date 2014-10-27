@@ -240,7 +240,7 @@ void GUIObject::draw_gui_mask (const std::shared_ptr<CameraObject> &camera)
     _b.add().v(rect.minus_x(),rect.minus_y(),0.0F);
     
     _b.batch_end();
-    _b.flush();
+    _b.draw();
 }
 
 void GUIObject::draw_gui_unmask (const std::shared_ptr<CameraObject> &camera)
@@ -261,7 +261,7 @@ void GUIObject::draw_gui_unmask (const std::shared_ptr<CameraObject> &camera)
     _b.add().v(rect.minus_x(),rect.minus_y(),0.0F);
     
     _b.batch_end();
-    _b.flush();
+    _b.draw();
 }
 
 void GUIObject::draw_gui (const std::shared_ptr<CameraObject> &camera, const Color4f& parent_color)

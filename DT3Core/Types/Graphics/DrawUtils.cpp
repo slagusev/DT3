@@ -107,7 +107,7 @@ void DrawUtils::draw_quad_stretch_center_3x3 (  DrawBatcher &draw_batcher,
 	draw_batcher.add().v(plus_x,		inner_top,		0.0F)   .t0(1.0F,			two_thirds_y)   .c(color);
 
 	draw_batcher.batch_end();
-    draw_batcher.flush();
+    draw_batcher.draw();
 }
 
 //==============================================================================
@@ -188,7 +188,7 @@ void DrawUtils::draw_quad_stretch_center_2x2 (  DrawBatcher &draw_batcher,
 	draw_batcher.add().v(plus_x,		inner_top,		0.0F)   .t0(1.0F,   0.5F)   .c(color);
 
 	draw_batcher.batch_end();
-    draw_batcher.flush();
+    draw_batcher.draw();
 }
 
 //==============================================================================
@@ -272,7 +272,7 @@ void DrawUtils::draw_selection (    DrawBatcher &draw_batcher,
     draw_batcher.add().v(+radius,+radius,+radius-SEL_size)  .c(color);
 
     draw_batcher.batch_end();
-    draw_batcher.flush();
+    draw_batcher.draw();
 }
 
 //==============================================================================
@@ -321,7 +321,67 @@ void DrawUtils::draw_cube ( DrawBatcher &draw_batcher,
     draw_batcher.add().v(size,-size,-size).c(color);
     
     draw_batcher.batch_end();
-    draw_batcher.flush();
+    draw_batcher.draw();
+}
+
+void DrawUtils::draw_cube ( DrawBatcher &draw_batcher,
+                            const std::shared_ptr<CameraObject> &camera,
+                            const std::shared_ptr<MaterialResource> &material,
+                            const std::shared_ptr<ShaderResource> &shader,
+                            const Matrix4 &transform,
+                            DTfloat size)
+{
+    draw_batcher.batch_begin(camera, material, shader, transform, DT3GL_PRIM_TRI_STRIP, DrawBatcher::FMT_V);
+    
+    // Sized
+    draw_batcher.add().v(-size,-size,size);
+    draw_batcher.add().v(size,-size,size);
+
+    draw_batcher.add().v(-size,size,size);
+    draw_batcher.add().v(size,size,size);
+
+    draw_batcher.add().v(-size,size,-size);
+    draw_batcher.add().v(size,size,-size);
+
+    draw_batcher.add().v(-size,-size,-size);
+    draw_batcher.add().v(size,-size,-size);
+
+    draw_batcher.add().v(-size,-size,size);
+    draw_batcher.add().v(size,-size,size);
+
+    draw_batcher.add().v(size,-size,size);      // Degenerate
+    draw_batcher.add().v(size,-size,size);      // Degenerate
+
+    draw_batcher.add().v(size,-size,size);
+    draw_batcher.add().v(size,-size,-size);
+    draw_batcher.add().v(size,size,size);
+    draw_batcher.add().v(size,size,-size);
+
+    draw_batcher.add().v(size,size,-size);      // Degenerate
+    draw_batcher.add().v(-size,-size,-size);    // Degenerate
+
+    draw_batcher.add().v(-size,-size,-size);
+    draw_batcher.add().v(-size,-size,size);
+    draw_batcher.add().v(-size,size,-size);
+    draw_batcher.add().v(-size,size,size);
+
+
+//    // Top
+//    draw_batcher.add().v(-size,size,-size);
+//    draw_batcher.add().v(-size,size,size);
+//    draw_batcher.add().v(size,size,-size);
+//    draw_batcher.add().v(size,size,size);
+//
+//    draw_batcher.add().v(size,size,size);   // Degenerate
+//
+//    // Bottom
+//    draw_batcher.add().v(-size,-size,size);
+//    draw_batcher.add().v(-size,-size,-size);
+//    draw_batcher.add().v(size,-size,size);
+//    draw_batcher.add().v(size,-size,-size);
+    
+    draw_batcher.batch_end();
+    draw_batcher.draw();
 }
 
 //==============================================================================
@@ -349,7 +409,7 @@ void DrawUtils::draw_cone(  DrawBatcher &draw_batcher,
     }
     
     draw_batcher.batch_end();
-    draw_batcher.flush();
+    draw_batcher.draw();
 }
 
 //==============================================================================
@@ -372,7 +432,7 @@ void DrawUtils::draw_ring ( DrawBatcher &draw_batcher,
     }
     
     draw_batcher.batch_end();
-    draw_batcher.flush();
+    draw_batcher.draw();
 }
 
 //==============================================================================
@@ -409,7 +469,7 @@ void DrawUtils::activate_state (    const std::shared_ptr<CameraObject> &camera,
         camera->calculate_frustum();
         
         shader->set_uniform_value(  shader->uniform_slot(DT3GL_UNIFORM_MODELVIEW), camera->modelview() * transform );
-        shader->set_uniform_value(  shader->uniform_slot(DT3GL_UNIFORM_PROJECTION), camera->projection() );
+        shader->set_uniform_value(  shader->uniform_slot(DT3GL_UNIFORM_PROJECTION), camera->projection());
     }
     
     

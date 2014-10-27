@@ -179,7 +179,7 @@ bool Image::load (const std::string &s)
 	}
 	
 	for (unsigned int y = 0; y < _data_height; ++y) {
-		row_pointers[y] = reinterpret_cast<png_byte*>( &getPixel(0,y) );
+		row_pointers[y] = reinterpret_cast<png_byte*>( &pixel(0,y) );
 	}	
 	
 	// Read the entire image
@@ -289,7 +289,7 @@ bool Image::save		(const std::string &s)
 	png_bytep *row_pointers = new png_bytep[_data_height];
 
 	for (png_uint_32 k = 0; k < _data_height; k++)
-		row_pointers[k] = (png_bytep) &getPixel(0,k);
+		row_pointers[k] = (png_bytep) &pixel(0,k);
 
 	png_write_image(png_ptr, row_pointers);
 	
@@ -320,14 +320,36 @@ void Image::allocate (int width, int height)
 //==============================================================================
 //==============================================================================
 
-Image::Pixel& Image::getPixel (int x, int y) const
+Image::Pixel& Image::pixel (int x, int y) const
 {
 	return _data[(y * _data_width) + x];
 }
 
-void Image::setPixel (int x, int y, Image::Pixel &p)
+void Image::set_pixel (int x, int y, Image::Pixel &p)
 {        
 	_data[(y * _data_width) + x] = p;
+}
+
+Image::Pixel& Image::pixel_clamped (int x, int y) const
+{
+    if (x < 0)  x = 0;
+    else if (x >= _data_width)  x = _data_width-1;
+
+    if (y < 0)  y = 0;
+    else if (y >= _data_height)  y = _data_height-1;
+
+    return pixel(x,y);
+}
+
+Image::Pixel& Image::pixel_wrapped (int x, int y) const
+{
+    while (x < 0)               x += _data_width;
+    while (x >= _data_width)    x -= _data_width;
+
+    while (y < 0)               y += _data_height;
+    while (y >= _data_height)   y -= _data_height;
+
+    return pixel(x,y);
 }
 
 //==============================================================================

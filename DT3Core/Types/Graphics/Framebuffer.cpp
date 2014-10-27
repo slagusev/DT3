@@ -40,14 +40,21 @@ Framebuffer::~Framebuffer (void)
 //==============================================================================
 //==============================================================================
 
-void Framebuffer::allocate (DTint width, DTint height, DT3GLTextelFormat color_format, DT3GLTextelFormat depth_format)
+void Framebuffer::allocate (DTint width, DTint height, DT3GLTextelFormat color_format, DT3GLTextelFormat depth_format, DTuint num_color_targets)
 {
-    _color_texture = System::renderer()->create_texture_2D (width, height, NULL, color_format, false, DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_WRITE);
+    _color_texture.resize(num_color_targets);
+    for (DTsize i = 0; i < _color_texture.size(); ++i) {
+        _color_texture[i] = System::renderer()->create_texture_2D (width, height, NULL, color_format, false, DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_WRITE);
+    }
+
     _depth_texture = System::renderer()->create_texture_2D (width, height, NULL, depth_format, false, DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_WRITE);
 
     _framebuffer = System::renderer()->create_framebuffer ();
 
-    System::renderer()->attach_framebuffer_color (_framebuffer, _color_texture);
+    for (DTsize i = 0; i < _color_texture.size(); ++i) {
+        System::renderer()->attach_framebuffer_color (_framebuffer, _color_texture[i], (DTuint) i);
+    }
+    
     System::renderer()->attach_framebuffer_depth_stencil (_framebuffer, _depth_texture);
 
     _rb_color_format = DT3GL_RB_FORMAT_NONE;
@@ -57,14 +64,21 @@ void Framebuffer::allocate (DTint width, DTint height, DT3GLTextelFormat color_f
     _height = height;
 }
 
-void Framebuffer::allocate (DTint width, DTint height, DT3GLTextelFormat color_format, DT3GLRenderBufferFormat depth_format)
+void Framebuffer::allocate (DTint width, DTint height, DT3GLTextelFormat color_format, DT3GLRenderBufferFormat depth_format, DTuint num_color_targets)
 {
-    _color_texture = System::renderer()->create_texture_2D (width, height, NULL, color_format, false, DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_WRITE);
+    _color_texture.resize(num_color_targets);
+    for (DTsize i = 0; i < _color_texture.size(); ++i) {
+        _color_texture[i] = System::renderer()->create_texture_2D (width, height, NULL, color_format, false, DT3GL_ACCESS_CPU_NONE | DT3GL_ACCESS_GPU_WRITE);
+    }
 
-    _framebuffer = System::renderer()->create_framebuffer ();
+    _framebuffer = System::renderer()->create_framebuffer();
 
-    System::renderer()->attach_framebuffer_color (_framebuffer, _color_texture);
-    System::renderer()->attach_renderbuffer_depth_stencil (_framebuffer, width, height, depth_format);
+    for (DTsize i = 0; i < _color_texture.size(); ++i) {
+        System::renderer()->attach_framebuffer_color (_framebuffer, _color_texture[i], (DTuint) i);
+    }
+    
+    if (depth_format != DT3GL_RB_FORMAT_NONE)
+        System::renderer()->attach_renderbuffer_depth_stencil (_framebuffer, width, height, depth_format);
 
     _rb_color_format = DT3GL_RB_FORMAT_NONE;
     _rb_depth_format = depth_format;
@@ -79,8 +93,8 @@ void Framebuffer::allocate (DTint width, DTint height, DT3GLRenderBufferFormat c
 
     _framebuffer = System::renderer()->create_framebuffer ();
 
-    System::renderer()->attach_framebuffer_color (_framebuffer, _color_texture);
     System::renderer()->attach_renderbuffer_color (_framebuffer, width, height, color_format);
+    System::renderer()->attach_framebuffer_depth_stencil(_framebuffer, _depth_texture);
 
     _rb_color_format = color_format;
     _rb_depth_format = DT3GL_RB_FORMAT_NONE;
@@ -92,14 +106,22 @@ void Framebuffer::allocate (DTint width, DTint height, DT3GLRenderBufferFormat c
 //==============================================================================
 //==============================================================================
 
-const std::shared_ptr<DT3GLTexture2DResource>& Framebuffer::color_texture (void)
+std::shared_ptr<DT3GLTexture2DResource>& Framebuffer::color_texture (DTuint color_target_index)
 {
-    return _color_texture;
+    return _color_texture[color_target_index];
 }
 
-const std::shared_ptr<DT3GLTexture2DResource>& Framebuffer::depth_texture (void)
+std::shared_ptr<DT3GLTexture2DResource>& Framebuffer::depth_texture (void)
 {
     return _depth_texture;
+}
+
+//==============================================================================
+//==============================================================================
+
+void Framebuffer::activate (void)
+{
+    System::renderer()->activate_framebuffer(_framebuffer);
 }
 
 //==============================================================================

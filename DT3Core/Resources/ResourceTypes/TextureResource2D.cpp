@@ -197,13 +197,31 @@ DTerr TextureResource2D::import (const FilePath &pathname, std::string args)
 //==============================================================================
 //==============================================================================
 
+void TextureResource2D::set_resource_textels (std::shared_ptr<DT3GLTexture2DResource> tex)
+{
+    _textels.reset();
+    
+    _format = DT3GL_FORMAT_UNKNOWN;
+    _width = 0;
+    _height = 0;
+    
+    _mipmapped = false;
+    _flags = 0;
+    
+    _resource_2D = tex;
+
+    _dirty_rectangle.clear();
+}
+
+//==============================================================================
+//==============================================================================
+
 void TextureResource2D::allocate_rgba_textels (const DTint width, const DTint height, DTboolean mipmapped)
 {
 	_format = DT3GL_FORMAT_RGBA;
     
 	_width = width;
 	_height = height;
-	_depth = 0;
     
     _mipmapped = mipmapped;
     _flags = DT3GL_ACCESS_CPU_READ | DT3GL_ACCESS_CPU_WRITE | DT3GL_ACCESS_GPU_READ;
@@ -224,7 +242,6 @@ void TextureResource2D::set_textels (const DTint width, const DTint height, std:
     
 	_width = width;
 	_height = height;
-	_depth = 0;
     
     _mipmapped = mipmapped;
     _flags = flags;
@@ -248,7 +265,6 @@ void TextureResource2D::set_textels_compressed (const DTint width, const DTint h
     
 	_width = width;
 	_height = height;
-	_depth = 0;
     
     _mipmapped = mipmapped;
     _flags = flags;

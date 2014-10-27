@@ -345,7 +345,7 @@ std::list<PlaceableObject*> PlaceableObject::children (void) const
 {
 	std::list<PlaceableObject*> children;
 
-	const std::vector<PlugBase*>& pos = _world_transform.outgoing_connections();
+	const std::vector<PlugBase*> pos = _world_transform.outgoing_connections();
 		
 	FOR_EACH (pos_iter,pos) {
 		if ( (**pos_iter).name() == "Parent_Transform" )

@@ -1,20 +1,27 @@
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFFPacketQueue.cpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFFPacketQueue.cpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "HWVideoPlayerFFPacketQueue.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFPacketQueue.hpp"
 
 //==============================================================================
 //==============================================================================
 
 namespace DT3 {
+
+//==============================================================================
+//==============================================================================
+
+const DTubyte FLUSH[] = "flush";
+const DTubyte PLAY[] = "play";
+const DTubyte PAUSE[] = "pause";
 
 //==============================================================================
 /// Standard class constructors/destructors
@@ -25,21 +32,31 @@ HWVideoPlayerFFPacketQueue::HWVideoPlayerFFPacketQueue (void)
         _last_pkt   (NULL),
         _size       (0)
 {
-    
+    ::av_init_packet(&_flush_pkt);
+    _flush_pkt.data = (uint8_t*) FLUSH;
+
+    ::av_init_packet(&_play_pkt);
+    _play_pkt.data = (uint8_t*) PLAY;
+
+    ::av_init_packet(&_pause_pkt);
+    _pause_pkt.data = (uint8_t*) PAUSE;
 }
 
 HWVideoPlayerFFPacketQueue::~HWVideoPlayerFFPacketQueue (void)
 {
-
+    clear();
 }
 
 //==============================================================================
 //==============================================================================
 
-DTerr HWVideoPlayerFFPacketQueue::pushBack (AVPacket *pkt)
+DTerr HWVideoPlayerFFPacketQueue::push_back (AVPacket *pkt)
 {
-    if(av_dup_packet(pkt) < 0)
-        return DT3_ERR_FILE_OPEN_FAILED;
+    // Duplicate if not a flush packet
+    if (!is_flush(pkt) && !is_play(pkt) && !is_pause(pkt)) {
+        if(av_dup_packet(pkt) < 0)
+            return DT3_ERR_FILE_OPEN_FAILED;
+    }
     
     AVPacketList *packet_list = (AVPacketList *) ::av_malloc(sizeof(AVPacketList));
     
@@ -63,7 +80,7 @@ DTerr HWVideoPlayerFFPacketQueue::pushBack (AVPacket *pkt)
     return 0;
 }
 
-DTboolean HWVideoPlayerFFPacketQueue::popFront (AVPacket *pkt)
+DTboolean HWVideoPlayerFFPacketQueue::pop_front (AVPacket *pkt)
 {
     _lock.lock();
 
@@ -79,6 +96,22 @@ DTboolean HWVideoPlayerFFPacketQueue::popFront (AVPacket *pkt)
         ::av_free(first_pkt);
     
         --_size;
+
+        _lock.unlock();
+        return true;
+    } else {
+
+        _lock.unlock();
+        return false;
+    }
+}
+
+DTboolean HWVideoPlayerFFPacketQueue::peek_front (AVPacket *pkt)
+{
+    _lock.lock();
+
+    if (_first_pkt) {
+        *pkt = _first_pkt->pkt;
 
         _lock.unlock();
         return true;
@@ -108,6 +141,42 @@ void HWVideoPlayerFFPacketQueue::clear (void)
     
     _lock.unlock();
 }
+
+//==============================================================================
+//==============================================================================
+
+DTerr HWVideoPlayerFFPacketQueue::push_back_flush (void)
+{
+    return push_back(&_flush_pkt);
+}
+
+DTboolean HWVideoPlayerFFPacketQueue::is_flush (AVPacket *pkt)
+{
+    return (pkt->data == (uint8_t*) FLUSH);
+}
+
+
+DTerr HWVideoPlayerFFPacketQueue::push_back_play (void)
+{
+    return push_back(&_play_pkt);
+}
+
+DTboolean HWVideoPlayerFFPacketQueue::is_play (AVPacket *pkt)
+{
+    return (pkt->data == (uint8_t*) PLAY);
+}
+
+
+DTerr HWVideoPlayerFFPacketQueue::push_back_pause (void)
+{
+    return push_back(&_pause_pkt);
+}
+
+DTboolean HWVideoPlayerFFPacketQueue::is_pause (AVPacket *pkt)
+{
+    return (pkt->data == (uint8_t*) PAUSE);
+}
+
 
 //==============================================================================
 //==============================================================================

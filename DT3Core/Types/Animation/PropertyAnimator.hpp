@@ -14,6 +14,7 @@
 #include "DT3Core/Types/Base/BaseClass.hpp"
 #include "DT3Core/Types/Utility/TypeTraits.hpp"
 #include "DT3Core/Types/Utility/LatentCall.hpp"
+#include "DT3Core/Types/Utility/ConsoleStream.hpp"
 #include "DT3Core/Types/Math/Matrix3.hpp"
 #include "DT3Core/Types/Math/Matrix4.hpp"
 #include "DT3Core/Types/Math/Quaternion.hpp"
@@ -167,7 +168,7 @@ class PropertyAnimatorHandle: public PropertyAnimatorHandleBase {
 		/// \param delay delay
 		/// \return this archiving object so you can chain them together
         void                    append ( V v, DTfloat time, DTfloat delay, std::shared_ptr<PropertyAnimatorInterpolatorBase<typename TypeTraits<V>::BaseType>> interpolator = nullptr)
-        {
+        {        
             Keyframe k;
             k._delay = delay;
             k._time = time;
@@ -186,6 +187,7 @@ class PropertyAnimatorHandle: public PropertyAnimatorHandleBase {
         {
             Keyframe k;
             k._latent_call = lc;
+            k._delay = delay;
             
             _keyframes.push_back(k);
         }

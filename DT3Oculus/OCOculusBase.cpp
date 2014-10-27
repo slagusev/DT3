@@ -166,7 +166,7 @@ OVR::Ptr<OVR::SensorDevice> OCOculusBase::new_sensor (void)
 //==============================================================================
 //==============================================================================
 
-void OCOculusBase::calculate_stereo_camera(const CameraObject *center_camera, CameraObject *stereo_camera, Camera c)
+void OCOculusBase::calculate_stereo_camera(const std::shared_ptr<CameraObject> center_camera, std::shared_ptr<CameraObject> stereo_camera, Camera c)
 {
     //
     // This code is modified from the Oculus SDK
@@ -185,8 +185,8 @@ void OCOculusBase::calculate_stereo_camera(const CameraObject *center_camera, Ca
     // We need to shift this projection center to match with the lens center.
     // We compute this shift in physical units (meters) to correct
     // for different screen sizes and then rescale to viewport coordinates.
-    DTfloat view_center             = _hmd_info.HScreenSize * 0.25F;
-    DTfloat eye_projection_shift     = view_center - _hmd_info.LensSeparationDistance * 0.5F;
+    DTfloat view_center = _hmd_info.HScreenSize * 0.25F;
+    DTfloat eye_projection_shift = view_center - _hmd_info.LensSeparationDistance * 0.5F;
     DTfloat projection_center_offset = 4.0F * eye_projection_shift / _hmd_info.HScreenSize;
     
     // Projection matrix for the "center eye", which the left/right matrices are based on.

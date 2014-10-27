@@ -89,7 +89,7 @@ DTerr	ImporterGeometry3DS::import(GeometryResource *target, std::string args)
 	mesh->set_uv_stream1(_uvs_stream_1);
 	mesh->set_weights_index_stream(_weights_index_stream);
 	mesh->set_weights_strength_stream(_weights_strength_stream);
-	mesh->set_index_stream(_indices_stream);
+	mesh->set_index_stream(_index_stream);
 
 	mesh->generate_normals();
     
@@ -240,7 +240,7 @@ DTuint	ImporterGeometry3DS::parse_edit_object(BinaryFileStream &in, DTuint owner
     //_hierarchy[_current_obj_id]._name = object_name;
 	
 	// Remember base index
-	_base_face = (DTint) _indices_stream.size();
+	_base_face = (DTint) _index_stream.size();
 	_base_vertex = (DTint) _vertices_stream.size();
             
     // Keep on Parsing
@@ -337,7 +337,7 @@ DTuint	ImporterGeometry3DS::parse_tri_face(BinaryFileStream &in, DTuint owner_ch
     
     size_read += read(in,num_faces);
 
-	_indices_stream.resize(_base_face + num_faces);
+	_index_stream.resize(_base_face + num_faces);
 	
 	//_hierarchy[_current_obj_id]._num_faces = num_faces;
 		
@@ -354,13 +354,13 @@ DTuint	ImporterGeometry3DS::parse_tri_face(BinaryFileStream &in, DTuint owner_ch
         
         // Test for inverting normal
         if (!(info & 0x0007)) {
-			_indices_stream[_base_face + i].v[0] = (DTushort) (v1 + _base_vertex);
-			_indices_stream[_base_face + i].v[1] = (DTushort) (v3 + _base_vertex);
-			_indices_stream[_base_face + i].v[2] = (DTushort) (v2 + _base_vertex);
+			_index_stream[_base_face + i].v[0] = (DTushort) (v1 + _base_vertex);
+			_index_stream[_base_face + i].v[1] = (DTushort) (v3 + _base_vertex);
+			_index_stream[_base_face + i].v[2] = (DTushort) (v2 + _base_vertex);
 		} else {
-			_indices_stream[_base_face + i].v[0] = (DTushort) (v1 + _base_vertex);
-			_indices_stream[_base_face + i].v[1] = (DTushort) (v2 + _base_vertex);
-			_indices_stream[_base_face + i].v[2] = (DTushort) (v3 + _base_vertex);
+			_index_stream[_base_face + i].v[0] = (DTushort) (v1 + _base_vertex);
+			_index_stream[_base_face + i].v[1] = (DTushort) (v2 + _base_vertex);
+			_index_stream[_base_face + i].v[2] = (DTushort) (v3 + _base_vertex);
 		}
 	
     }

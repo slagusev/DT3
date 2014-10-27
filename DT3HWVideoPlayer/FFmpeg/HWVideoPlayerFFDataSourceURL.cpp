@@ -1,15 +1,15 @@
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFFDataSourceURL.cpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFFDataSourceURL.cpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "HWVideoPlayerFFDataSourceURL.hpp"
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFDataSourceURL.hpp"
 
 //==============================================================================
 //==============================================================================
@@ -20,8 +20,7 @@ namespace DT3 {
 /// Standard class constructors/destructors
 //==============================================================================
 
-HWVideoPlayerFFDataSourceURL::HWVideoPlayerFFDataSourceURL (const URL &url)
-    :   _url    (url)
+HWVideoPlayerFFDataSourceURL::HWVideoPlayerFFDataSourceURL (void)
 {
     
 }
@@ -34,8 +33,9 @@ HWVideoPlayerFFDataSourceURL::~HWVideoPlayerFFDataSourceURL (void)
 //==============================================================================
 //==============================================================================
 
-DTerr HWVideoPlayerFFDataSourceURL::open   (void)
+DTerr HWVideoPlayerFFDataSourceURL::open   (const URL &url)
 {
+    _url = url;
     return DT3_ERR_NONE;
 }
 

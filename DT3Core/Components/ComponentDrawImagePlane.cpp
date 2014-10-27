@@ -106,6 +106,8 @@ ComponentDrawImagePlane & ComponentDrawImagePlane::operator = (const ComponentDr
 		ComponentBase::operator = (rhs);
         
         _material = rhs._material;
+        _shader = rhs._shader;
+
         _aspect = rhs._aspect;
         _color = rhs._color;
         
@@ -261,7 +263,7 @@ void ComponentDrawImagePlane::draw (const std::shared_ptr<CameraObject> &camera,
     _b.add().v(+width,-height,0.0F)  .t0(tc_s_max,tc_t_min)  .c(c);
     
     _b.batch_end();
-    _b.flush();
+    _b.draw();
 }
 
 //==============================================================================

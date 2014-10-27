@@ -156,7 +156,7 @@ void ScriptingKeyframesMaterialResource::set_key (void)
 {
 	PROFILER(SCRIPTING);
 
-	const std::vector<PlugBase*> &outgoing = _out.outgoing_connections();
+	const std::vector<PlugBase*> outgoing = _out.outgoing_connections();
 	if (outgoing.size() > 0) {
 		// get first connected plug
 		Plug<std::shared_ptr<MaterialResource>> *outplug = static_cast<Plug<std::shared_ptr<MaterialResource>>*>(*(outgoing.begin()));

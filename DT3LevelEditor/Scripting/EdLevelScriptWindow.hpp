@@ -90,7 +90,7 @@ class EdLevelScriptWindow : public QGraphicsView
         int                             _auto_scroll_x;
         int                             _auto_scroll_y;
 
-        void                            syncConnections     (std::shared_ptr<PlugNode> node);
+        void                            syncConnections     (PlugNode *node);
         void                            adjustGroupBounds   (std::shared_ptr<Group> group);
 
 		void							readjustSceneRect   (void);

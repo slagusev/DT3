@@ -38,7 +38,7 @@ DrawBatcher::DrawBatcher (void)
 
 DrawBatcher::~DrawBatcher (void)
 {
-	flush();
+	draw();
 
     SystemCallbacks::screen_opened_cb().remove(make_callback(this, &type::screen_opened));
     SystemCallbacks::screen_closed_cb().remove(make_callback(this, &type::screen_closed));
@@ -77,7 +77,7 @@ void	 DrawBatcher::batch_begin ( const std::shared_ptr<CameraObject> &camera,
 {
 	// flush for materials and format changes
 	if (_material != material || _format != fmt || _transform != transform)
-		flush();
+		draw();
 
     _camera_object = camera;
 	_material = material;
@@ -133,7 +133,7 @@ void	 DrawBatcher::batch_end (void)
 void	 DrawBatcher::batch_split (void)
 {
 	if (_cur_index > _size_hint - 3) {
-		flush();
+		draw();
     }
 
 }
@@ -141,7 +141,7 @@ void	 DrawBatcher::batch_split (void)
 //==============================================================================
 //==============================================================================
 
-void	 DrawBatcher::flush (void)
+void DrawBatcher::draw (DTboolean clear_when_done)
 {
 	if (System::renderer() && _cur_index > 0) {
     
@@ -159,6 +159,7 @@ void	 DrawBatcher::flush (void)
         DTint a_texcoord0 = _shader->attrib_slot(DT3GL_ATTRIB_TEXCOORD0);
         DTint a_texcoord1 = _shader->attrib_slot(DT3GL_ATTRIB_TEXCOORD1);
         DTint a_color = _shader->attrib_slot(DT3GL_ATTRIB_COLOR);
+        DTint a_tangent = _shader->attrib_slot(DT3GL_ATTRIB_TANGENT);
     
         if (_batch_v_raw && a_position >= 0) {
             if (!_batch_v_buffer)
@@ -167,6 +168,9 @@ void	 DrawBatcher::flush (void)
                 System::renderer()->update_buffer(_batch_v_buffer,_batch_v_raw.get(), (_cur_index+1) * sizeof(Vector3), 0);
         
             _shader->attach_attribute_buffer(a_position, _batch_v_buffer);
+            
+        } else if (a_position >= 0) {
+            _shader->attach_attribute_buffer(a_position, NULL);
         }
 
         if (_batch_n_raw && a_normal >= 0) {
@@ -176,6 +180,9 @@ void	 DrawBatcher::flush (void)
                 System::renderer()->update_buffer(_batch_n_buffer,_batch_n_raw.get(), (_cur_index+1) * sizeof(Vector3), 0);
         
             _shader->attach_attribute_buffer(a_normal, _batch_n_buffer);
+            
+        } else if (a_normal >= 0) {
+            _shader->attach_attribute_buffer(a_normal, NULL);
         }
 
         if (_batch_t0_raw && a_texcoord0 >= 0) {
@@ -185,6 +192,9 @@ void	 DrawBatcher::flush (void)
                 System::renderer()->update_buffer(_batch_t0_buffer,_batch_t0_raw.get(), (_cur_index+1) * sizeof(Vector2), 0);
         
             _shader->attach_attribute_buffer(a_texcoord0, _batch_t0_buffer);
+            
+        } else if (a_texcoord0 >= 0) {
+            _shader->attach_attribute_buffer(a_texcoord0, NULL);
         }
 
         if (_batch_t1_raw && a_texcoord1 >= 0) {
@@ -194,6 +204,9 @@ void	 DrawBatcher::flush (void)
                 System::renderer()->update_buffer(_batch_t1_buffer,_batch_t1_raw.get(), (_cur_index+1) * sizeof(Vector2), 0);
         
             _shader->attach_attribute_buffer(a_texcoord1, _batch_t1_buffer);
+            
+        } else if (a_texcoord1 >= 0) {
+            _shader->attach_attribute_buffer(a_texcoord1, NULL);
         }
 
         if (_batch_c_raw && a_color >= 0) {
@@ -203,24 +216,32 @@ void	 DrawBatcher::flush (void)
                 System::renderer()->update_buffer(_batch_c_buffer,_batch_c_raw.get(), (_cur_index+1) * sizeof(Color4b), 0);
         
             _shader->attach_attribute_buffer(a_color, _batch_c_buffer);
-        }
-
-        if (_batch_cf_raw && a_color >= 0) {
+            
+        } else if (_batch_cf_raw && a_color >= 0) {
             if (!_batch_cf_buffer)
                 _batch_cf_buffer = System::renderer()->create_buffer(_batch_cf_raw.get(), _size_hint * sizeof(Color4f), DT3GL_BUFFER_FORMAT_4_FLOAT, DT3GL_ACCESS_CPU_WRITE);
             else
                 System::renderer()->update_buffer(_batch_cf_buffer,_batch_cf_raw.get(), (_cur_index+1) * sizeof(Color4f), 0);
         
             _shader->attach_attribute_buffer(a_color, _batch_cf_buffer);
+            
+        } else if (a_color >= 0) {
+            _shader->attach_attribute_buffer(a_color, NULL);
         }
         
+        // No tangent. We have to clear it because a previous object might have set it on the shader.
+        if (a_tangent >= 0)
+            _shader->attach_attribute_buffer(a_tangent, NULL);
+
         // Setup render state
         DrawUtils::activate_state(_camera_object, _material, _shader, _transform);
         
         // Draw!!
         System::renderer()->draw_arrays(_type, _cur_index+1);
-					
-		_cur_index = -1;
+				
+        // Do we clear after?
+        if (clear_when_done)
+            _cur_index = -1;
 	}
 }
 

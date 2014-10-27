@@ -153,7 +153,7 @@ CommandResult ObjectBase_cmd::do_remove_component (CommandContext &ctx, const Co
         }
         
         // Outgoing
-        const std::vector<PlugBase*> &connections = p_iter()->outgoing_connections();
+        const std::vector<PlugBase*> connections = p_iter()->outgoing_connections();
         for (DTuint k = 0; k < connections.size(); ++k) {
             cr.append_undo_command(CommandParams("ConnectPlugs \"" + p_iter()->full_name() + "\" \"" + connections[k]->full_name() + "\"" ));
         }
@@ -164,13 +164,13 @@ CommandResult ObjectBase_cmd::do_remove_component (CommandContext &ctx, const Co
     for (EventIter e_iter(component.get()); e_iter; ++e_iter) {
         
         // Incoming
-        const std::vector<Event*> &connections_in = e_iter()->incoming_connections();
+        const std::vector<Event*> connections_in = e_iter()->incoming_connections();
         for (DTuint k = 0; k < connections_in.size(); ++k) {
             cr.append_undo_command(CommandParams("ConnectEvents \"" + e_iter()->full_name() + "\" \"" + connections_in[k]->full_name() + "\"" ));
         }
         
         // Outgoing
-        const std::vector<Event*> &connections_out = e_iter()->outgoing_connections();
+        const std::vector<Event*> connections_out = e_iter()->outgoing_connections();
         for (DTuint k = 0; k < connections_out.size(); ++k) {
             cr.append_undo_command(CommandParams("ConnectEvents \"" + e_iter()->full_name() + "\" \"" + connections_out[k]->full_name() + "\"" ));
         }

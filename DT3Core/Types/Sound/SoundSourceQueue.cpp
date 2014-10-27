@@ -11,6 +11,7 @@
 
 #include "DT3Core/Types/Sound/SoundSourceQueue.hpp"
 #include "DT3Core/Types/Sound/SoundPacket.hpp"
+#include "DT3Core/Types/Utility/ConsoleStream.hpp"
 #include "DT3Core/System/Factory.hpp"
 #include <mutex>
 
@@ -37,12 +38,14 @@ END_IMPLEMENT_PLUGS
 //==============================================================================
 
 SoundSourceQueue::SoundSourceQueue (void)
+    :   _packet_count   (0)
 {
 
 }
 
 SoundSourceQueue::SoundSourceQueue (const SoundSourceQueue& rhs)
-	:	SoundSource     (rhs)
+	:	SoundSource     (rhs),
+        _packet_count   (0)
 {
 
 }
@@ -74,6 +77,10 @@ void SoundSourceQueue::push_packet (SoundPacket& packet)
     p.copy(packet);
     
     _packets.push_back(p);
+    ++_packet_count;
+    
+//    LOG_MESSAGE << "Total packets in queue: " << _packet_count;
+//    LOG_MESSAGE << "Num packets in queue: " << (DTsize) _packets.size();
 }
 
 void SoundSourceQueue::clear_packets (void)
@@ -92,8 +99,8 @@ const SoundPacket& SoundSourceQueue::next_sound_packet (void)
     
     if (_packets.size() > 0) {
         _sound_packet.as_ref() = _packets.front();
-    
         _packets.pop_front();
+        
         _sound_packet.set_dirty();
     } else {
         // Empty the packet

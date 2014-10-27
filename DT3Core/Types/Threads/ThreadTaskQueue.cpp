@@ -86,6 +86,7 @@ void ThreadTaskQueue::set_num_threads (DTuint n)
     std::for_each(_threads.begin(), _threads.end(),
         [](std::shared_ptr<Helper> &h) {
             h->_helper_done = true;
+            resume(h);
             h->_helper_thread.join();
         }
     );

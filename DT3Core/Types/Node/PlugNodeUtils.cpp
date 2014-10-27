@@ -87,7 +87,7 @@ void PlugNodeUtils::copy_nodes (    const std::list<std::shared_ptr<PlugNode>> &
             }
             
             // Outgoing
-            const std::vector<PlugBase*> &connections = p_iter()->outgoing_connections();
+            const std::vector<PlugBase*> connections = p_iter()->outgoing_connections();
             for (DTuint k = 0; k < connections.size(); ++k) {
                 std::shared_ptr<PlugNode> orig_node_dest = checked_static_cast<PlugNode>(connections[k]->owner()->shared_from_this());
 
@@ -112,7 +112,7 @@ void PlugNodeUtils::copy_nodes (    const std::list<std::shared_ptr<PlugNode>> &
         for (EventIter e_iter(orig_node_src.get()); e_iter; ++e_iter) {
             
             // Incoming
-            const std::vector<Event*> &connections_in = e_iter()->incoming_connections();
+            const std::vector<Event*> connections_in = e_iter()->incoming_connections();
             for (DTuint k = 0; k < connections_in.size(); ++k) {
                 std::shared_ptr<PlugNode> orig_node_dest = checked_static_cast<PlugNode>(connections_in[k]->owner()->shared_from_this());
                 if (!orig_node_dest)    continue;
@@ -131,7 +131,7 @@ void PlugNodeUtils::copy_nodes (    const std::list<std::shared_ptr<PlugNode>> &
             }
             
             // Outgoing
-            const std::vector<Event*> &connections_out = e_iter()->outgoing_connections();
+            const std::vector<Event*> connections_out = e_iter()->outgoing_connections();
             for (DTuint k = 0; k < connections_out.size(); ++k) {
                 std::shared_ptr<PlugNode> orig_node_dest = checked_static_cast<PlugNode>(connections_out[k]->owner()->shared_from_this());
                 if (!orig_node_dest)    continue;
@@ -164,7 +164,7 @@ void PlugNodeUtils::copy_connections     (PlugBase* src, PlugBase* dst)
     if (src->incoming_connection())
         dst->set_incoming_connection(src->incoming_connection());
     
-    const std::vector<PlugBase*>& connections = src->outgoing_connections();
+    const std::vector<PlugBase*> connections = src->outgoing_connections();
     for (DTuint i = 0; i < connections.size(); ++i) {
         dst->add_outgoing_connection(connections[i]);
     }
@@ -205,7 +205,7 @@ void PlugNodeUtils::all_connected_nodes(std::shared_ptr<PlugNode> root, std::lis
                     nodes_and_components.push_back(remove);
             }
 
-            const std::vector<PlugBase*>& outgoing = (**j).outgoing_connections();
+            const std::vector<PlugBase*> outgoing = (**j).outgoing_connections();
             for (DTuint k = 0; k < outgoing.size(); ++k) {
                 std::shared_ptr<PlugNode> remove = checked_static_cast<PlugNode>(outgoing[k]->owner()->shared_from_this());
                 if (std::find(nodes_and_components.begin(), nodes_and_components.end(), remove) == nodes_and_components.end())
@@ -218,7 +218,7 @@ void PlugNodeUtils::all_connected_nodes(std::shared_ptr<PlugNode> root, std::lis
         
         FOR_EACH (j,events) {
         
-            const std::vector<Event*>& incoming = (**j).incoming_connections();
+            const std::vector<Event*> incoming = (**j).incoming_connections();
             for (DTuint k = 0; k < incoming.size(); ++k) {
                 std::shared_ptr<PlugNode> remove = checked_static_cast<PlugNode>(incoming[k]->owner()->shared_from_this());
                 if (std::find(nodes_and_components.begin(), nodes_and_components.end(), remove) == nodes_and_components.end())
@@ -226,7 +226,7 @@ void PlugNodeUtils::all_connected_nodes(std::shared_ptr<PlugNode> root, std::lis
             }
 
 
-            const std::vector<Event*>& outgoing = (**j).outgoing_connections();
+            const std::vector<Event*> outgoing = (**j).outgoing_connections();
             for (DTuint k = 0; k < outgoing.size(); ++k) {
                 std::shared_ptr<PlugNode> remove = checked_static_cast<PlugNode>(outgoing[k]->owner()->shared_from_this());
                 if (std::find(nodes_and_components.begin(), nodes_and_components.end(), remove) == nodes_and_components.end())

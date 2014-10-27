@@ -166,7 +166,7 @@ void ScriptingKeyframesVector3::set_key (void)
 {
 	PROFILER(SCRIPTING);
 
-	const std::vector<PlugBase*> &outgoing = _out.outgoing_connections();
+	const std::vector<PlugBase*> outgoing = _out.outgoing_connections();
 	if (outgoing.size() > 0) {
 		// get first connected plug
 		Plug<Vector3> *outplug = static_cast<Plug<Vector3>*>(*(outgoing.begin()));

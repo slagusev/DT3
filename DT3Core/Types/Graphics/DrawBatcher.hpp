@@ -49,12 +49,12 @@ class Color4b;
 #undef BATCH_C
 #undef BATCH_CF
 
-#define BATCH_V     ((Vector3*) _batch_v_raw.get())
-#define BATCH_N     ((Vector3*) _batch_n_raw.get())
-#define BATCH_T0    ((Vector2*) _batch_t0_raw.get())
-#define BATCH_T1    ((Vector2*) _batch_t1_raw.get())
-#define BATCH_C     ((Color4b*) _batch_c_raw.get())
-#define BATCH_CF    ((Color4f*) _batch_cf_raw.get())
+#define BATCH_V     (reinterpret_cast<Vector3*>(_batch_v_raw.get()))
+#define BATCH_N     (reinterpret_cast<Vector3*>(_batch_n_raw.get()))
+#define BATCH_T0    (reinterpret_cast<Vector2*>(_batch_t0_raw.get()))
+#define BATCH_T1    (reinterpret_cast<Vector2*>(_batch_t1_raw.get()))
+#define BATCH_C     (reinterpret_cast<Color4b*>(_batch_c_raw.get()))
+#define BATCH_CF    (reinterpret_cast<Color4f*>(_batch_cf_raw.get()))
 
 //==============================================================================
 /// Class
@@ -114,8 +114,8 @@ class DrawBatcher {
         DrawBatcher&    v   (const Vector3 &v)                              {   ASSERT(_format & FMT_V);  ASSERT(_cur_index < _size_hint); BATCH_V[_cur_index] = v;                return *this;    }
         DrawBatcher&    v   (DTfloat x, DTfloat y, DTfloat z)               {   ASSERT(_format & FMT_V);  ASSERT(_cur_index < _size_hint); BATCH_V[_cur_index] = Vector3(x,y,z);   return *this;    }
 
-        DrawBatcher&    n   (const Vector3 &n)                              {   ASSERT(_format & FMT_N);  ASSERT(_cur_index < _size_hint); BATCH_V[_cur_index] = n;                return *this;    }
-        DrawBatcher&    n   (DTfloat x, DTfloat y, DTfloat z)               {   ASSERT(_format & FMT_N);  ASSERT(_cur_index < _size_hint); BATCH_V[_cur_index] = Vector3(x,y,z);   return *this;    }
+        DrawBatcher&    n   (const Vector3 &n)                              {   ASSERT(_format & FMT_N);  ASSERT(_cur_index < _size_hint); BATCH_N[_cur_index] = n;                return *this;    }
+        DrawBatcher&    n   (DTfloat x, DTfloat y, DTfloat z)               {   ASSERT(_format & FMT_N);  ASSERT(_cur_index < _size_hint); BATCH_N[_cur_index] = Vector3(x,y,z);   return *this;    }
 
         DrawBatcher&    t0  (const Vector2 &t0)                             {   ASSERT(_format & FMT_T0); ASSERT(_cur_index < _size_hint); BATCH_T0[_cur_index] = t0;              return *this;    }
         DrawBatcher&    t0  (DTfloat s, DTfloat t)                          {   ASSERT(_format & FMT_T0); ASSERT(_cur_index < _size_hint); BATCH_T0[_cur_index] = Vector2(s,t);    return *this;    }
@@ -130,10 +130,9 @@ class DrawBatcher {
         DrawBatcher&    cf  (const Color4f &c)                              {   ASSERT(_format & FMT_CF); ASSERT(_cur_index < _size_hint); BATCH_CF[_cur_index] = c;               return *this;    }
         DrawBatcher&    cf  (const Color4b &c)                              {   ASSERT(_format & FMT_CF); ASSERT(_cur_index < _size_hint); BATCH_CF[_cur_index] = Color4f(c);      return *this;    }
         DrawBatcher&    cf  (DTfloat r, DTfloat g, DTfloat b, DTfloat a)    {   ASSERT(_format & FMT_CF); ASSERT(_cur_index < _size_hint); BATCH_CF[_cur_index] = Color4f(r,g,b,a);return *this;    }
-
 	
 		/// Perform the drawing of the batch
-		void			flush				(void);
+		void			draw				(DTboolean clear_when_done = true);
 
 	private:
         void            screen_opened       (DTuint width, DTuint height);
@@ -154,7 +153,7 @@ class DrawBatcher {
     
         std::shared_ptr<Callback<DrawBatcher*>>     _flush_callback;
 
-        // These are byte arrays because constructors were getting called all the time
+        // These are raw byte arrays
         std::shared_ptr<DTubyte>                    _batch_v_raw;
         std::shared_ptr<DTubyte>                    _batch_n_raw;
         std::shared_ptr<DTubyte>                    _batch_t0_raw;

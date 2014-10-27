@@ -2,22 +2,24 @@
 #define DT3_HWVIDEOPLAYERFF
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFF.hpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFF.hpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "BaseInclude.hpp"
+#include "DT3Core/Types/Base/BaseInclude.hpp"
 
-#include "FilePath.hpp"
-#include "URL.hpp"
-#include "TextureResource.hpp"
-#include "Callback.hpp"
-#include "Rectangle.hpp"
+#include "DT3Core/Types/FileBuffer/FilePath.hpp"
+#include "DT3Core/Types/Network/URL.hpp"
+#include "DT3Core/Types/Utility/Callback.hpp"
+#include "DT3Core/Types/Math/Rectangle.hpp"
+#include "DT3Core/Resources/ResourceTypes/TextureResource2D.hpp"
+
+#include "DT3HWVideoPlayer/FFmpeg/HWVideoPlayerFFInstance.hpp"
 
 extern "C" {
     #include "libavcodec/avcodec.h"
@@ -35,7 +37,7 @@ namespace DT3 {
 /// Forward declarations
 //==============================================================================
 
-class TextureResource;
+class TextureResource2D;
 
 //==============================================================================
 /// Class
@@ -50,13 +52,13 @@ class HWVideoPlayerFF {
     
 	public:
     
-        typedef void*                   HWVideoPlayerType;
+        typedef std::shared_ptr<HWVideoPlayerFFInstance>    HWVideoPlayerType;
     
 		/// Initialize the FFMpeg Subsystem
-        static void                         initialize              (void);
+        static void                         initialize          (void);
 
 		/// Destroy the FFMpeg Subsystem
-        static void                         destroy                 (void);
+        static void                         destroy             (void);
 
 		/// Open a video file
 		/// \param path path to video file
@@ -76,7 +78,7 @@ class HWVideoPlayerFF {
         /// Checks if streaming video is likely to finish loading in time to play unterrupted
         /// \param hwvp video handle
         /// \return Is playback likely to succeed skip free
-        static DTboolean                    isPlaybackLikelyToKeepUp    (HWVideoPlayerType hwvp);
+        static DTboolean                    is_playback_likely_to_keep_up   (HWVideoPlayerType hwvp);
 
 		/// Play the currently opened video
         /// \param hwvp video handle
@@ -101,7 +103,7 @@ class HWVideoPlayerFF {
 		/// Returns the length of the video
         /// \param hwvp video handle
         /// \return length (in seconds) of the video
-        static DTfloat                      currentTime         (HWVideoPlayerType hwvp);
+        static DTfloat                      current_time        (HWVideoPlayerType hwvp);
 
 		/// Seeks to a position in the video
         /// \param hwvp video handle
@@ -119,21 +121,27 @@ class HWVideoPlayerFF {
 		/// Returns the state of playback of the video
         /// \param hwvp video handle
         /// \return lstate of the video
-        static State                        getState            (HWVideoPlayerType hwvp);
+        static State                        state               (HWVideoPlayerType hwvp);
 
 		/// Returns the size of the video
         /// \param hwvp video handle
 		/// \param width width of video
 		/// \param height height of video
-        static void                         getSize             (HWVideoPlayerType hwvp, DTuint &width, DTuint &height);
+        static void                         size                (HWVideoPlayerType hwvp, DTuint &width, DTuint &height);
     
 		/// Returns the current frame for the video
         /// \param hwvp video handle
         /// \return current frame of the video
-        static std::shared_ptr<TextureResource>    getFrame            (HWVideoPlayerType hwvp);
+        static std::shared_ptr<TextureResource2D> frame         (HWVideoPlayerType hwvp);
+    
+		/// Returns a pixel from the current frame
+        /// \param x x location
+        /// \param y y location
+        /// \return current pixel from the video
+        static Color4f                      sample_pixel        (HWVideoPlayerType hwvp, DTint x, DTint y);
     
     private:
-        static int                          lockManager         (void **mutex, enum AVLockOp op);
+        static int                          lock_manager        (void **mutex, enum AVLockOp op);
     
 };
 

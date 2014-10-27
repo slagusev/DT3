@@ -73,7 +73,7 @@ void EdLevelManipScale::draw (EdLevelToolWindow *parent, const std::shared_ptr<C
                             transform * axis,
                             Color4b::white,
                             0.05F);
-    b.flush();
+    b.draw();
 
 
     // X Axis
@@ -91,7 +91,7 @@ void EdLevelManipScale::draw (EdLevelToolWindow *parent, const std::shared_ptr<C
                             transform * axis,
                             Color4b::red,
                             0.05F);
-    b.flush();
+    b.draw();
 
     // Y Axis
     ::glLoadName(PLUS_Y);
@@ -108,7 +108,7 @@ void EdLevelManipScale::draw (EdLevelToolWindow *parent, const std::shared_ptr<C
                             transform * axis,
                             Color4b::green,
                             0.05F);
-    b.flush();
+    b.draw();
 
     // Z Axis
     ::glLoadName(PLUS_Z);
@@ -125,7 +125,7 @@ void EdLevelManipScale::draw (EdLevelToolWindow *parent, const std::shared_ptr<C
                             transform * axis,
                             Color4b::blue,
                             0.05F);
-    b.flush();
+    b.draw();
     
     ::glPopName();
     

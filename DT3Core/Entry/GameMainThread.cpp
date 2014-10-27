@@ -38,7 +38,7 @@
 
 #include DT3_HAL_INCLUDE_PATH
 
-#ifdef DTP_USE_PORTAL
+#if DTP_USE_PORTAL
     #include "DTPortalSDK.hpp"
 #endif
 
@@ -70,7 +70,7 @@ void GameMainThread::initialize_engine_impl (void)
     // Initialize engine
     //
     
-#ifdef DTP_USE_PORTAL
+#if DTP_USE_PORTAL
     // Start portal SDK
     DTPortal::initialize(DTP_PUBLIC_ID, DTP_PRIVATE_KEY, HAL::save_dir().full_path().c_str());
 #endif
@@ -87,7 +87,9 @@ void GameMainThread::initialize_engine_impl (void)
     std::thread import_config_thread(Configure::import_config, FilePath("{config.txt}"));
 
     // Start up thread task queue threads
+#if DT3_ENABLE_TASK_QUEUE
     ThreadTaskQueue::set_num_threads(HAL::num_CPU_cores());
+#endif
 
 	// Warning if in debug mode
 #if DT3_DEBUG == 1
@@ -169,6 +171,11 @@ void GameMainThread::destroy_engine_impl (void)
 
     _state = STATE_IDLE;
 
+    // Shutdown up thread task queue threads
+#if DT3_ENABLE_TASK_QUEUE
+    ThreadTaskQueue::set_num_threads(0);
+#endif
+
 	//
 	// Destroy Managers
 	//
@@ -195,7 +202,7 @@ void GameMainThread::destroy_engine_impl (void)
 	StaticInitializer::destroy();
     
     
-#ifdef DTP_USE_PORTAL
+#if DTP_USE_PORTAL
     // Uninitialize the portal
     DTPortal::uninitialize();
 #endif
@@ -508,7 +515,7 @@ void GameMainThread::loop (void)
 	if (GameMainThread::_state == GameMainThread::STATE_INITIALIZED_AND_SHOWN) {
         System::application()->run_event_loop ();
 		
-#ifdef DTP_USE_PORTAL
+#if DTP_USE_PORTAL
 		DTPortal::pump_results();
 #endif
 	}

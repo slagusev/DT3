@@ -555,8 +555,6 @@ void EdLevelWorldWindow::pickGL(QPointF pos, EdLevelToolEvent &tool_event)
     // 5. Draw the scene
     //
         
-    //DrawUtils::activate_camera(_camera);
-
     // Replace the camera temporarily in the world
     std::shared_ptr<CameraObject> save_camera = _document->world()->camera();
     _document->world()->set_camera(_camera);
@@ -1093,7 +1091,7 @@ void EdLevelWorldWindow::drawGrid (const std::shared_ptr<CameraObject> &camera)
     _b.batch_split();
     
     _b.batch_end();
-    _b.flush();
+    _b.draw();
 }
 
 //==============================================================================

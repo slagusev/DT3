@@ -2,18 +2,18 @@
 #define DT3_HWVIDEOPLAYERFFCOMMANDQUEUE
 //==============================================================================
 ///	
-///	URL: 			HWVideoPlayerFFCommandQueue.hpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	URL: HWVideoPlayerFFCommandQueue.hpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "BaseInclude.hpp"
-#include "Mutex.hpp"
+#include "DT3Core/Types/Base/BaseInclude.hpp"
 #include <list>
+#include <mutex>
 
 extern "C" {
     #include "libavcodec/avcodec.h"
@@ -50,28 +50,28 @@ class HWVideoPlayerFFCommandQueue {
         };
     
         /// Pushes the play command
-        void            pushPlay        (void);
+        void            push_play           (void);
     
         /// Pushes the play command
-        void            pushPause       (void);
+        void            push_pause          (void);
 
         /// Pushes the seek command
         /// \param time Time to seek to
-        void            pushSeek        (DTdouble time);
+        void            push_seek           (DTdouble time);
     
     
         /// Gets the next command in the queue
-        DTboolean       popCommand      (Command &command, DTdouble &param);
+        DTboolean       pop_command         (Command &command, DTdouble &param);
     
     private:
 
         struct CommandEntry {
-            Command     _command;
-            DTdouble    _parameter;
+            Command             _command;
+            DTdouble            _parameter;
         };
 
-        std::list<CommandEntry>  _commands;
-        Mutex               _lock;
+        std::list<CommandEntry> _commands;
+        std::mutex              _lock;
 };
 
 //==============================================================================

@@ -2,17 +2,16 @@
 #define DT3_HWVIDEOPLAYERFFDATASOURCEBASE
 //==============================================================================
 ///	
-///	File: 			HWVideoPlayerFFDataSourceBase.hpp
-///	Author:			Tod Baudais
-///					Copyright (C) 2000-2007. All rights reserved.
+///	File: HWVideoPlayerFFDataSourceBase.hpp
 ///	
-///	Date Created:	2/12/2013
-///	Changes:		-none-
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///
+/// This file is subject to the terms and conditions defined in
+/// file 'LICENSE.txt', which is part of this source code package.
 ///	
 //==============================================================================
 
-#include "BaseRefCounted.hpp"
-#include "SpinLock.hpp"
+#include "DT3Core/Types/Base/BaseClass.hpp"
 
 extern "C" {
     #include "libavcodec/avcodec.h"
@@ -31,7 +30,7 @@ namespace DT3 {
 /// Class
 //==============================================================================
 
-class HWVideoPlayerFFDataSourceBase: public BaseRefCounted {
+class HWVideoPlayerFFDataSourceBase: public BaseClass {
     public:
     
                                         HWVideoPlayerFFDataSourceBase   (void);
@@ -42,49 +41,33 @@ class HWVideoPlayerFFDataSourceBase: public BaseRefCounted {
         virtual                         ~HWVideoPlayerFFDataSourceBase	(void);
     
 	public:
-    
-		/// Open a video data source
-        /// \return Error code
-        virtual DTerr           open                (void) = 0;
-    
+        
 		/// Closes a video source
-        virtual void            close               (void) = 0;
+        virtual void                close               (void) {};
     
-        /// Returns AVIOContext
-        AVIOContext*            avIOContext         (void)  {   return _av_io_context;  }
+        /// Returns size of file
+        virtual DTsize              size                (void) {    return 0;   }
 
         /// Returns Format Context
-        AVFormatContext*        formatContext       (void)  {   return _format_context;  }
+        virtual AVFormatContext*    format_context      (void) = 0;
 
         /// Index of video stream
-        int                     videoStreamIndex    (void)  {   return _video_stream_index;  }
+        virtual int                 video_stream_index  (void) = 0;
 
         /// Index of audio stream
-        int                     audioStreamIndex    (void)  {   return _audio_stream_index;  }
+        virtual int                 audio_stream_index  (void) = 0;
     
         /// Returns Codec Context
-        AVCodecContext*         videoCodecContext   (void)  {   return _video_codec_context;  }
+        virtual AVCodecContext*     video_codec_context (void) = 0;
 
         /// Returns Codec Context
-        AVCodecContext*         audioCodecContext   (void)  {   return _audio_codec_context;  }
+        virtual AVCodecContext*     audio_codec_context (void) = 0;
     
         /// Returns AVStream
-        AVStream*               videoStream         (void)  {   return _video_stream_index >= 0 ? _format_context->streams[_video_stream_index] : NULL; }
+        virtual AVStream*           video_stream        (void) = 0;
 
         /// Returns AVStream
-        AVStream*               audioStream         (void)  {   return _audio_stream_index >= 0 ? _format_context->streams[_audio_stream_index] : NULL; }
-    
-    protected:
-        DTubyte                 *_buffer;
-    
-        AVIOContext             *_av_io_context;
-        AVFormatContext         *_format_context;
-
-        int                     _video_stream_index;
-        int                     _audio_stream_index;
-    
-        AVCodecContext          *_video_codec_context;
-        AVCodecContext          *_audio_codec_context;
+        virtual AVStream*           audio_stream        (void) = 0;
 
 };
 

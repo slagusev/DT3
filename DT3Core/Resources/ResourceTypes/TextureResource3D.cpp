@@ -218,7 +218,8 @@ void TextureResource3D::set_textels (const DTint width, const DTint height, cons
 
 void TextureResource3D::activate (DTuint texture_slot)
 {
-    if (_resource_3D)   System::renderer()->attach_texture(texture_slot, _resource_3D);
+    if (_resource_3D)
+        System::renderer()->attach_texture(texture_slot, _resource_3D);
 }
 
 //==============================================================================

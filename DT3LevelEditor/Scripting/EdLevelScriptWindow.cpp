@@ -959,33 +959,33 @@ void EdLevelScriptWindow::adjustGroupBounds (std::shared_ptr<Group> group)
 //==============================================================================
 //==============================================================================
 
-void EdLevelScriptWindow::syncConnections (std::shared_ptr<PlugNode> node)
+void EdLevelScriptWindow::syncConnections (PlugNode *node)
 {
     // Since a node can be added that already has a bunch of plug connections, we have to iterate
     // through them and be sure that they are added.
     
     // Plugs first
-    for (PlugIter p_iter(node.get()); p_iter; ++p_iter) {
+    for (PlugIter p_iter(node); p_iter; ++p_iter) {
         PlugBase* plug = p_iter();
     
         onConnectPlug (plug->incoming_connection(), plug);
 
-        const std::vector<PlugBase*> &connections = plug->outgoing_connections();
+        const std::vector<PlugBase*> connections = plug->outgoing_connections();
         for (DTuint k = 0; k < connections.size(); ++k) {
             onConnectPlug (plug, connections[k]);
         }
 	}
     
     // Events second
-    for (EventIter e_iter(node.get()); e_iter; ++e_iter) {
+    for (EventIter e_iter(node); e_iter; ++e_iter) {
         Event* event = e_iter();
         
-        const std::vector<Event*> &connections_in = event->incoming_connections();
+        const std::vector<Event*> connections_in = event->incoming_connections();
         for (DTuint k = 0; k < connections_in.size(); ++k) {
             onConnectEvent (connections_in[k], event);
         }
     
-        const std::vector<Event*> &connections_out = event->outgoing_connections();
+        const std::vector<Event*> connections_out = event->outgoing_connections();
         for (DTuint k = 0; k < connections_out.size(); ++k) {
             onConnectEvent (event, connections_out[k]);
         }
@@ -1027,7 +1027,7 @@ void EdLevelScriptWindow::onAddNode (WorldNode *node_raw)
 
     item->layoutNode();
 
-    syncConnections(node);
+    syncConnections(node_raw);
     
     // Do components if necessary
     std::shared_ptr<ObjectBase> base_object = checked_cast<ObjectBase>(node);
@@ -1035,7 +1035,7 @@ void EdLevelScriptWindow::onAddNode (WorldNode *node_raw)
         std::list<std::shared_ptr<ComponentBase>> c = base_object->all_components();
         
         FOR_EACH (i,c) {
-            syncConnections(*i);
+            syncConnections(i->get());
         }
     }
     
@@ -1116,7 +1116,7 @@ void EdLevelScriptWindow::onAddComponent (ComponentBase *component_raw)
         i->_scene_object->layoutNode();
     }
 
-    syncConnections(component);
+    syncConnections(component_raw);
 }
 
 void EdLevelScriptWindow::onRemoveComponent (ComponentBase *component_raw)

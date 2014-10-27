@@ -189,7 +189,7 @@ void SimpleSoundSourceObject::play (PlugNode *sender)
     // Start getting ticks
     world()->register_for_tick(this, make_callback(this, &type::tick));
     
-    System::audio_renderer()->play(_source, checked_static_cast<World>(world()->shared_from_this()), NULL);
+    System::audio_renderer()->play(_source, world(), NULL);
 
     tick (0.0F);    // Update gain and pitch
 }

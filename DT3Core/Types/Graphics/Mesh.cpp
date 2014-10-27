@@ -14,6 +14,10 @@
 #include "DT3Core/Types/Utility/Assert.hpp"
 #include "DT3Core/Types/Utility/ConsoleStream.hpp"
 
+extern "C" {
+    extern unsigned int hashlittle( const void *key, unsigned int length, unsigned int initval);
+}
+
 //==============================================================================
 //==============================================================================
 
@@ -43,7 +47,7 @@ Mesh::Mesh (const Mesh &rhs)
         _uvs_stream_1(rhs._uvs_stream_1),
         _weights_index_stream(rhs._weights_index_stream),
         _weights_strength_stream(rhs._weights_strength_stream),
-        _indices_stream(rhs._indices_stream)
+        _index_stream(rhs._index_stream)
 {
 
 }
@@ -57,7 +61,7 @@ Mesh::Mesh (Mesh &&rhs)
         _uvs_stream_1(std::move(rhs._uvs_stream_1)),
         _weights_index_stream(std::move(rhs._weights_index_stream)),
         _weights_strength_stream(std::move(rhs._weights_strength_stream)),
-        _indices_stream(std::move(rhs._indices_stream))
+        _index_stream(std::move(rhs._index_stream))
 {
 
 }
@@ -72,7 +76,7 @@ Mesh& Mesh::operator = (const Mesh &rhs)
     _uvs_stream_1 = rhs._uvs_stream_1;
     _weights_index_stream = rhs._weights_index_stream;
     _weights_strength_stream = rhs._weights_strength_stream;
-    _indices_stream = rhs._indices_stream;
+    _index_stream = rhs._index_stream;
 
     return (*this);
 }	
@@ -87,7 +91,7 @@ Mesh& Mesh::operator = (Mesh &&rhs)
     _uvs_stream_1 = std::move(rhs._uvs_stream_1);
     _weights_index_stream = std::move(rhs._weights_index_stream);
     _weights_strength_stream = std::move(rhs._weights_strength_stream);
-    _indices_stream = std::move(rhs._indices_stream);
+    _index_stream = std::move(rhs._index_stream);
 
     return (*this);
 }	
@@ -104,15 +108,27 @@ void Mesh::generate_normals (void)
 {
     ASSERT(_vertex_stream.size() > 0);
 
+    const DTuint HASH_TABLE_SIZE = 1021;
+
     _normals_stream.clear();
     _normals_stream.resize(_vertex_stream.size(), Vector3(0.0F,0.0F,0.0F));
+    
+    // Fill hash table
+    std::list<DTuint> vert_hashes[HASH_TABLE_SIZE];
+    
+    for (DTuint i = 0; i < _vertex_stream.size(); ++i) {
+        DTuint h = hash_vertex (i, true);
+        
+        vert_hashes[h % HASH_TABLE_SIZE].push_back(i);
+    }
 
-	for (DTuint i = 0; i < _indices_stream.size(); ++i) {
+    // Accumulate normals
+	for (DTuint i = 0; i < _index_stream.size(); ++i) {
 		DTuint ai,bi,ci;
 		
-		ai = _indices_stream[i].v[0];
-		bi = _indices_stream[i].v[1];
-		ci = _indices_stream[i].v[2];
+		ai = _index_stream[i].v[0];
+		bi = _index_stream[i].v[1];
+		ci = _index_stream[i].v[2];
 		
 		ASSERT(ai < _vertex_stream.size());
 		ASSERT(bi < _vertex_stream.size());
@@ -120,10 +136,32 @@ void Mesh::generate_normals (void)
 		
 		Vector3 n = Vector3::cross(_vertex_stream[bi] - _vertex_stream[ai], _vertex_stream[ci] - _vertex_stream[ai]);
 		n.normalize();
+        
+        // Hashes of vertex positions
+        DTuint h0 = hash_vertex(ai, true);
+        DTuint h1 = hash_vertex(bi, true);
+        DTuint h2 = hash_vertex(ci, true);
+        
+        // Get hash entries for verts
+        std::list<DTuint> &list0 = vert_hashes[h0 % HASH_TABLE_SIZE];
+        std::list<DTuint> &list1 = vert_hashes[h1 % HASH_TABLE_SIZE];
+        std::list<DTuint> &list2 = vert_hashes[h2 % HASH_TABLE_SIZE];
+        
+        for (auto j : list0) {
+            if (equal_vertex(ai, j, true))
+                _normals_stream[j] += n;
+        }
+
+        for (auto j : list1) {
+            if (equal_vertex(bi, j, true))
+                _normals_stream[j] += n;
+        }
+
+        for (auto j : list2) {
+            if (equal_vertex(ci, j, true))
+                _normals_stream[j] += n;
+        }
 		
-		_normals_stream[ai] += n;
-		_normals_stream[bi] += n;
-		_normals_stream[ci] += n;
 	}
 	
 	for (DTuint i = 0; i < _vertex_stream.size(); ++i)
@@ -143,10 +181,10 @@ void Mesh::generate_tangents	(void)
     tan1.resize(_vertex_stream.size(), Vector3(0.0F,0.0F,0.0F));
     tan2.resize(_vertex_stream.size(), Vector3(0.0F,0.0F,0.0F));
 
-    for (DTuint face_index = 0; face_index < _indices_stream.size(); ++face_index) {
-		DTuint i1 = _indices_stream[face_index].v[0];
-		DTuint i2 = _indices_stream[face_index].v[1];
-		DTuint i3 = _indices_stream[face_index].v[2];
+    for (DTuint face_index = 0; face_index < _index_stream.size(); ++face_index) {
+		DTuint i1 = _index_stream[face_index].v[0];
+		DTuint i2 = _index_stream[face_index].v[1];
+		DTuint i3 = _index_stream[face_index].v[2];
 		
 		ASSERT(i1 < _vertex_stream.size());
 		ASSERT(i2 < _vertex_stream.size());
@@ -222,66 +260,79 @@ void Mesh::generate_tangents	(void)
 //==============================================================================
 //==============================================================================	
 
-#define TOBITS(x)  *((DTuint*)(&x))
-
-DTuint Mesh::hash_vertex (DTuint i)
+DTuint Mesh::hash_vertex (DTuint i, DTboolean vertex_only)
 {
     DTuint h = 0;
     
+    if (_smoothing_group.size() > 0) {
+        h = hashlittle( (unsigned char *) &_smoothing_group[i], (unsigned int) sizeof(_smoothing_group[i]), h);
+    }
+
     if (_vertex_stream.size() > 0) {
-        h ^= TOBITS(_vertex_stream[i].x);
-        h ^= TOBITS(_vertex_stream[i].y);
-        h ^= TOBITS(_vertex_stream[i].z);
+        h = hashlittle( (unsigned char *) &_vertex_stream[i].x, (unsigned int) sizeof(_vertex_stream[i].x), h);
+        h = hashlittle( (unsigned char *) &_vertex_stream[i].y, (unsigned int) sizeof(_vertex_stream[i].y), h);
+        h = hashlittle( (unsigned char *) &_vertex_stream[i].z, (unsigned int) sizeof(_vertex_stream[i].z), h);
     }
 
-    if (_uvs_stream_0.size() > 0) {
-        h ^= TOBITS(_uvs_stream_0[i].u);
-        h ^= TOBITS(_uvs_stream_0[i].v);
-    }
+    if (!vertex_only) {
+        if (_uvs_stream_0.size() > 0) {
+            h = hashlittle( (unsigned char *) &_uvs_stream_0[i].u, (unsigned int) sizeof(_uvs_stream_0[i].u), h);
+            h = hashlittle( (unsigned char *) &_uvs_stream_0[i].v, (unsigned int) sizeof(_uvs_stream_0[i].v), h);
+        }
 
-    if (_uvs_stream_1.size() > 0) {
-        h ^= TOBITS(_uvs_stream_1[i].u);
-        h ^= TOBITS(_uvs_stream_1[i].v);
-    }
+        if (_uvs_stream_1.size() > 0) {
+            h = hashlittle( (unsigned char *) &_uvs_stream_1[i].u, (unsigned int) sizeof(_uvs_stream_1[i].u), h);
+            h = hashlittle( (unsigned char *) &_uvs_stream_1[i].v, (unsigned int) sizeof(_uvs_stream_1[i].v), h);
+        }
 
-    if (_normals_stream.size() > 0) {
-        h ^= TOBITS(_normals_stream[i].x);
-        h ^= TOBITS(_normals_stream[i].y);
-        h ^= TOBITS(_normals_stream[i].z);
+        if (_normals_stream.size() > 0) {
+            h = hashlittle( (unsigned char *) &_normals_stream[i].x, (unsigned int) sizeof(_normals_stream[i].x), h);
+            h = hashlittle( (unsigned char *) &_normals_stream[i].y, (unsigned int) sizeof(_normals_stream[i].y), h);
+            h = hashlittle( (unsigned char *) &_normals_stream[i].z, (unsigned int) sizeof(_normals_stream[i].z), h);
+        }
+
     }
 
     return h;
 }
 
-DTboolean Mesh::equal_vertex(DTuint v1, DTuint v2)
+DTboolean Mesh::equal_vertex(DTuint v1, DTuint v2, DTboolean vertex_only)
 {
     if (v1 == v2)
         return true;
 
     // Test to see if the vertices are the same
+    if (_smoothing_group.size() > 0 && (_smoothing_group[v1] != _smoothing_group[v2]))
+        return false;
+
     if (_vertex_stream.size() > 0 && (_vertex_stream[v1] != _vertex_stream[v2]))
         return false; 
-                            
-    if (_normals_stream.size() > 0 && (_normals_stream[v1] != _normals_stream[v2]))
+
+    if (_normals_stream.size() > 0 && (Vector3::dot(_normals_stream[v1], _normals_stream[v2]) < 0.5F))
         return false; 
 
-    if (_tangents_stream.size() > 0 && (_tangents_stream[v1] != _tangents_stream[v2]))
-        return false; 
+    if (!vertex_only) {
 
-    if (_colors_stream.size() > 0 && (_colors_stream[v1] != _colors_stream[v2]))
-        return false; 
+        if (_tangents_stream.size() > 0 && (_tangents_stream[v1] != _tangents_stream[v2]))
+            return false; 
 
-    if (_uvs_stream_0.size() > 0 && (_uvs_stream_0[v1] != _uvs_stream_0[v2]))
-        return false; 
-            
-    if (_uvs_stream_1.size() > 0 && (_uvs_stream_1[v1] != _uvs_stream_1[v2]))
-        return false; 
+        if (_colors_stream.size() > 0 && (_colors_stream[v1] != _colors_stream[v2]))
+            return false; 
 
-    if (_weights_index_stream.size() > 0 && (_weights_index_stream[v1] != _weights_index_stream[v2]))
-        return false; 
+        if (_uvs_stream_0.size() > 0 && (_uvs_stream_0[v1] != _uvs_stream_0[v2]))
+            return false; 
+                
+        if (_uvs_stream_1.size() > 0 && (_uvs_stream_1[v1] != _uvs_stream_1[v2]))
+            return false; 
 
-    if (_weights_strength_stream.size() > 0 && (_weights_strength_stream[v1] != _weights_strength_stream[v2]))
-        return false; 
+        if (_weights_index_stream.size() > 0 && (_weights_index_stream[v1] != _weights_index_stream[v2]))
+            return false; 
+
+        if (_weights_strength_stream.size() > 0 && (_weights_strength_stream[v1] != _weights_strength_stream[v2]))
+            return false; 
+
+
+    }
 
     return true;
 }
@@ -304,6 +355,8 @@ void Mesh::collapse_verts (void)
     std::vector<Vector2>        uvs_stream_1;
     std::vector<WeightsIndex>   weights_index_stream;
     std::vector<Vector4>        weights_strength_stream;
+    
+    std::vector<DTuint>         smoothing_group;
 
     if (_vertex_stream.size() > 0)              vertex_stream.resize(num_old_verts);
     if (_normals_stream.size() > 0)             normals_stream.resize(num_old_verts);
@@ -313,6 +366,7 @@ void Mesh::collapse_verts (void)
     if (_uvs_stream_1.size() > 0)               uvs_stream_1.resize(num_old_verts);
     if (_weights_index_stream.size() > 0)       weights_index_stream.resize(num_old_verts);
     if (_weights_strength_stream.size() > 0)    weights_strength_stream.resize(num_old_verts);
+    if (_smoothing_group.size() > 0)            smoothing_group.resize(num_old_verts);
     
     // Hash all vertices
     std::list<std::pair<DTuint, DTuint>> vert_hashes[HASH_TABLE_SIZE];   // new index, old index
@@ -342,7 +396,10 @@ void Mesh::collapse_verts (void)
             if (uvs_stream_1.size() > 0)            uvs_stream_1[num_new_verts] = _uvs_stream_1[i];
             if (weights_index_stream.size() > 0)    weights_index_stream[num_new_verts] = _weights_index_stream[i];
             if (weights_strength_stream.size() > 0) weights_strength_stream[num_new_verts] = _weights_strength_stream[i];
-                    
+            if (weights_strength_stream.size() > 0) weights_strength_stream[num_new_verts] = _weights_strength_stream[i];
+
+            if (smoothing_group.size() > 0)         smoothing_group[num_new_verts] = _smoothing_group[i];
+            
             vert_hashes[h % HASH_TABLE_SIZE].push_back( std::make_pair(num_new_verts, i) );
             
             ++num_new_verts;
@@ -350,10 +407,10 @@ void Mesh::collapse_verts (void)
     }
     
     // Time to re-wire the face indices
-    for (DTuint f = 0; f < _indices_stream.size(); ++f) {
-        DTuint &v0 = _indices_stream[f].v[0];
-        DTuint &v1 = _indices_stream[f].v[1];
-        DTuint &v2 = _indices_stream[f].v[2];
+    for (DTuint f = 0; f < _index_stream.size(); ++f) {
+        DTuint &v0 = _index_stream[f].v[0];
+        DTuint &v1 = _index_stream[f].v[1];
+        DTuint &v2 = _index_stream[f].v[2];
         
         ASSERT(v0 < num_old_verts);
         ASSERT(v1 < num_old_verts);
@@ -411,6 +468,7 @@ void Mesh::collapse_verts (void)
 	if (uvs_stream_1.size() > 0)            uvs_stream_1.resize(num_new_verts);
 	if (weights_index_stream.size() > 0)    weights_index_stream.resize(num_new_verts);
 	if (weights_strength_stream.size() > 0) weights_strength_stream.resize(num_new_verts);
+	if (smoothing_group.size() > 0)         smoothing_group.resize(num_new_verts);
     
     _vertex_stream = vertex_stream;
     _normals_stream = normals_stream;
@@ -420,9 +478,11 @@ void Mesh::collapse_verts (void)
     _uvs_stream_1 = uvs_stream_1;
     _weights_index_stream = weights_index_stream;
     _weights_strength_stream = weights_strength_stream;
+    _smoothing_group = smoothing_group;
     
-    LOG_MESSAGE << "Old size: " << num_old_verts;
-    LOG_MESSAGE << "New size: " << num_new_verts;
+    LOG_MESSAGE << "Mesh Collapsing results for " << name();
+    LOG_MESSAGE << " Old size: " << num_old_verts;
+    LOG_MESSAGE << " New size: " << num_new_verts;
 
 }
 

@@ -73,7 +73,7 @@ void EdLevelManipRotate::draw (EdLevelToolWindow *parent, const std::shared_ptr<
                             transform * axis,
                             Color4b::red,
                             1.0F);
-    b.flush();
+    b.draw();
     
     // Y Axis
     ::glLoadName(ROTATE_Y);
@@ -90,7 +90,7 @@ void EdLevelManipRotate::draw (EdLevelToolWindow *parent, const std::shared_ptr<
                             transform * axis,
                             Color4b::green,
                             1.0F);
-    b.flush();
+    b.draw();
 
     // Z Axis
     ::glLoadName(ROTATE_Z);
@@ -107,7 +107,7 @@ void EdLevelManipRotate::draw (EdLevelToolWindow *parent, const std::shared_ptr<
                             transform * axis,
                             Color4b::blue,
                             1.0F);
-    b.flush();
+    b.draw();
     
     // Rotate
     ::glLoadName(ROTATE_SCREEN);
@@ -126,7 +126,7 @@ void EdLevelManipRotate::draw (EdLevelToolWindow *parent, const std::shared_ptr<
                             transform * axis,
                             Color4b::white,
                             1.0F);
-    b.flush();
+    b.draw();
     
     ::glPopName();
 
