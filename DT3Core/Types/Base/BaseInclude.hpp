@@ -258,7 +258,7 @@ namespace DT3 {
 #elif DT3_OS == DT3_WINDOWS
     #define DT3_HAL_INCLUDE_PATH "DT3Windows8/HAL.hpp"
 #elif DT3_OS == DT3_LINUX
-    #define DT3_HAL_INCLUD_PATH "DT3Linux/HAL.hpp"
+    #define DT3_HAL_INCLUDE_PATH "DT3Linux/HAL.hpp"
 #endif
 
 //==============================================================================
