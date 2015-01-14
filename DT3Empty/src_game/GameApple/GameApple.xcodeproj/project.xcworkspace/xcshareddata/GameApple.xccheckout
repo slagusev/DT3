@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>9D6E057B-3DEA-4364-8310-47627F9DE248</string>
+	<key>IDESourceControlProjectName</key>
+	<string>GameApple</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>EE618615-2B12-4316-9109-B68D9AAF1EC2</key>
+		<string>https://github.com/smellslikedonkey/DT3Empty.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>src_game/GameApple/GameApple.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>EE618615-2B12-4316-9109-B68D9AAF1EC2</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/smellslikedonkey/DT3Empty.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>EE618615-2B12-4316-9109-B68D9AAF1EC2</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>EE618615-2B12-4316-9109-B68D9AAF1EC2</string>
+			<key>IDESourceControlWCCName</key>
+			<string>DT3Empty</string>
+		</dict>
+	</array>
+</dict>
+</plist>
