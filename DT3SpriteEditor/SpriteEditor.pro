@@ -3,13 +3,105 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
-DEPENDPATH += . . Source
-INCLUDEPATH += . Source
+TARGET = SpriteEditor
+#DEPENDPATH += . . Source ..
+#INCLUDEPATH += . Source
+QMAKE_CXXFLAGS+= -std=c++11 -Wunused-parameter -Wextra  \
+        -fpic -fno-short-enums -fno-strict-aliasing -finline-limit=64
+
+QMAKE_LFLAGS +=  -g -std=c++11
+
+DEPENDPATH +=  . ../../DT3 ../DT3Core/Resources/ResourceTypes
+INCLUDEPATH += . ../../DT3 ../DT3Core/Resources/ResourceTypes
+
+INCLUDEPATH += \
+    ../DT3Sprites/Types \
+    ../DT3Sprites/Resources \
+    ../DT3Sprites/Resources/Importers \
+    ../DT3Sprites/Resources/ResourcesTypes \
+
+INCLUDEPATH +=  . \
+   ./Animation \
+   ./Console \
+   ./Hierarchy \
+   ./Library \
+   ./MeshBuilder \
+   ./Performance \
+   ./Properties \
+   ./Resources \
+   ./Scripting \
+   ./Sound \
+   ./Tools \
+   ./World \
+    ../../DT3  \
+  ../DT3Core/Components \
+  ../DT3Core/Devices \
+  ../DT3Core/Entry \
+  ../DT3Core/Objects \
+  ../DT3Core/Resources/ \
+  ../DT3Core/Resources/ResourceTypes \
+  ../DT3Core/Resources/Importers \
+  ../DT3Core/Resources/Scripting \
+  ../DT3Core/Resources/System \
+  ../DT3Core/Resources/Transitions \
+  ../DT3Core/Types \
+  ../DT3Core/Types/Animation \
+  ../DT3Core/Types/Base \
+  ../DT3Core/Types/FileBuffer \
+  ../DT3Core/Types/Graphics \
+  ../DT3Core/Types/GUI \
+  ../DT3Core/Types/Math/ \
+  ../DT3Core/Types/Media \
+  ../DT3Core/Types/Memory \
+  ../DT3Core/Types/Network \
+  ../DT3Core/Types/Node \
+  ../DT3Core/Types/Sound \
+  ../DT3Core/Types/Text \
+  ../DT3Core/Types/Threads \
+  ../DT3Core/Types/Utility \
+  ../DT3Core/World\
+  ../DT3Core/World\
+
 
 # Input
-HEADERS += $$(SRC_DIR)/AppConfig.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAppMain.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteBitfield.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteMainWindow.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteEditor.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteUVEditor.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteTimeline.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteProperties.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAnimationProperties.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteJointProperties.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteJointList.hpp  $$(SRC_DIR)/DT3SpriteEditor/EdSpriteLineEdit.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyBase.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAnimations.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyBoolField.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyDefaultField.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyBitfieldField.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAnimationTransferDialog.hpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteNewEventDialog.hpp
+HEADERS +=  \
+        EdSpriteAppMain.hpp \
+        EdSpriteBitfield.hpp  \
+        EdSpriteMainWindow.hpp  \
+        EdSpriteEditor.hpp  \
+        EdSpriteUVEditor.hpp  \
+        EdSpriteTimeline.hpp  \
+        EdSpriteProperties.hpp  \
+        EdSpriteAnimationProperties.hpp  \
+        EdSpriteJointProperties.hpp  \
+        EdSpriteJointList.hpp  \
+        EdSpriteLineEdit.hpp  \
+        EdSpritePropertyBase.hpp  \
+        EdSpriteAnimations.hpp  \
+        EdSpritePropertyBoolField.hpp  \
+        EdSpritePropertyDefaultField.hpp  \
+        EdSpritePropertyBitfieldField.hpp  \
+        EdSpriteAnimationTransferDialog.hpp  \
+        EdSpriteNewEventDialog.hpp \
 
-SOURCES += $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAppMain.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteBitfield.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteMainWindow.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteEditor.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteUVEditor.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteTimeline.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteProperties.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAnimationProperties.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteJointProperties.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteJointList.cpp   $$(SRC_DIR)/DT3SpriteEditor/EdSpriteLineEdit.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyBase.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAnimations.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyBoolField.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyDefaultField.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpritePropertyBitfieldField.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteAnimationTransferDialog.cpp $$(SRC_DIR)/DT3SpriteEditor/EdSpriteNewEventDialog.cpp
+SOURCES += \
+        EdSpriteAppMain.cpp  \
+        EdSpriteBitfield.cpp  \
+        EdSpriteMainWindow.cpp  \
+        EdSpriteEditor.cpp  \
+        EdSpriteUVEditor.cpp  \
+        EdSpriteTimeline.cpp  \
+        EdSpriteProperties.cpp  \
+        EdSpriteAnimationProperties.cpp  \
+        EdSpriteJointProperties.cpp  \
+        EdSpriteJointList.cpp  \
+        EdSpriteLineEdit.cpp  \
+        EdSpritePropertyBase.cpp  \
+        EdSpriteAnimations.cpp  \
+        EdSpritePropertyBoolField.cpp  \
+        EdSpritePropertyDefaultField.cpp  \
+        EdSpritePropertyBitfieldField.cpp  \
+        EdSpriteAnimationTransferDialog.cpp  \
+        EdSpriteNewEventDialog.cpp \
 
-RESOURCES += $$(SRC_DIR)/DT3SpriteEditor/SpriteEditor.qrc
+RESOURCES += SpriteEditor.qrc

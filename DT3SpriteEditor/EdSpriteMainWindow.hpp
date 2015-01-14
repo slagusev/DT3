@@ -15,8 +15,8 @@
 #include <QtWidgets/QComboBox>
 #include <QtCore/QTimer>
 
-#include "DT3Sprites/Types/KeyedSpriteResource.hpp"
-#include "DT3Sprites/Types/KeyedSpriteAnimationResource.hpp"
+#include "DT3Sprites/Resources/ResourceTypes/KeyedSpriteResource.hpp"
+#include "DT3Sprites/Resources/ResourceTypes/KeyedSpriteAnimationResource.hpp"
 #include "DT3Sprites/Types/KeyedSpriteAnimationTrack.hpp"
 
 using namespace DT2;
