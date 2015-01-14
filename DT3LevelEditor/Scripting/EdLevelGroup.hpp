@@ -1,20 +1,22 @@
+#pragma once
 #ifndef EDLEVELGROUP
 #define EDLEVELGROUP
 //==============================================================================
-///	
+///
 ///	File: EdLevelGroup.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
 // Qt include
 #include <QtWidgets/QGraphicsItem>
 #include <QtGui/QFont>
+#include <memory>
 
 // Engine includes
 
@@ -41,31 +43,31 @@ class EdLevelGroup : public QGraphicsItem
 {
     //Q_OBJECT
     //Q_INTERFACES(QGraphicsItem)
-    
-	public:
+
+    public:
         enum { Type = UserType + 4 };
         int type() const {  return Type;    }
 
-	public:
+    public:
                                     EdLevelGroup    (void)  {}
                                     EdLevelGroup    (std::shared_ptr<Group> group);
                                     ~EdLevelGroup   (void);
 
 
-	public:
+    public:
         std::shared_ptr<Group>      getGroup        (void)                  {   return _group;   }
 
         void                        setBoundingRect (const QRectF &rect);
-		QRectF						boundingRect	(void) const            {   return _bounding_rect;  }
+        QRectF						boundingRect	(void) const            {   return _bounding_rect;  }
         //QPainterPath				shape			(void) const;
 
-		virtual void				paint			(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
-    
+        virtual void				paint			(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
         bool                        checkClick      (const QPointF &scene_pos, const QPointF &global_pos);
         bool                        handleClick     (const QPointF &scene_pos, const QPointF &global_pos);
 
-	protected:
-		QFont						_title_font;
+    protected:
+        QFont						_title_font;
         QRectF                      _bounding_rect;
         std::shared_ptr<Group>      _group;
 

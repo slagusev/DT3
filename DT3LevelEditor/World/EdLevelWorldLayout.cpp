@@ -1,12 +1,12 @@
 //==============================================================================
-///	
+///
 ///	File: EdLevelWorldLayout.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -24,16 +24,18 @@
 //==============================================================================
 //==============================================================================
 EdLevelWorldLayout::EdLevelWorldLayout (QWidget *parent)
-    :   QLayout(parent) 
+    :   QLayout(parent)
 {
 
 }
 
 EdLevelWorldLayout::EdLevelWorldLayout (void)
-    : QLayout() 
+    : QLayout()
 {
 
 }
+
+
 
 EdLevelWorldLayout::~EdLevelWorldLayout (void)
 {
@@ -53,8 +55,8 @@ void EdLevelWorldLayout::addItem (QLayoutItem *item)
 QSize EdLevelWorldLayout::sizeHint (void) const
 {
      QSize s(0,0);
-     
-     int n = _list.count();         
+
+     int n = _list.count();
      int i = 0;
      while (i < n) {
          QLayoutItem *o = _list.at(i);
@@ -95,10 +97,10 @@ void EdLevelWorldLayout::setGeometry (const QRect &rect)
     // Set the first item (toolbar) to the top
     QLayoutItem *tb = _list.at(0);
     QRect tb_rect = QRect(0,0,rect.width(), tb->minimumSize().height());
-    
+
     if (tb_rect != tb->geometry())
         tb->setGeometry(tb_rect);
-    
+
     // Window
     QLayoutItem *window = _list.at(1);
     QSize window_size = window->widget()->sizeHint();
@@ -110,25 +112,25 @@ void EdLevelWorldLayout::setGeometry (const QRect &rect)
         window_rect = sub_rect;
     } else {
         float aspect = (float) window_size.width() / (float) window_size.height();
-    
+
         // Move rectangle to center
         window_rect = QRect(0,0,window_size.width(),window_size.height());
         window_rect.moveCenter(sub_rect.center());
-        
+
         // Scale so top fits within
         if (window_rect.top() < sub_rect.top()) {
             int adjustment = window_rect.top() - sub_rect.top();
             window_rect.adjust(-adjustment*aspect, -adjustment, adjustment*aspect, adjustment);
         }
-        
+
         // Scale so left fits within
         if (window_rect.left() < sub_rect.left()) {
             int adjustment = window_rect.left() - sub_rect.left();
             window_rect.adjust(-adjustment, -adjustment/aspect, adjustment, adjustment/aspect);
         }
-        
+
     }
-    
+
     if (window_rect != window->geometry())
         window->setGeometry(window_rect);
 

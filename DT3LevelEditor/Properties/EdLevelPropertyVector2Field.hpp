@@ -1,14 +1,15 @@
+#pragma once
 #ifndef EDLEVELPROPERTYVECTOR2FIELD
 #define EDLEVELPROPERTYVECTOR2FIELD
 //==============================================================================
-///	
+///
 ///	File: EdLevelPropertyVector2Field.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -19,6 +20,7 @@
 #include <QtWidgets/QToolButton>
 
 // Engine includes
+#include <memory>
 
 
 //==============================================================================
@@ -44,16 +46,16 @@ class EdLevelPropertyVector2Field : public EdLevelPropertyBase
 {
     Q_OBJECT
 
-	public:
-										EdLevelPropertyVector2Field		(EdLevelPropertiesWindow *parent, std::shared_ptr<PlugNode> node, std::shared_ptr<ArchiveData> data);
-										~EdLevelPropertyVector2Field	(void);
-    
+    public:
+                                        EdLevelPropertyVector2Field		(EdLevelPropertiesWindow *parent, std::shared_ptr<PlugNode> node, std::shared_ptr<ArchiveData> data);
+                                        ~EdLevelPropertyVector2Field	(void);
+
         /// Gets the value of the field
-		/// \return value of field
+        /// \return value of field
         virtual std::string             getValueOfField                 (void);
-    
+
         /// Sets the value of the field
-		/// \param value value to set
+        /// \param value value to set
         virtual void                    setValueOfField                 (const std::string &value);
 
     private:

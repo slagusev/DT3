@@ -32,7 +32,7 @@
 #include "DT3Core/Devices/DeviceMusic.hpp"
 #include "DT3Core/Devices/DeviceAudio.hpp"
 
-#if DT3_OS == DT3_IOS || DT3_OS == DT3_ANDROID || DT3_OS == DT3_MACOSX
+#if DT3_OS == DT3_IOS || DT3_OS == DT3_ANDROID || DT3_OS == DT3_MACOSX ||  DT3_OS == DT3_LINUX
     #include "DT3OpenGL/DT3OpenGL.hpp"
 #else
     #include "DT3DX11/DT3GLDX11.hpp"

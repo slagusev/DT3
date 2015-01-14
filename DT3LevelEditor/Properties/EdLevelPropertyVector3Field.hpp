@@ -1,16 +1,17 @@
+#pragma once
 #ifndef EDLEVELPROPERTYVECTOR3FIELD
 #define EDLEVELPROPERTYVECTOR3FIELD
 //==============================================================================
-///	
+///
 ///	File: EdLevelPropertyVector3Field.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
-
+#include<memory>
 // Editor include
 #include "EdLevelPropertyBase.hpp"
 #include "EdLevelLineEdit.hpp"
@@ -19,6 +20,8 @@
 #include <QtWidgets/QToolButton>
 
 // Engine includes
+
+
 
 
 //==============================================================================
@@ -44,16 +47,16 @@ class EdLevelPropertyVector3Field : public EdLevelPropertyBase
 {
     Q_OBJECT
 
-	public:
-										EdLevelPropertyVector3Field		(EdLevelPropertiesWindow *parent, std::shared_ptr<PlugNode> node, std::shared_ptr<ArchiveData> data);
-										~EdLevelPropertyVector3Field	(void);
-    
+    public:
+                                        EdLevelPropertyVector3Field		(EdLevelPropertiesWindow *parent, std::shared_ptr<PlugNode> node, std::shared_ptr<ArchiveData> data);
+                                        ~EdLevelPropertyVector3Field	(void);
+
         /// Gets the value of the field
-		/// \return value of field
+        /// \return value of field
         virtual std::string             getValueOfField (void);
-    
+
         /// Sets the value of the field
-		/// \param value value to set
+        /// \param value value to set
         virtual void                    setValueOfField (const std::string &value);
 
     private:
