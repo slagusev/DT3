@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_MORESTRINGS
 #define DT3_MORESTRINGS
 //==============================================================================
-///	
+///
 ///	File: MoreStrings.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -28,86 +29,86 @@ namespace DT3 {
 //==============================================================================
 
 class MoreStrings {
-	private:
-								MoreStrings                     (void);
-								MoreStrings                     (const MoreStrings &rhs);
-		MoreStrings &           operator =                      (const MoreStrings &rhs);
-								~MoreStrings                    (void);
-	
-	public:
+    private:
+                                MoreStrings                     (void);
+                                MoreStrings                     (const MoreStrings &rhs);
+        MoreStrings &           operator =                      (const MoreStrings &rhs);
+                                ~MoreStrings                    (void);
 
-		/// Convert data to hex strings
-		/// \param data pointer to data
-		/// \param length length of data
-		/// \return Hex string
-		static std::string      to_hex_string                   (const void* data, DTsize length);
-    
+    public:
+
+        /// Convert data to hex strings
+        /// \param data pointer to data
+        /// \param length length of data
+        /// \return Hex string
+        static std::string      to_hex_string                   (const void* data, DTsize length);
+
         /// Convert hex string to data
-		/// \param s hex string
-		/// \param data pointer to data
-		/// \param length length of data
-		static void				from_hex_string					(const std::string &s, void* data, DTsize length);
+        /// \param s hex string
+        /// \param data pointer to data
+        /// \param length length of data
+        static void				from_hex_string					(const std::string &s, void* data, DTsize length);
 
-		/// Simple Obfuscator
-		/// \param key key used to obfuscate data
-		/// \param s data
-		/// \return Obfuscated data
-		static std::string      to_obfuscated					(const std::string &key, const std::string &s);
+        /// Simple Obfuscator
+        /// \param key key used to obfuscate data
+        /// \param s data
+        /// \return Obfuscated data
+        static std::string      to_obfuscated					(const std::string &key, const std::string &s);
 
-		/// Simple Unobfuscator
-		/// \param key key used to obfuscate data
-		/// \param s data
-		/// \return Unobfuscated data
-		static std::string      from_obfuscated					(const std::string &key, const std::string &s);
+        /// Simple Unobfuscator
+        /// \param key key used to obfuscate data
+        /// \param s data
+        /// \return Unobfuscated data
+        static std::string      from_obfuscated					(const std::string &key, const std::string &s);
 
-		/// Simple Unobfuscator for raw data
-		/// \param data data to obfuscate data
-		/// \param size size sof data
-		/// \param salt salt obfuscate data
-		/// \param offset offset for obfuscating data
-		/// \return Unobfuscated data
+        /// Simple Unobfuscator for raw data
+        /// \param data data to obfuscate data
+        /// \param size size sof data
+        /// \param salt salt obfuscate data
+        /// \param offset offset for obfuscating data
+        /// \return Unobfuscated data
         static void             obfuscate_raw                   (DTubyte *data, DTsize size, DTuint salt, DTsize offset);
 
-		/// Convert string to lowercase
-		/// \param s string
-		/// \return lowercase string
+        /// Convert string to lowercase
+        /// \param s string
+        /// \return lowercase string
         static std::string      lowercase                       (const std::string &s);
 
-		/// Convert string to uppercase
-		/// \param s string
-		/// \return uppercase string
+        /// Convert string to uppercase
+        /// \param s string
+        /// \return uppercase string
         static std::string      uppercase                       (const std::string &s);
-    
-    
+
+
         /// Find and replace strings
         /// \param s string
         /// \param f find string
         /// \param r replace string
-		/// \return string
+        /// \return string
         static std::string      find_and_replace                (const std::string &s, const std::string &f, const std::string &r);
-    
+
         /// Filter characters out of a string
         /// \param s string
         /// \param f filter characters
-		/// \return string
+        /// \return string
         static std::string      filter_out                      (const std::string &s, const std::string &f);
 
         /// Allow certain characters in the string
         /// \param s string
         /// \param f filter characters
-		/// \return string
+        /// \return string
         static std::string      filter_in                       (const std::string &s, const std::string &f);
 
 
         /// Hash a string
         /// \param s string
-		/// \return hash of string
+        /// \return hash of string
         static DTuint           hash                            (const std::string &s);
 
 
         /// Clean the control characters in a string
         /// \param s string
-		/// \return cleaned string
+        /// \return cleaned string
         static std::string      clean_ctrl_characters           (const std::string &s);
 
 
@@ -127,17 +128,17 @@ class MoreStrings {
         /// \param s string to unescape
         /// \return unescaped string
         static std::string      unescaped                       (const std::string &s);
-    
+
         /// Remove end digits from a string
         /// \param s string to trim
         /// \return trimmed string
         static std::string      trim_end_digits                 (const std::string &s);
-    
+
         /// Return end digits from a string
         /// \param s string to get digits from
         /// \return trimmed string
         static std::string      end_digits                      (const std::string &s);
-    
+
         /// Extract a unicode character from a buffer
         /// \param start start of buffer
         /// \param num_bytes number of bytes consumed
@@ -189,8 +190,8 @@ class MoreStrings {
             ss >> temp;
             return temp;
         }
-    
-    
+
+
         // Case insensitive string compare
         // \param a first string
         // \param b second string
@@ -237,24 +238,24 @@ class StringCopier {
         StringCopier (const StringCopier &s)
             :   _s  (s._s.data(), s._s.length())
         {}
-    
+
         StringCopier (const std::string &s)
             :   _s  (s.data(), s.length())
         {}
-    
+
         operator std::string()
         {
             return std::string(_s.data(), _s.length());
         }
-    
+
         ~StringCopier (void)
         {}
-    
-    
+
+
         DTboolean operator < (const StringCopier &s) const {
             return _s < s._s;
         }
-    
+
     private:
         std::string     _s;
 };

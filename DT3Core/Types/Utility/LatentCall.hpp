@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_LATENTCALL
 #define DT3_LATENTCALL
 //==============================================================================
-///	
+///
 ///	File: LatentCall.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Utility/Callback.hpp"
@@ -43,37 +44,37 @@ class LatentCall {
 
 template <typename... T>
 class LatentCallImpl: public LatentCall {
-	public:
-		DEFINE_TYPE(LatentCallImpl,LatentCall)
+    public:
+        DEFINE_TYPE(LatentCallImpl,LatentCall)
 
-		LatentCallImpl (std::shared_ptr<Callback<T...>> cb, T... t)
-			:   _cb (cb),
+        LatentCallImpl (std::shared_ptr<Callback<T...>> cb, T... t)
+            :   _cb (cb),
                 _t  (t...)
-		{}
+        {}
 
-		LatentCallImpl (const LatentCallImpl<T...>& rhs)
-			:	LatentCall(rhs),
+        LatentCallImpl (const LatentCallImpl<T...>& rhs)
+            :	LatentCall(rhs),
                 _cb (rhs._cb),
-				_t  (rhs._t)
-		{}
+                _t  (rhs._t)
+        {}
 
-		LatentCallImpl<T...>& operator = (const LatentCallImpl<T...>& rhs)
-		{
-			LatentCall::operator = (rhs);
+        LatentCallImpl<T...>& operator = (const LatentCallImpl<T...>& rhs)
+        {
+            LatentCall::operator = (rhs);
             _cb = rhs._cb;
-			_t = rhs.t;
-			return (*this);
-		}
+            _t = rhs.t;
+            return (*this);
+        }
 
-		~LatentCallImpl (void)
-		{
-		}
+        ~LatentCallImpl (void)
+        {
+        }
 
-		void fire (void) {
+        void fire (void) {
             call_func(typename gens<sizeof...(T)>::type());
-		}
+        }
 
-	private:
+    private:
         template<int ...> struct seq {};
         template<int N, int ...S> struct gens : gens<N-1, N-1, S...> {};
         template<int ...S> struct gens<0, S...>{ typedef seq<S...> type; };
@@ -85,8 +86,8 @@ class LatentCallImpl: public LatentCall {
         }
 
         std::shared_ptr<Callback<T...>> _cb;
-		std::tuple<T...>                _t;
-    
+        std::tuple<T...>                _t;
+
 };
 
 //==============================================================================
@@ -95,23 +96,23 @@ class LatentCallImpl: public LatentCall {
 template<typename CLASS, typename... T>
 inline std::shared_ptr<LatentCall> make_latent_call(CLASS c, void (TypeTraits<CLASS>::NonPtrType::*fn)(T...), T... t)
 {
-	return std::shared_ptr<LatentCall>(
-				new LatentCallImpl<T...>(
-					std::shared_ptr<Callback<T...>>(new ("Callback") CallbackImpl<CLASS,T...>(c, fn)),
-					t...
-				)
-			);
+    return std::shared_ptr<LatentCall>(
+                new LatentCallImpl<T...>(
+                    std::shared_ptr<Callback<T...>>(new ("Callback") CallbackImpl<CLASS,T...>(c, fn)),
+                    t...
+                )
+            );
 }
 
 template<typename... T>
 inline std::shared_ptr<LatentCall> make_latent_call(void (*fn)(T...), T... t)
 {
-	return std::shared_ptr<LatentCall>(
-				new LatentCallImpl<T...>(
-					std::shared_ptr<Callback<T...>>(new ("Callback") CallbackStaticImpl<T...>(fn)),
-					t...
-				)
-			);
+    return std::shared_ptr<LatentCall>(
+                new LatentCallImpl<T...>(
+                    std::shared_ptr<Callback<T...>>(new ("Callback") CallbackStaticImpl<T...>(fn)),
+                    t...
+                )
+            );
 }
 
 //==============================================================================

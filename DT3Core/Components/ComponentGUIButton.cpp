@@ -1,14 +1,13 @@
 //==============================================================================
-///	
+///
 ///	File: ComponentGUIButton.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
-
 #include "DT3Core/Components/ComponentGUIButton.hpp"
 #include "DT3Core/Types/FileBuffer/ArchiveObjectQueue.hpp"
 #include "DT3Core/Types/FileBuffer/ArchiveData.hpp"
@@ -40,9 +39,9 @@ IMPLEMENT_PLUG_INFO_INDEX(_sound)
 BEGIN_IMPLEMENT_PLUGS(ComponentGUIButton)
 
     PLUG_INIT(_sound, "Sound")
-		.set_input(true);
+        .set_input(true);
 
-	EVENT_INIT(_clicked,"Clicked")
+    EVENT_INIT(_clicked,"Clicked")
         .set_output(true);
 
 END_IMPLEMENT_PLUGS
@@ -57,7 +56,7 @@ ComponentGUIButton::ComponentGUIButton (void)
 {
 
 }
-		
+
 ComponentGUIButton::ComponentGUIButton (const ComponentGUIButton &rhs)
     :   ComponentBase               (rhs),
         _button_pressed_latent_call (rhs._button_pressed_latent_call),
@@ -70,15 +69,15 @@ ComponentGUIButton::ComponentGUIButton (const ComponentGUIButton &rhs)
 ComponentGUIButton & ComponentGUIButton::operator = (const ComponentGUIButton &rhs)
 {
     // Make sure we are not assigning the class to itself
-    if (&rhs != this) {        
-		ComponentBase::operator = (rhs);
-        
+    if (&rhs != this) {
+        ComponentBase::operator = (rhs);
+
         _button_pressed_latent_call = rhs._button_pressed_latent_call;
         _sound = rhs._sound;
     }
     return (*this);
 }
-			
+
 ComponentGUIButton::~ComponentGUIButton (void)
 {
 
@@ -89,7 +88,7 @@ ComponentGUIButton::~ComponentGUIButton (void)
 
 void ComponentGUIButton::initialize (void)
 {
-	ComponentBase::initialize();
+    ComponentBase::initialize();
 }
 
 //==============================================================================
@@ -99,8 +98,8 @@ void ComponentGUIButton::archive (const std::shared_ptr<Archive> &archive)
 {
     ComponentBase::archive(archive);
 
-	archive->push_domain (class_id());
-        	
+    archive->push_domain (class_id());
+
     *archive << ARCHIVE_PLUG(_sound, DATA_PERSISTENT | DATA_SETTABLE);
 
     archive->pop_domain ();
@@ -112,7 +111,7 @@ void ComponentGUIButton::archive (const std::shared_ptr<Archive> &archive)
 void ComponentGUIButton::add_to_owner (ObjectBase *owner)
 {
     ComponentBase::add_to_owner(owner);
-    
+
     GUIObject *gui = checked_cast<GUIObject*>(owner);
     if (gui) {
         gui->touches_began_callbacks().add(make_callback(this, &type::touches_began));
@@ -154,11 +153,11 @@ void ComponentGUIButton::touches_moved (GUITouchEvent *event)
     GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
-        
+
     //
     // Check if still within bounds
     //
-    
+
     if (gui->state() != GUIObject::STATE_DISABLED) {
         // Transform touches into widget coordinates
         Vector2 pos = gui->position_to_object_coord(event->position());
@@ -177,16 +176,16 @@ void ComponentGUIButton::touches_ended (GUITouchEvent *event)
     GUIObject *gui = checked_cast<GUIObject*>(owner());
     if (!gui)
         return;
-        
+
     if (gui->state() == GUIObject::STATE_FOCUSED) {
-    
+
         if (_sound.as_ref())
             System::audio_renderer()->play_quick(_sound, owner()->world());
-        
+
         gui->set_state(GUIObject::STATE_NORMAL);
-     
+
         _clicked.send(gui);    // GUIObject is the originator of the event
-        
+
         // Call callback too
         if (_button_pressed_latent_call) {
             _button_pressed_latent_call->fire();

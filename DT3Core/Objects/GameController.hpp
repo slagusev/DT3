@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_GAMECONTROLLER
 #define DT3_GAMECONTROLLER
 //==============================================================================
-///	
+///
 ///	File: GameController.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "ObjectBase.hpp"
@@ -25,24 +26,24 @@ namespace DT3 {
 /// state and also manages the players.
 //==============================================================================
 
-class GameController: public ObjectBase {    
+class GameController: public ObjectBase {
     public:
         DEFINE_TYPE(GameController,ObjectBase)
 
-										GameController			(void);	
-										GameController			(const GameController &rhs);
+                                        GameController			(void);
+                                        GameController			(const GameController &rhs);
         GameController &				operator =				(const GameController &rhs);
         virtual							~GameController			(void);
-    
+
         virtual void					archive                 (const std::shared_ptr<Archive> &archive);
-		
-	public:
-		      
-		/// Object was added to a world
-		/// world world that object was added to
+
+    public:
+
+        /// Object was added to a world
+        /// world world that object was added to
         virtual void                    add_to_world            (World *world);
 
-		/// Object was removed from a world
+        /// Object was removed from a world
         virtual void                    remove_from_world       (void);
 
 };

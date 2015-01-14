@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 2.8)
 #==============================================================================
 #	
 #	File: CMakeLists.txt	(for 3rdParty)
@@ -10,11 +11,33 @@
 #==============================================================================
 
 #
-# Freetype
-#
+#	With the asumption that this is called from the DT3Core/CMakeLists.txt
 
-set (PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set (PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+#### Specified if the libs are going to be in DT3Core/bin/unix
+#set(CORE_LIBS 1)
+
+if(EXISTS ${THIRD_PARTY_OUTPUT_LIBRARY_PATH})
+	SET(LIBRARY_OUTPUT_PATH "${THIRD_PARTY_OUTPUT_LIBRARY_PATH}")
+elseif(EXISTS ${CORE_LIBS})
+	SET(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../bin/unix/")
+else()
+	SET(LIBRARY_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/bin/unix/")
+endif(EXISTS ${THIRD_PARTY_OUTPUT_LIBRARY_PATH})
+
+message(DEBUG " 3rdPArty output location" "${LIBRARY_OUTPUT_PATH}")
+
+message(DEBUG " 3rdPArty cmakefile location" "${CMAKE_CURRENT_SOURCE_DIR}")
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${LIBRARY_OUTPUT_PATH}")
+### SDL: something was changed in the SDL CMakeFiles.txt to allow us to build it inside dirs that it didn't liked.
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/SDL2/)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/SDL2/" "${LIBRARY_OUTPUT_PATH}" )
+else()
+ message(WARNING "SDL2 library not present. See " "${CMAKE_CURRENT_SOURCE_DIR}/" "README for more information.")
+endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/SDL2/)
+
+set(PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(PROJECT_SRCS 
 	${PROJECT_SOURCE_DIR}/freetype-2.4.7/src/autofit/autofit.c
@@ -145,6 +168,8 @@ set(PROJECT_INCLUDES
 	${PROJECT_INCLUDE_DIR}/md5-cc
 )
 
+
+
 include_directories("${PROJECT_INCLUDES}")
 add_library(md5 STATIC ${PROJECT_SRCS})
 
@@ -162,4 +187,10 @@ set(PROJECT_INCLUDES
 
 include_directories("${PROJECT_INCLUDES}")
 add_library(jenkins STATIC ${PROJECT_SRCS})
+
+
+
+
+
+
 

@@ -1,12 +1,12 @@
 //==============================================================================
-///	
+///
 ///	File: DT3GL.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3OpenGL/DT3OpenGL.hpp"
@@ -46,7 +46,7 @@ namespace {
         /*DT3GL_BACK*/                      GL_BACK,
         /*DT3GL_CULL_NONE*/                 GL_NONE
     };
-    
+
     DTuint gWrap[] = {
         /*TEXTURE_WRAP_REPEAT*/             GL_REPEAT,
         /*TEXTURE_WRAP_CLAMP*/              GL_CLAMP_TO_EDGE
@@ -65,8 +65,8 @@ namespace {
         /*TEXTURE_FILTER_NEAREST_MIPMAP*/   GL_NEAREST,
         /*TEXTURE_FILTER_LINEAR_MIPMAP*/    GL_LINEAR
     };
-    
-	DTuint gComparison[] = {
+
+    DTuint gComparison[] = {
         /*DT3GL_ALWAYS*/                    GL_ALWAYS,
         /*DT3GL_NEVER*/                     GL_NEVER,
         /*DT3GL_EQUAL*/                     GL_EQUAL,
@@ -75,9 +75,9 @@ namespace {
         /*DT3GL_GEQUAL*/                    GL_GEQUAL,
         /*DT3GL_LESS*/                      GL_LESS,
         /*DT3GL_LEQUAL*/                    GL_LEQUAL
-	};
-    
-	DTuint gStencilOp[] = {
+    };
+
+    DTuint gStencilOp[] = {
         /*DT3GL_STENCILOP_KEEP*/            GL_KEEP,
         /*DT3GL_STENCILOP_ZERO*/            GL_ZERO,
         /*DT3GL_STENCILOP_REPLACE*/         GL_REPLACE,
@@ -86,15 +86,15 @@ namespace {
         /*DT3GL_STENCILOP_INCR_WRAP*/       GL_INCR_WRAP,
         /*DT3GL_STENCILOP_DECR_WRAP*/       GL_DECR_WRAP,
         /*DT3GL_STENCILOP_INVERT*/          GL_INVERT
-	};
+    };
 
-	DTuint gPrimitiveType[] = {
+    DTuint gPrimitiveType[] = {
         /*DT3GL_PRIM_TRIS*/                 GL_TRIANGLES,
         /*DT3GL_PRIM_TRI_STRIP*/            GL_TRIANGLE_STRIP,
         /*DT3GL_PRIM_LINE_LOOP*/            GL_LINE_LOOP,
         /*DT3GL_PRIM_LINES*/                GL_LINES
-	};
-    
+    };
+
 }
 
 //==============================================================================
@@ -114,7 +114,7 @@ DT3OpenGL::DT3OpenGL (void)
 {
 
 }
-            
+
 DT3OpenGL::~DT3OpenGL (void)
 {
     _depth_stencil_states.clear();
@@ -134,36 +134,36 @@ void DT3OpenGL::init_display (void)
 void DT3OpenGL::open_display (DTint width, DTint height)
 {
     // Update Geometry
-	_width = width;
-	_height = height;
-    
+    _width = width;
+    _height = height;
+
     // Called to say we are ready to init this device
     DeviceGraphics::init_display();
-    
-#if DT3_OS != DT3_ANDROID && DT3_OS != DT3_IOS
-	// init Glew
-    GLenum err = glewInit();
-	if (GLEW_OK != err) {
-		WARNINGMSG("Could not initialize glew.");
-		return;
-	}
-#endif
-	
-	set_viewport (0, 0, width, height, width, height);
 
-	LOG_MESSAGE << "Vendor:     " << ::glGetString(GL_VENDOR);
-	LOG_MESSAGE << "Renderer:   " << ::glGetString(GL_RENDERER);
-	LOG_MESSAGE << "Version:    " << ::glGetString(GL_VERSION);
-	LOG_MESSAGE << "Extensions: " << ::glGetString(GL_EXTENSIONS);
-	
+#if DT3_OS != DT3_ANDROID && DT3_OS != DT3_IOS
+    // init Glew
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+        WARNINGMSG("Could not initialize glew.");
+        return;
+    }
+#endif
+
+    set_viewport (0, 0, width, height, width, height);
+
+    LOG_MESSAGE << "Vendor:     " << ::glGetString(GL_VENDOR);
+    LOG_MESSAGE << "Renderer:   " << ::glGetString(GL_RENDERER);
+    LOG_MESSAGE << "Version:    " << ::glGetString(GL_VERSION);
+    LOG_MESSAGE << "Extensions: " << ::glGetString(GL_EXTENSIONS);
+
     //
     // Default State
     //
-    
+
     // clear out all of the buffers
     clear_color_value(Color4f(0.0F,0.0F,0.0F,0.0F));
     clear_depth_value(1.0f);
-    
+
     ::glGetIntegerv(GL_FRAMEBUFFER_BINDINGM, &_default_framebuffer);
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -175,19 +175,19 @@ void DT3OpenGL::open_display (DTint width, DTint height)
 //    _frame_query_in_progress = false;
 //    _frame_lag_now = 0;
 //    _frame_lag_last_calculated = 0;
-	   
+
     DeviceGraphics::open_display(width,height);
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
 
 void DT3OpenGL::change_display (DTuint width, DTuint height)
 {
-	_width = width;
-	_height = height;
-	
-	set_viewport (0, 0, width, height, width, height);
-	   
+    _width = width;
+    _height = height;
+
+    set_viewport (0, 0, width, height, width, height);
+
     DeviceGraphics::change_display(width,height);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
@@ -202,17 +202,17 @@ void DT3OpenGL::close_display (void)
 
 DTuint DT3OpenGL::screen_width (void)
 {
-	return _width;
+    return _width;
 }
 
 DTuint DT3OpenGL::screen_height (void)
 {
-	return _height;
+    return _height;
 }
 
 DTfloat DT3OpenGL::screen_aspect (void)
 {
-	return (DTfloat) _width / (DTfloat) _height;
+    return (DTfloat) _width / (DTfloat) _height;
 }
 
 //==============================================================================
@@ -220,37 +220,37 @@ DTfloat DT3OpenGL::screen_aspect (void)
 
 void DT3OpenGL::viewport (DTint &x, DTint &y, DTint &width, DTint &height)
 {
-	x = _viewport_x;
-	y = _viewport_y;
-	width = _viewport_width;
-	height = _viewport_height;
+    x = _viewport_x;
+    y = _viewport_y;
+    width = _viewport_width;
+    height = _viewport_height;
 }
 
 void DT3OpenGL::set_viewport (DTint x, DTint y, DTint width, DTint height, DTint rt_width, DTint rt_height)
 {
-	::glViewport(x,y,width,height);
-	
-	_viewport_x = x;
-	_viewport_y = y;
-	_viewport_width = width;
-	_viewport_height = height;
+    ::glViewport(x,y,width,height);
+
+    _viewport_x = x;
+    _viewport_y = y;
+    _viewport_width = width;
+    _viewport_height = height;
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
 
 DTuint DT3OpenGL::viewport_width (void)
 {
-	return _viewport_width;
+    return _viewport_width;
 }
 
 DTuint DT3OpenGL::viewport_height (void)
 {
-	return _viewport_height;
+    return _viewport_height;
 }
 
 DTfloat DT3OpenGL::viewport_aspect (void)
 {
-	return (DTfloat) _viewport_width / (DTfloat) _viewport_height;
+    return (DTfloat) _viewport_width / (DTfloat) _viewport_height;
 }
 
 //==============================================================================
@@ -260,10 +260,10 @@ void DT3OpenGL::clear_viewport (DTboolean depth, DTboolean color, DTboolean sten
 {
     ASSERT(::glGetError() == GL_NO_ERROR);
 
-	GLenum flags =	(GL_DEPTH_BUFFER_BIT * (depth ? 1:0)) |
-					(GL_COLOR_BUFFER_BIT * (color ? 1:0)) |
+    GLenum flags =	(GL_DEPTH_BUFFER_BIT * (depth ? 1:0)) |
+                    (GL_COLOR_BUFFER_BIT * (color ? 1:0)) |
                     (GL_STENCIL_BUFFER_BIT * (stencil ? 1:0));
-	
+
     GLboolean depth_mask;
     GLboolean stencil_mask;
 
@@ -273,14 +273,14 @@ void DT3OpenGL::clear_viewport (DTboolean depth, DTboolean color, DTboolean sten
     }
 
     ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
     if (stencil) {
         ::glGetBooleanv(GL_STENCIL_WRITEMASK, &stencil_mask);
         ::glStencilMask(0xFFFFFFFF);
     }
 
     ASSERT(::glGetError() == GL_NO_ERROR);
-        
+
     ::glClear(flags);
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -297,14 +297,14 @@ void DT3OpenGL::clear_viewport (DTboolean depth, DTboolean color, DTboolean sten
 
 void DT3OpenGL::clear_stencil_value (DTuint s)
 {
-	::glClearStencil(s);
+    ::glClearStencil(s);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
 
 void DT3OpenGL::clear_color_value (const Color4f &c)
 {
-	::glClearColor(c.r_as_float(),c.g_as_float(),c.b_as_float(),c.a_as_float());
+    ::glClearColor(c.r_as_float(),c.g_as_float(),c.b_as_float(),c.a_as_float());
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -312,9 +312,9 @@ void DT3OpenGL::clear_color_value (const Color4f &c)
 void DT3OpenGL::clear_depth_value (DTfloat d)
 {
 #if DT3_OS != DT3_ANDROID && DT3_OS != DT3_IOS
-	::glClearDepth(d);
+    ::glClearDepth(d);
 #else
-	::glClearDepthf(d);
+    ::glClearDepthf(d);
 #endif
 
     ASSERT(::glGetError() == GL_NO_ERROR);
@@ -338,15 +338,15 @@ std::shared_ptr<DT3GLDepthStencilResource> DT3OpenGL::create_depth_stencil_state
 
     auto i = _depth_stencil_states.find(hash);
     if (i == _depth_stencil_states.end()) {
-    
+
         // Build resource
         DT3OpenGLDepthStencilResource *r = new DT3OpenGLDepthStencilResource();
         r->state = state;
-        
+
         auto rr = std::shared_ptr<DT3GLDepthStencilResource>(r);
-        
+
         _depth_stencil_states[hash] = rr;
-    
+
         return rr;
     } else {
         return i->second;
@@ -375,15 +375,15 @@ std::shared_ptr<DT3GLBlendResource> DT3OpenGL::create_blend_state (const DT3GLBl
 
     auto i = _blend_states.find(hash);
     if (i == _blend_states.end()) {
-    
+
         // Build resource
         DT3OpenGLBlendResource *r = new DT3OpenGLBlendResource();
         r->state = state;
-        
+
         auto rr = std::shared_ptr<DT3GLBlendResource>(r);
-        
+
         _blend_states[hash] = rr;
-    
+
         return rr;
     } else {
         return i->second;
@@ -408,15 +408,15 @@ std::shared_ptr<DT3GLRasterizerResource> DT3OpenGL::create_rasterizer_state (con
 
     auto i = _rasterizer_states.find(hash);
     if (i == _rasterizer_states.end()) {
-    
+
         // Build resource
         DT3OpenGLRasterizerResource *r = new DT3OpenGLRasterizerResource();
         r->state = state;
-        
+
         auto rr = std::shared_ptr<DT3OpenGLRasterizerResource>(r);
-        
+
         _rasterizer_states[hash] = rr;
-    
+
         return rr;
     } else {
         return i->second;
@@ -441,15 +441,15 @@ std::shared_ptr<DT3GLSamplerResource> DT3OpenGL::create_sampler_state (const DT3
 
     auto i = _sampler_states.find(hash);
     if (i == _sampler_states.end()) {
-    
+
         // Build resource
         DT3OpenGLSamplerResource *r = new DT3OpenGLSamplerResource();
         r->state = state;
-        
+
         auto rr = std::shared_ptr<DT3GLSamplerResource>(r);
-        
+
         _sampler_states[hash] = rr;
-    
+
         return rr;
     } else {
         return i->second;
@@ -479,7 +479,7 @@ DTuint DT3OpenGL::textel_byte_size (DT3GLTextelFormat format)
         case DT3GL_FORMAT_RGB_565:              return 2;
         case DT3GL_FORMAT_LUM_8:                return 1;
         case DT3GL_FORMAT_BGRA:                 return 4;
-    
+
 #if DT3_OS == DT3_IOS || DT3_OS == DT3_ANDROID
         case DT3GL_FORMAT_PVR2_RGBA:            return 0;
         case DT3GL_FORMAT_PVR4_RGBA:            return 0;
@@ -490,7 +490,9 @@ DTuint DT3OpenGL::textel_byte_size (DT3GLTextelFormat format)
         case DT3GL_FORMAT_DEPTH_16:             return 2;
         case DT3GL_FORMAT_DEPTH_24:             return 3;
         case DT3GL_FORMAT_DEPTH_24_STENCIL_8:   return 4;
+        case DT3GL_FORMAT_UNKNOWN:              return 0;
     }
+    return 0;
 }
 
 std::shared_ptr<DT3GLTexture2DResource> DT3OpenGL::create_texture_2D (DTint width, DTint height, DTubyte *textels, DT3GLTextelFormat format, DTboolean mipmapped, DTuint flags)
@@ -499,7 +501,7 @@ std::shared_ptr<DT3GLTexture2DResource> DT3OpenGL::create_texture_2D (DTint widt
     ::glGetIntegerv(GL_TEXTURE_BINDING_2D, &save_tex);
 
     DT3OpenGLTexture2DResource *r = new DT3OpenGLTexture2DResource();
-    
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
     // If we're looking for fast uploads, use PBO
     if (flags & DT3GL_ACCESS_CPU_WRITE) {
@@ -534,7 +536,7 @@ std::shared_ptr<DT3GLTexture2DResource> DT3OpenGL::create_texture_2D (DTint widt
 
     // Create OpenGL2 Texture
     ::glGenTextures(1,&r->name);
-    
+
     ::glBindTexture(GL_TEXTURE_2D, r->name);          //	bind the texture
     ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -548,13 +550,13 @@ std::shared_ptr<DT3GLTexture2DResource> DT3OpenGL::create_texture_2D (DTint widt
 //        ASSERT(::glGetError() == GL_NO_ERROR);
 //
 //        ::memcpy(buffer, textels, (GLsizeiptr) r->size);
-//        
+//
 //        ::glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 //        ASSERT(::glGetError() == GL_NO_ERROR);
 //
 //        // Build texture based on the format
 //        switch (r->format) {
-//        
+//
 //            case DT3GL_FORMAT_RGBA:
 //                ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 //                break;
@@ -576,19 +578,19 @@ std::shared_ptr<DT3GLTexture2DResource> DT3OpenGL::create_texture_2D (DTint widt
 //            case DT3GL_FORMAT_RGB:
 //                ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 //                break;
-//                
+//
 //            default:
 //                ASSERT(0);
 //
 //        }
-//        
+//
 //        ::glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, save_buffer);
 //
 //    } else {
 
         // Build texture based on the format
         switch (r->format) {
-      
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
             case DT3GL_FORMAT_RGBA_HALF_FLOAT:
                 ::glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, textels);
@@ -643,15 +645,15 @@ std::shared_ptr<DT3GLTexture2DResource> DT3OpenGL::create_texture_2D (DTint widt
  //       }
 
     }
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
-	if (r->mipmapped) {
-		::glGenerateMipmapM(GL_TEXTURE_2D);   // establish a mipmap chain for the texture
+    if (r->mipmapped) {
+        ::glGenerateMipmapM(GL_TEXTURE_2D);   // establish a mipmap chain for the texture
         ASSERT(::glGetError() == GL_NO_ERROR);
-	}
+    }
 
-	::glBindTexture(GL_TEXTURE_2D, save_tex);
+    ::glBindTexture(GL_TEXTURE_2D, save_tex);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -667,14 +669,14 @@ void DT3OpenGL::update_texture_2D (const std::shared_ptr<DT3GLTexture2DResource>
 
     // Create OpenGLES2 Texture
     ::glBindTexture(GL_TEXTURE_2D, r->name);          //	bind the texture
-    
+
     ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	 
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
     if (r->flags & DT3GL_ACCESS_CPU_WRITE) {
         ASSERT(r->pbo);
         ASSERT(r->size == (textel_byte_size(r->format) * width * height));
-        
+
         GLint save_buffer;
         ::glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &save_buffer);
 
@@ -691,10 +693,10 @@ void DT3OpenGL::update_texture_2D (const std::shared_ptr<DT3GLTexture2DResource>
 
         ::glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
         ASSERT(::glGetError() == GL_NO_ERROR);
-        
+
         // Build texture based on the format
         switch (r->format) {
-        
+
             case DT3GL_FORMAT_RGBA_HALF_FLOAT:
                 ::glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_HALF_FLOAT, 0);
                 break;
@@ -719,12 +721,12 @@ void DT3OpenGL::update_texture_2D (const std::shared_ptr<DT3GLTexture2DResource>
             case DT3GL_FORMAT_RGB:
                 ::glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, 0);
                 break;
-                
+
             default:
                 ASSERT(0);
 
         }
-        
+
         ::glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, save_buffer);
         ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -784,19 +786,19 @@ void DT3OpenGL::update_texture_2D (const std::shared_ptr<DT3GLTexture2DResource>
                 ASSERT(0);
 
         }
-        
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
     }
 #endif
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
-	if (r->mipmapped) {
-		::glGenerateMipmapM(GL_TEXTURE_2D);   // establish a mipmap chain for the texture
+    if (r->mipmapped) {
+        ::glGenerateMipmapM(GL_TEXTURE_2D);   // establish a mipmap chain for the texture
         ASSERT(::glGetError() == GL_NO_ERROR);
-	}
+    }
 
-	::glBindTexture(GL_TEXTURE_2D, save_tex);
+    ::glBindTexture(GL_TEXTURE_2D, save_tex);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -825,14 +827,14 @@ std::shared_ptr<DT3GLTexture3DResource> DT3OpenGL::create_texture_3D (DTint widt
     r->flags = flags;
 
     ::glGenTextures(1,&r->name);
-    
+
     // Create OpenGL2 Texture
     ::glBindTexture(GL_TEXTURE_3D, r->name);          //	bind the texture
-    
+
     ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    
+
     switch (r->format) {
-    
+
         case DT3GL_FORMAT_RGBA_HALF_FLOAT:
             ::glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA16F, width, height, depth, 0, GL_RGBA, GL_HALF_FLOAT, textels);
             break;
@@ -881,15 +883,15 @@ std::shared_ptr<DT3GLTexture3DResource> DT3OpenGL::create_texture_3D (DTint widt
         default:
             ASSERT(0);
     }
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
-	if (r->mipmapped) {
-		::glGenerateMipmapM(GL_TEXTURE_3D);   // establish a mipmap chain for the texture
+    if (r->mipmapped) {
+        ::glGenerateMipmapM(GL_TEXTURE_3D);   // establish a mipmap chain for the texture
         ASSERT(::glGetError() == GL_NO_ERROR);
-	}
-    
-	::glBindTexture(GL_TEXTURE_3D, save_tex);
+    }
+
+    ::glBindTexture(GL_TEXTURE_3D, save_tex);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -910,9 +912,9 @@ void DT3OpenGL::update_texture_3D (const std::shared_ptr<DT3GLTexture3DResource>
 
     // Create OpenGLES2 Texture
     ::glBindTexture(GL_TEXTURE_2D, r->name);          //	bind the texture
-    
+
     ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	   
+
     // Build texture based on the format
     switch (r->format) {
 
@@ -968,12 +970,12 @@ void DT3OpenGL::update_texture_3D (const std::shared_ptr<DT3GLTexture3DResource>
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
-	if (r->mipmapped) {
-		::glGenerateMipmapM(GL_TEXTURE_3D);   // establish a mipmap chain for the texture
+    if (r->mipmapped) {
+        ::glGenerateMipmapM(GL_TEXTURE_3D);   // establish a mipmap chain for the texture
         ASSERT(::glGetError() == GL_NO_ERROR);
-	}
-    
-	::glBindTexture(GL_TEXTURE_3D, save_tex);
+    }
+
+    ::glBindTexture(GL_TEXTURE_3D, save_tex);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 #endif
@@ -1010,14 +1012,14 @@ std::shared_ptr<DT3GLTextureCubeResource> DT3OpenGL::create_texture_cube (  DTin
     r->flags = flags;
 
     ::glGenTextures(1,&r->name);
-    
+
     // Create OpenGL2 Texture
     ::glBindTexture(GL_TEXTURE_CUBE_MAPM, r->name);          //	bind the texture
-    
+
     ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    
+
     for (DTuint f = 0; f < 6; ++f) {
-    
+
         GLenum face;
         GLvoid *buffer;
 
@@ -1029,9 +1031,9 @@ std::shared_ptr<DT3GLTextureCubeResource> DT3OpenGL::create_texture_cube (  DTin
             case 4: face = GL_TEXTURE_CUBE_MAP_POSITIVE_XM;  buffer = textels_left;    break;
             case 5: face = GL_TEXTURE_CUBE_MAP_NEGATIVE_XM;  buffer = textels_right;   break;
         };
-        
+
         switch (r->format) {
-	    
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
             case DT3GL_FORMAT_RGBA_HALF_FLOAT:
                 ::glTexImage2D(face, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_HALF_FLOAT, buffer);
@@ -1062,17 +1064,17 @@ std::shared_ptr<DT3GLTextureCubeResource> DT3OpenGL::create_texture_cube (  DTin
                 ASSERT(0);
                 break;
         }
-  
+
         ASSERT(::glGetError() == GL_NO_ERROR);
         if (r->mipmapped) {
             ::glGenerateMipmapM(GL_TEXTURE_CUBE_MAPM);   // establish a mipmap chain for the texture
             ASSERT(::glGetError() == GL_NO_ERROR);
         }
-    
+
     }
 
-	::glBindTexture(GL_TEXTURE_CUBE_MAP, save_tex);
- 
+    ::glBindTexture(GL_TEXTURE_CUBE_MAP, save_tex);
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     return std::shared_ptr<DT3GLTextureCubeResource>(r);
@@ -1093,14 +1095,14 @@ void DT3OpenGL::update_texture_cube (   const std::shared_ptr<DT3GLTextureCubeRe
 
     // Create OpenGLES2 Texture
     ::glBindTexture(GL_TEXTURE_2D, r->name);          //	bind the texture
-    
+
     ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     for (DTuint f = 0; f < 6; ++f) {
-    
+
         GLenum face;
         GLvoid *buffer;
-        
+
         switch (f) {
             case 0: face = GL_TEXTURE_CUBE_MAP_POSITIVE_ZM;  buffer = textels_front;   break;
             case 1: face = GL_TEXTURE_CUBE_MAP_NEGATIVE_ZM;  buffer = textels_back;    break;
@@ -1109,7 +1111,7 @@ void DT3OpenGL::update_texture_cube (   const std::shared_ptr<DT3GLTextureCubeRe
             case 4: face = GL_TEXTURE_CUBE_MAP_POSITIVE_XM;  buffer = textels_left;    break;
             case 5: face = GL_TEXTURE_CUBE_MAP_NEGATIVE_XM;  buffer = textels_right;   break;
         };
-        
+
         // Build texture based on the format
         switch (r->format) {
 
@@ -1164,16 +1166,16 @@ void DT3OpenGL::update_texture_cube (   const std::shared_ptr<DT3GLTextureCubeRe
                 ASSERT(0);
 
         }
-        
+
         ASSERT(::glGetError() == GL_NO_ERROR);
         if (r->mipmapped) {
             ::glGenerateMipmapM(GL_TEXTURE_CUBE_MAPM);   // establish a mipmap chain for the texture
             ASSERT(::glGetError() == GL_NO_ERROR);
         }
-    
+
     }
 
-	::glBindTexture(GL_TEXTURE_CUBE_MAP, save_tex);
+    ::glBindTexture(GL_TEXTURE_CUBE_MAP, save_tex);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -1194,19 +1196,19 @@ std::shared_ptr<DT3GLAttribBufferResource> DT3OpenGL::create_buffer (DTubyte *bu
 
     r->flags = flags;
     r->format = buffer_format;
-    
+
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glGenBuffers(1,&r->name);
-	::glBindBuffer(GL_ARRAY_BUFFER, r->name);
-    
+    ::glGenBuffers(1,&r->name);
+    ::glBindBuffer(GL_ARRAY_BUFFER, r->name);
+
     //if (r->flags == DT3GL_ACCESS_CPU_WRITE)
         ::glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) buffer_size, buffer_data, GL_STREAM_DRAW);
-	//else
+    //else
     //    ::glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) buffer_size, buffer_data, GL_STATIC_DRAW);
-		
-	::glBindBuffer(GL_ARRAY_BUFFER, save_buffer);
+
+    ::glBindBuffer(GL_ARRAY_BUFFER, save_buffer);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -1220,16 +1222,16 @@ void DT3OpenGL::update_buffer (const std::shared_ptr<DT3GLAttribBufferResource> 
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glBindBuffer(GL_ARRAY_BUFFER, r->name);
-    
+    ::glBindBuffer(GL_ARRAY_BUFFER, r->name);
+
 //    void *p = ::glMapBufferRangeEXT(GL_ARRAY_BUFFER, (GLsizeiptr) buffer_offset, (GLsizeiptr) buffer_size, GL_MAP_WRITE_BIT_EXT | GL_MAP_UNSYNCHRONIZED_BIT_EXT);
 //    ::memcpy(p, buffer_data, (DTuint) buffer_size);
 //    ::glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, (GLsizeiptr) buffer_size, buffer_data);
-		
+
     ::glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) buffer_size, buffer_data, GL_STREAM_DRAW);    // Orphaning
     //::glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, (GLsizeiptr) buffer_size, buffer_data);
 
-	::glBindBuffer(GL_ARRAY_BUFFER, save_buffer);
+    ::glBindBuffer(GL_ARRAY_BUFFER, save_buffer);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -1241,19 +1243,19 @@ std::shared_ptr<DT3GLElementBufferResource> DT3OpenGL::create_index_buffer (DTub
 
     r->flags = flags;
     r->format = buffer_format;
-    
+
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glGenBuffers(1,&r->name);
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->name);
-    
+    ::glGenBuffers(1,&r->name);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->name);
+
     //if (r->flags == DT3GL_ACCESS_CPU_WRITE)
         ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) buffer_size, buffer_data, GL_STREAM_DRAW);
-	//else
+    //else
     //    ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) buffer_size, buffer_data, GL_STATIC_DRAW);
-		
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
+
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -1267,16 +1269,16 @@ void DT3OpenGL::update_index_buffer (const std::shared_ptr<DT3GLElementBufferRes
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->name);
-    
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->name);
+
 //    void *p = ::glMapBufferRangeEXT(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) buffer_offset, (GLsizeiptr) buffer_size, GL_MAP_WRITE_BIT_EXT | GL_MAP_UNSYNCHRONIZED_BIT_EXT);
 //    ::memcpy(p, buffer_data, (DTuint) buffer_size);
 //    ::glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, (GLsizeiptr) buffer_size, buffer_data);
-		
+
     ::glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr) buffer_size, buffer_data, GL_STREAM_DRAW);    // Orphaning
     //::glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, buffer_offset, (GLsizeiptr) buffer_size, buffer_data);
 
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -1295,10 +1297,10 @@ void DT3OpenGL::update_index_buffer (const std::shared_ptr<DT3GLElementBufferRes
 std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const DTint buffer_data)
 {
     DT3OpenGLUniformResource *r = new DT3OpenGLUniformResource();
-    
+
     r->format = DT3GL_UNIFORM_FORMAT_1_INT;
     r->num = 1;
-    
+
     r->data.resize(sizeof(DTint));
     ::memcpy(&r->data[0], &buffer_data, r->data.size());
 
@@ -1310,10 +1312,10 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const DTint buf
 std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Vector4 &buffer_data)
 {
     DT3OpenGLUniformResource *r = new DT3OpenGLUniformResource();
-    
+
     r->format = DT3GL_UNIFORM_FORMAT_4_FLOAT;
     r->num = 1;
-    
+
     r->data.resize(sizeof(Vector4));
     ::memcpy(&r->data[0], &buffer_data, r->data.size());
 
@@ -1325,10 +1327,10 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Vector4 &
 std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const std::vector<Vector4> &buffer_data)
 {
     DT3OpenGLUniformResource *r = new DT3OpenGLUniformResource();
-    
+
     r->format = DT3GL_UNIFORM_FORMAT_4_FLOAT;
     r->num = (DTint) buffer_data.size();
-    
+
     r->data.resize(sizeof(Vector4) * r->num);
     ::memcpy(&r->data[0], &buffer_data[0], r->data.size());
 
@@ -1340,10 +1342,10 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const std::vect
 std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Matrix4 &buffer_data)
 {
     DT3OpenGLUniformResource *r = new DT3OpenGLUniformResource();
-    
+
     r->format = DT3GL_UNIFORM_FORMAT_16_FLOAT;
     r->num = 1;
-    
+
     r->data.resize(sizeof(Matrix4));
     ::memcpy(&r->data[0], &buffer_data, r->data.size());
 
@@ -1355,10 +1357,10 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Matrix4 &
 std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const std::vector<Matrix4> &buffer_data)
 {
     DT3OpenGLUniformResource *r = new DT3OpenGLUniformResource();
-    
+
     r->format = DT3GL_UNIFORM_FORMAT_16_FLOAT;
     r->num = (DTint) buffer_data.size();
-    
+
     r->data.resize(sizeof(Matrix4) * r->num);
     ::memcpy(&r->data[0], &buffer_data[0], r->data.size());
 
@@ -1370,10 +1372,10 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const std::vect
 std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Color4f &buffer_data)
 {
     DT3OpenGLUniformResource *r = new DT3OpenGLUniformResource();
-    
+
     r->format = DT3GL_UNIFORM_FORMAT_4_FLOAT;
     r->num = 1;
-    
+
     r->data.resize(sizeof(Color4f));
     ::memcpy(&r->data[0], &buffer_data, r->data.size());
 
@@ -1388,10 +1390,10 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Color4f &
 void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res, const DTint buffer_data)
 {
     std::shared_ptr<DT3OpenGLUniformResource> r = std::static_pointer_cast<DT3OpenGLUniformResource>(res);
-    
+
     ASSERT(r->format == DT3GL_UNIFORM_FORMAT_1_INT);
     ASSERT(r->data.size() == sizeof(DTint));
-    
+
     if (::memcmp(&r->data[0], &buffer_data, r->data.size()) != 0) {
         ::memcpy(&r->data[0], &buffer_data, r->data.size());
         r->use_stamp = ++_use_stamp;
@@ -1401,7 +1403,7 @@ void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res
 void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res, const Vector4 &buffer_data)
 {
     std::shared_ptr<DT3OpenGLUniformResource> r = std::static_pointer_cast<DT3OpenGLUniformResource>(res);
-    
+
     ASSERT(r->format == DT3GL_UNIFORM_FORMAT_4_FLOAT);
     ASSERT(r->data.size() == sizeof(Vector4));
 
@@ -1414,10 +1416,10 @@ void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res
 void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res, const std::vector<Vector4> &buffer_data)
 {
     std::shared_ptr<DT3OpenGLUniformResource> r = std::static_pointer_cast<DT3OpenGLUniformResource>(res);
-    
+
     ASSERT(r->format == DT3GL_UNIFORM_FORMAT_4_FLOAT);
     ASSERT(r->data.size() == sizeof(Vector4) * buffer_data.size());
-    
+
     ::memcpy(&r->data[0], &buffer_data[0], r->data.size());
     r->use_stamp = ++_use_stamp;
 }
@@ -1425,10 +1427,10 @@ void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res
 void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res, const Matrix4 &buffer_data)
 {
     std::shared_ptr<DT3OpenGLUniformResource> r = std::static_pointer_cast<DT3OpenGLUniformResource>(res);
-    
+
     ASSERT(r->format == DT3GL_UNIFORM_FORMAT_16_FLOAT);
     ASSERT(r->data.size() == sizeof(Matrix4));
-    
+
     if (::memcmp(&r->data[0], &buffer_data, r->data.size()) != 0) {
         ::memcpy(&r->data[0], &buffer_data, r->data.size());
         r->use_stamp = ++_use_stamp;
@@ -1438,10 +1440,10 @@ void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res
 void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res, const std::vector<Matrix4> &buffer_data)
 {
     std::shared_ptr<DT3OpenGLUniformResource> r = std::static_pointer_cast<DT3OpenGLUniformResource>(res);
-    
+
     ASSERT(r->format == DT3GL_UNIFORM_FORMAT_16_FLOAT);
     ASSERT(r->data.size() == sizeof(Matrix4) * buffer_data.size());
-    
+
     ::memcpy(&r->data[0], &buffer_data[0], r->data.size());
     r->use_stamp = ++_use_stamp;
 }
@@ -1449,10 +1451,10 @@ void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res
 void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res, const Color4f &buffer_data)
 {
     std::shared_ptr<DT3OpenGLUniformResource> r = std::static_pointer_cast<DT3OpenGLUniformResource>(res);
-    
+
     ASSERT(r->format == DT3GL_UNIFORM_FORMAT_4_FLOAT);
     ASSERT(r->data.size() == sizeof(Color4f));
-    
+
     if (::memcmp(&r->data[0], &buffer_data, r->data.size()) != 0) {
         ::memcpy(&r->data[0], &buffer_data, r->data.size());
         r->use_stamp = ++_use_stamp;
@@ -1472,7 +1474,7 @@ void DT3OpenGL::update_uniform (const std::shared_ptr<DT3GLUniformResource> &res
 std::shared_ptr<DT3GLShaderResource> DT3OpenGL::create_shader (void)
 {
     DT3OpenGLShaderResource *r = new DT3OpenGLShaderResource();
-    
+
     // Create Program
     r->name = ::glCreateProgram();
 
@@ -1487,31 +1489,31 @@ void DT3OpenGL::link_shader (const std::shared_ptr<DT3GLShaderResource> &shader)
 
     // Link Program
     ::glLinkProgram(r->name);
-    
+
     GLint linked;
     ::glGetProgramiv(r->name, GL_LINK_STATUS, &linked);
 
     // Check link status
     if (!linked) {
         GLint infoLen = 0;
-        
+
         ::glGetProgramiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
-        
+
         if (infoLen > 1) {
             DTcharacter *infoLog = new ("OGL Log") DTcharacter[infoLen];
             ::glGetProgramInfoLog(r->name, infoLen, NULL, infoLog);
-            
+
             LOG_MESSAGE << infoLog;
-            
+
             delete[] infoLog;
         } else {
             LOG_MESSAGE << "Program is not linked and there is no error log.";
         }
-        
+
         ::glDeleteProgram(r->name);
-        return;	
+        return;
     }
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
 }
@@ -1520,46 +1522,46 @@ std::shared_ptr<DT3GLVertexShaderResource> DT3OpenGL::create_vertex_shader (cons
 {
     DT3OpenGLVertexShaderResource *r = new DT3OpenGLVertexShaderResource();
 
-	// Create the shader object
-	r->name = ::glCreateShader(GL_VERTEX_SHADER);
-	if (r->name == 0) {
+    // Create the shader object
+    r->name = ::glCreateShader(GL_VERTEX_SHADER);
+    if (r->name == 0) {
         delete r;
-		return std::shared_ptr<DT3GLVertexShaderResource>();
+        return std::shared_ptr<DT3GLVertexShaderResource>();
     }
-		
-	// load the _shader source
-	const DTcharacter *s = source.c_str();
-	::glShaderSource(r->name, 1, &s, NULL);
-	
-	// compile the _shader
-	::glCompileShader(r->name);
-	
-	// Check the compile status
-	GLint	compiled;
-	::glGetShaderiv(r->name, GL_COMPILE_STATUS, &compiled);
-	
-	if (!compiled) {
-		GLint infoLen = 0;
-		
-		::glGetShaderiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
-		
-		if (infoLen > 1) {
-			DTcharacter *infoLog = new ("ShaderLog") DTcharacter[infoLen];
-			::glGetShaderInfoLog(r->name, infoLen, NULL, infoLog);
-			
-			LOG_MESSAGE << infoLog;
-			
-			delete[] infoLog;
-		}
-		
-		::glDeleteShader(r->name);
-        
+
+    // load the _shader source
+    const DTcharacter *s = source.c_str();
+    ::glShaderSource(r->name, 1, &s, NULL);
+
+    // compile the _shader
+    ::glCompileShader(r->name);
+
+    // Check the compile status
+    GLint	compiled;
+    ::glGetShaderiv(r->name, GL_COMPILE_STATUS, &compiled);
+
+    if (!compiled) {
+        GLint infoLen = 0;
+
+        ::glGetShaderiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
+
+        if (infoLen > 1) {
+            DTcharacter *infoLog = new ("ShaderLog") DTcharacter[infoLen];
+            ::glGetShaderInfoLog(r->name, infoLen, NULL, infoLog);
+
+            LOG_MESSAGE << infoLog;
+
+            delete[] infoLog;
+        }
+
+        ::glDeleteShader(r->name);
+
         delete r;
-		return std::shared_ptr<DT3GLVertexShaderResource>();
-	}
-    
+        return std::shared_ptr<DT3GLVertexShaderResource>();
+    }
+
     ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
     return std::shared_ptr<DT3GLVertexShaderResource>(r);
 }
 
@@ -1569,43 +1571,43 @@ std::shared_ptr<DT3GLGeometryShaderResource> DT3OpenGL::create_geometry_shader (
 
     DT3OpenGLGeometryShaderResource *r = new DT3OpenGLGeometryShaderResource();
 
-	// Create the shader object
-	r->name = ::glCreateShader(GL_GEOMETRY_SHADER);
-	if (r->name == 0) {
+    // Create the shader object
+    r->name = ::glCreateShader(GL_GEOMETRY_SHADER);
+    if (r->name == 0) {
         delete r;
-		return std::shared_ptr<DT3GLGeometryShaderResource>();
+        return std::shared_ptr<DT3GLGeometryShaderResource>();
     }
-		
-	// load the _shader source
-	const DTcharacter *s = source.c_str();
-	::glShaderSource(r->name, 1, &s, NULL);
-	
-	// compile the _shader
-	::glCompileShader(r->name);
-	
-	// Check the compile status
-	GLint	compiled;
-	::glGetShaderiv(r->name, GL_COMPILE_STATUS, &compiled);
-	
-	if (!compiled) {
-		GLint infoLen = 0;
-		
-		::glGetShaderiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
-		
-		if (infoLen > 1) {
-			DTcharacter *infoLog = new ("ShaderLog") DTcharacter[infoLen];
-			::glGetShaderInfoLog(r->name, infoLen, NULL, infoLog);
-			
-			LOG_MESSAGE << infoLog;
-			
-			delete[] infoLog;
-		}
-		
-		::glDeleteShader(r->name);
-        
+
+    // load the _shader source
+    const DTcharacter *s = source.c_str();
+    ::glShaderSource(r->name, 1, &s, NULL);
+
+    // compile the _shader
+    ::glCompileShader(r->name);
+
+    // Check the compile status
+    GLint	compiled;
+    ::glGetShaderiv(r->name, GL_COMPILE_STATUS, &compiled);
+
+    if (!compiled) {
+        GLint infoLen = 0;
+
+        ::glGetShaderiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
+
+        if (infoLen > 1) {
+            DTcharacter *infoLog = new ("ShaderLog") DTcharacter[infoLen];
+            ::glGetShaderInfoLog(r->name, infoLen, NULL, infoLog);
+
+            LOG_MESSAGE << infoLog;
+
+            delete[] infoLog;
+        }
+
+        ::glDeleteShader(r->name);
+
         delete r;
-		return std::shared_ptr<DT3GLGeometryShaderResource>();
-	}
+        return std::shared_ptr<DT3GLGeometryShaderResource>();
+    }
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -1619,43 +1621,43 @@ std::shared_ptr<DT3GLFragmentShaderResource> DT3OpenGL::create_fragment_shader (
 {
     DT3OpenGLFragmentShaderResource *r = new DT3OpenGLFragmentShaderResource();
 
-	// Create the shader object
-	r->name = ::glCreateShader(GL_FRAGMENT_SHADER);
-	if (r->name == 0) {
+    // Create the shader object
+    r->name = ::glCreateShader(GL_FRAGMENT_SHADER);
+    if (r->name == 0) {
         delete r;
-		return std::shared_ptr<DT3OpenGLFragmentShaderResource>();
+        return std::shared_ptr<DT3OpenGLFragmentShaderResource>();
     }
-		
-	// load the _shader source
-	const DTcharacter *s = source.c_str();
-	::glShaderSource(r->name, 1, &s, NULL);
-	
-	// compile the _shader
-	::glCompileShader(r->name);
-	
-	// Check the compile status
-	GLint	compiled;
-	::glGetShaderiv(r->name, GL_COMPILE_STATUS, &compiled);
-	
-	if (!compiled) {
-		GLint infoLen = 0;
-		
-		::glGetShaderiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
-		
-		if (infoLen > 1) {
-			DTcharacter *infoLog = new ("ShaderLog") DTcharacter[infoLen];
-			::glGetShaderInfoLog(r->name, infoLen, NULL, infoLog);
-			
-			LOG_MESSAGE << infoLog;
-			
-			delete[] infoLog;
-		}
-		
-		::glDeleteShader(r->name);
+
+    // load the _shader source
+    const DTcharacter *s = source.c_str();
+    ::glShaderSource(r->name, 1, &s, NULL);
+
+    // compile the _shader
+    ::glCompileShader(r->name);
+
+    // Check the compile status
+    GLint	compiled;
+    ::glGetShaderiv(r->name, GL_COMPILE_STATUS, &compiled);
+
+    if (!compiled) {
+        GLint infoLen = 0;
+
+        ::glGetShaderiv(r->name, GL_INFO_LOG_LENGTH, &infoLen);
+
+        if (infoLen > 1) {
+            DTcharacter *infoLog = new ("ShaderLog") DTcharacter[infoLen];
+            ::glGetShaderInfoLog(r->name, infoLen, NULL, infoLog);
+
+            LOG_MESSAGE << infoLog;
+
+            delete[] infoLog;
+        }
+
+        ::glDeleteShader(r->name);
 
         delete r;
-		return std::shared_ptr<DT3OpenGLFragmentShaderResource>();
-	}
+        return std::shared_ptr<DT3OpenGLFragmentShaderResource>();
+    }
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -1667,13 +1669,13 @@ DTint DT3OpenGL::attribute_slot (const std::shared_ptr<DT3GLShaderResource> &sha
     std::shared_ptr<DT3OpenGLShaderResource> rs = std::static_pointer_cast<DT3OpenGLShaderResource>(shader);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
 //    GLint save_p;
 //    ::glGetIntegerv(GL_CURRENT_PROGRAM, &save_p);
 //
 //    ::glUseProgram(rs->name);
     GLint attrib = ::glGetAttribLocation(rs->name,name.c_str());
-    
+
 //    ::glUseProgram(save_p);
 
     return attrib;
@@ -1684,13 +1686,13 @@ DTint DT3OpenGL::uniform_slot (const std::shared_ptr<DT3GLShaderResource> &shade
     std::shared_ptr<DT3OpenGLShaderResource> rs = std::static_pointer_cast<DT3OpenGLShaderResource>(shader);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
 //    GLint save_p;
 //    ::glGetIntegerv(GL_CURRENT_PROGRAM, &save_p);
 //
 //    ::glUseProgram(rs->name);
     GLint attrib = ::glGetUniformLocation(rs->name,name.c_str());
-    
+
 //    ::glUseProgram(save_p);
 
     return attrib;
@@ -1826,15 +1828,15 @@ void DT3OpenGL::attach_texture (DTuint texture_slot, const std::shared_ptr<DT3GL
 void DT3OpenGL::draw_arrays (DT3GLPrimitiveType primitive_type, DTuint num_elements)
 {
     sync_state();
-    
+
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     ::glDrawArrays(gPrimitiveType[primitive_type], 0, num_elements);
-    
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
+
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -1842,15 +1844,15 @@ void DT3OpenGL::draw_arrays (DT3GLPrimitiveType primitive_type, DTuint num_eleme
 void DT3OpenGL::draw_arrays_ranged (DT3GLPrimitiveType primitive_type, DTuint start_element, DTuint num_elements)
 {
     sync_state();
-    
+
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     ::glDrawArrays(gPrimitiveType[primitive_type], start_element, num_elements);
-    
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
+
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
 
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
@@ -1860,15 +1862,15 @@ void DT3OpenGL::draw_indexed_arrays (const std::shared_ptr<DT3GLElementBufferRes
     DT3OpenGLElementBufferResource *r = static_cast<DT3OpenGLElementBufferResource*>(elements.get());
 
     sync_state();
-    
+
     GLint save_buffer;
     ::glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &save_buffer);
 
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->name);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, r->name);
 
     ::glDrawElements(gPrimitiveType[primitive_type], num_elements, GL_UNSIGNED_INT, (void*) 0);
 
-	::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
+    ::glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, save_buffer);
 }
 
 //==============================================================================
@@ -1885,12 +1887,12 @@ std::shared_ptr<DT3GLFramebufferResource> DT3OpenGL::create_framebuffer (void)
 {
     DT3OpenGLFramebufferResource *r = new DT3OpenGLFramebufferResource();
 
-	::glGenFramebuffersM(1, &r->name);
-    
+    ::glGenFramebuffersM(1, &r->name);
+
     r->num_targets = 0;
     r->name_rb_color = 0;
     r->name_rb_depth = 0;
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     return std::shared_ptr<DT3GLFramebufferResource>(r);
@@ -1901,17 +1903,17 @@ void DT3OpenGL::activate_framebuffer (const std::shared_ptr<DT3GLFramebufferReso
 
     if (framebuffer) {
         DT3OpenGLFramebufferResource *rfb = static_cast<DT3OpenGLFramebufferResource*>(framebuffer.get());
-        
+
         std::vector<GLenum> buffers;
         buffers.resize(rfb->num_targets);
-        
+
         for (DTsize i = 0; i < buffers.size(); ++i) {
             buffers[i] = GL_COLOR_ATTACHMENT0M + i;
         }
 
         ::glBindFramebufferM(GL_FRAMEBUFFERM, rfb->name);
         ASSERT(::glGetError() == GL_NO_ERROR);
-        
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
         ::glDrawBuffers(buffers.size(), &buffers[0]);
         ASSERT(::glGetError() == GL_NO_ERROR);
@@ -1919,7 +1921,7 @@ void DT3OpenGL::activate_framebuffer (const std::shared_ptr<DT3GLFramebufferReso
     } else {
         ::glBindFramebufferM(GL_FRAMEBUFFERM, _default_framebuffer);
         ASSERT(::glGetError() == GL_NO_ERROR);
-        
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
         ::glDrawBuffer(GL_BACK);
         ASSERT(::glGetError() == GL_NO_ERROR);
@@ -1934,14 +1936,14 @@ void DT3OpenGL::attach_framebuffer_color (const std::shared_ptr<DT3GLFramebuffer
 
     DT3OpenGLFramebufferResource *rfb = static_cast<DT3OpenGLFramebufferResource*>(framebuffer.get());
     DT3OpenGLTexture2DResource *rt = static_cast<DT3OpenGLTexture2DResource*>(tex.get());
-    
+
     ::glBindFramebufferM(GL_FRAMEBUFFERM, rfb->name);
     ::glFramebufferTexture2DM(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0M + target_index, GL_TEXTURE_2D, rt->name, 0);
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     ::glBindFramebufferM(GL_FRAMEBUFFERM, save_fb);
     ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
     rfb->num_targets = MoreMath::max(target_index+1, rfb->num_targets);
 }
 
@@ -1952,7 +1954,7 @@ void DT3OpenGL::attach_framebuffer_depth_stencil (const std::shared_ptr<DT3GLFra
 
     DT3OpenGLFramebufferResource *rfb = static_cast<DT3OpenGLFramebufferResource*>(framebuffer.get());
     DT3OpenGLTexture2DResource *rt = static_cast<DT3OpenGLTexture2DResource*>(tex.get());
-    
+
     ::glBindFramebufferM(GL_FRAMEBUFFERM, rfb->name);
     ::glFramebufferTexture2DM(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rt->name, 0);
     ASSERT(::glGetError() == GL_NO_ERROR);
@@ -1971,7 +1973,7 @@ void DT3OpenGL::attach_renderbuffer_color (const std::shared_ptr<DT3GLFramebuffe
     GLenum color_fmt = 0;
     switch (format) {
         case DT3GL_FORMAT_RGBA:                 color_fmt = GL_RGBA;    break;
-        
+
         default:
             break;
     }
@@ -1980,7 +1982,7 @@ void DT3OpenGL::attach_renderbuffer_color (const std::shared_ptr<DT3GLFramebuffe
 
     if (!r->name_rb_color)
         ::glGenRenderbuffersM(1, &r->name_rb_color);
-    
+
     ::glBindRenderbufferM(GL_RENDERBUFFER, r->name_rb_color);
     ::glRenderbufferStorageM(GL_RENDERBUFFER, color_fmt, width, height);
     ASSERT(::glGetError() == GL_NO_ERROR);
@@ -2005,20 +2007,20 @@ void DT3OpenGL::attach_renderbuffer_depth_stencil (const std::shared_ptr<DT3GLFr
         case DT3GL_RB_FORMAT_DEPTH_16:              depth_fmt = GL_DEPTH_COMPONENT16M;  break;
         case DT3GL_RB_FORMAT_DEPTH_24:              depth_fmt = GL_DEPTH_COMPONENT24M;  break;
         case DT3GL_RB_FORMAT_DEPTH_24_STENCIL_8:    depth_fmt = GL_DEPTH24_STENCIL8M;   break;
-        
+
         default:
             break;
     }
-    
+
     ::glBindFramebufferM(GL_FRAMEBUFFERM, r->name);
 
     if (!r->name_rb_depth) {
         ::glGenRenderbuffersM(1, &r->name_rb_depth);
         ASSERT(::glGetError() == GL_NO_ERROR);
     }
-    
+
     ::glBindRenderbufferM(GL_RENDERBUFFER, r->name_rb_depth);
-    ::glRenderbufferStorageM(GL_RENDERBUFFER, depth_fmt, width, height);        
+    ::glRenderbufferStorageM(GL_RENDERBUFFER, depth_fmt, width, height);
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     if (format == DT3GL_RB_FORMAT_DEPTH_24_STENCIL_8) {
@@ -2031,9 +2033,9 @@ void DT3OpenGL::attach_renderbuffer_depth_stencil (const std::shared_ptr<DT3GLFr
         ::glFramebufferRenderbufferM(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, r->name_rb_depth);
         ASSERT(::glGetError() == GL_NO_ERROR);
     }
-    
+
     ::glBindFramebufferM(GL_FRAMEBUFFERM, save_fb);
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 }
 
@@ -2054,7 +2056,7 @@ void DT3OpenGL::sync_state (void)
     //
     // Depth stencil State
     //
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     if (_pending_depth_stencil_state && (_pending_depth_stencil_state != _current_depth_stencil_state)) {
@@ -2124,16 +2126,16 @@ void DT3OpenGL::sync_state (void)
 //        }
 
         ASSERT(::glGetError() == GL_NO_ERROR);
-        
+
         _current_depth_stencil_state = _pending_depth_stencil_state;
     }
 
     //
     // Blend state
     //
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
     if (_pending_blend_state && (_pending_blend_state != _current_blend_state)) {
         std::shared_ptr<DT3OpenGLBlendResource> r = std::static_pointer_cast<DT3OpenGLBlendResource>(_pending_blend_state);
 
@@ -2150,7 +2152,7 @@ void DT3OpenGL::sync_state (void)
                         r->state.render_target_write_mask_g,
                         r->state.render_target_write_mask_b,
                         r->state.render_target_write_mask_a);
-        
+
         ASSERT(::glGetError() == GL_NO_ERROR);
 
         _current_blend_state = _pending_blend_state;
@@ -2181,46 +2183,46 @@ void DT3OpenGL::sync_state (void)
         // Scissor
         if (r->state.scissor_enable)    ::glEnable(GL_SCISSOR_TEST);
         else                            ::glDisable(GL_SCISSOR_TEST);
-        
+
         ASSERT(::glGetError() == GL_NO_ERROR);
 
         _current_rasterizer_state = _pending_rasterizer_state;
     }
-    
+
     //
     // Shader state
     //
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     if (_pending_shader_state && (_pending_shader_state != _current_shader_state)) {
         std::shared_ptr<DT3OpenGLShaderResource> rs = std::static_pointer_cast<DT3OpenGLShaderResource>(_pending_shader_state);
-    
+
         ::glUseProgram(rs->name);
-    
+
         ASSERT(::glGetError() == GL_NO_ERROR);
 
         _current_shader_state = _pending_shader_state;
     }
 
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     if (_pending_shader_state) {
-    
+
         //
         // Attributes
         //
 
         std::shared_ptr<DT3OpenGLShaderResource> rs = std::static_pointer_cast<DT3OpenGLShaderResource>(_pending_shader_state);
-    
+
         for (auto &i : rs->attributes) {
             const std::shared_ptr<DT3OpenGLAttribBufferResource> &attrib = i.second.attribute;
-            
+
             ASSERT(i.first >= 0);
-                
+
             if (attrib) {
-                
+
                 ::glBindBuffer(GL_ARRAY_BUFFER, attrib->name);
                 ASSERT(::glGetError() == GL_NO_ERROR);
 
@@ -2228,47 +2230,50 @@ void DT3OpenGL::sync_state (void)
                 ASSERT(::glGetError() == GL_NO_ERROR);
 
                 switch (attrib->format) {
+                    case DT3GL_BUFFER_FORMAT_1_UINT:
+                        // fix compiler warning. Need implementation?
+                        break;
                     case DT3GL_BUFFER_FORMAT_2_FLOAT:
                         ::glVertexAttribPointer(i.first, 2, GL_FLOAT, GL_FALSE, 0, (void *) 0);
                         ASSERT(::glGetError() == GL_NO_ERROR);
                         break;
-                    
+
                     case DT3GL_BUFFER_FORMAT_3_FLOAT:
                         ::glVertexAttribPointer(i.first, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
                         ASSERT(::glGetError() == GL_NO_ERROR);
                         break;
-                        
+
                     case DT3GL_BUFFER_FORMAT_4_FLOAT:
                         ::glVertexAttribPointer(i.first, 4, GL_FLOAT, GL_FALSE, 0, (void *) 0);
                         ASSERT(::glGetError() == GL_NO_ERROR);
                         break;
-                    
+
                     case DT3GL_BUFFER_FORMAT_4_UBYTE:
                         ::glVertexAttribPointer(i.first, 4, GL_UNSIGNED_BYTE, GL_TRUE, 0, (void *) 0);
                         ASSERT(::glGetError() == GL_NO_ERROR);
                         break;
-                        
+
                     case DT3GL_BUFFER_FORMAT_4_USHORT:
                         ::glVertexAttribPointer(i.first, 4, GL_UNSIGNED_SHORT, GL_TRUE, 0, (void *) 0);
                         ASSERT(::glGetError() == GL_NO_ERROR);
                         break;
                 };
 
-            } else {                
+            } else {
                 ::glDisableVertexAttribArray(i.first);
                 ASSERT(::glGetError() == GL_NO_ERROR);
 
             }
-            
+
         }
-        
+
         ASSERT(::glGetError() == GL_NO_ERROR);
-    
+
 
         //
         // Uniforms
         //
-        
+
         for (auto &i : rs->uniforms) {
             std::shared_ptr<DT3OpenGLUniformResource> uniform = i.second.uniform;
 
@@ -2278,40 +2283,40 @@ void DT3OpenGL::sync_state (void)
             uniform->use_stamp = i.second.use_stamp;
 
             DTint index = i.first;
-            
+
             switch(uniform->format) {
                 case DT3GL_UNIFORM_FORMAT_1_INT:
                     ::glUniform1iv(index, uniform->num, (const GLint*) &(uniform->data[0]));
                     break;
-                
+
                 case DT3GL_UNIFORM_FORMAT_4_FLOAT:
                     ::glUniform4fv(index, uniform->num, (const GLfloat*) &(uniform->data[0]));
                     break;
-                
+
                 case DT3GL_UNIFORM_FORMAT_16_FLOAT:
                     ::glUniformMatrix4fv(index, uniform->num, GL_FALSE, (const GLfloat *) &(uniform->data[0]));
                     break;
-                
+
             }
 
             ASSERT(::glGetError() == GL_NO_ERROR);
         }
-        
+
         ASSERT(::glGetError() == GL_NO_ERROR);
     }
-    
+
     //
     // Textures
     //
-    
+
     ASSERT(::glGetError() == GL_NO_ERROR);
 
     for (DTint i = 0; i < 16; ++i) {
-        
+
         //
         // Set active texture unit
         //
-        
+
         ASSERT(::glGetError() == GL_NO_ERROR);
 
         // Activate texture
@@ -2323,10 +2328,10 @@ void DT3OpenGL::sync_state (void)
 
             ::glBindTexture(GL_TEXTURE_2D, r->name);
             ASSERT(::glGetError() == GL_NO_ERROR);
-            
+
             if (r->sampler != _pending_sampler_state[i]) {
                 std::shared_ptr<DT3OpenGLSamplerResource> rs = std::static_pointer_cast<DT3OpenGLSamplerResource>(_pending_sampler_state[i]);
-                
+
                 ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gFilterMinMode[rs->state.filter]);
                 ::glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gFilterMagMode[rs->state.filter]);
                 ASSERT(::glGetError() == GL_NO_ERROR);
@@ -2341,9 +2346,9 @@ void DT3OpenGL::sync_state (void)
 #endif
                 r->sampler = rs;
             }
-            
+
             ASSERT(::glGetError() == GL_NO_ERROR);
-            
+
             // Copy current states
             _current_texture_2d_state[i] = _pending_texture_2d_state[i];
             _current_texture_3d_state[i] = nullptr;
@@ -2355,7 +2360,7 @@ void DT3OpenGL::sync_state (void)
 
             ::glActiveTexture(GL_TEXTURE0 + i);
             ::glBindTexture(GL_TEXTURE_3D, r->name);
-            
+
             if (r->sampler != _pending_sampler_state[i]) {
                 std::shared_ptr<DT3OpenGLSamplerResource> rs = std::static_pointer_cast<DT3OpenGLSamplerResource>(_pending_sampler_state[i]);
 
@@ -2372,7 +2377,7 @@ void DT3OpenGL::sync_state (void)
             }
 
             ASSERT(::glGetError() == GL_NO_ERROR);
-            
+
             // Copy current states
             _current_texture_2d_state[i] = nullptr;
             _current_texture_3d_state[i] = _pending_texture_3d_state[i];
@@ -2420,17 +2425,17 @@ void DT3OpenGL::sync_state (void)
             _current_texture_3d_state[i] = nullptr;
             _current_texture_cube_state[i] = nullptr;
         }
-        
+
 
 
         //
         // Sampler
         //
-       
-        
+
+
         if (_pending_sampler_state[i] != _current_sampler_state[i]) {
             std::shared_ptr<DT3OpenGLSamplerResource> r = std::static_pointer_cast<DT3OpenGLSamplerResource>(_pending_sampler_state[i]);
-            
+
 #if DT3_OS != DT3_IOS && DT3_OS != DT3_ANDROID
             // Env
             ::glTexEnvf(GL_TEXTURE_FILTER_CONTROL, GL_TEXTURE_LOD_BIAS, r->state.mip_lod_bias);
@@ -2441,8 +2446,8 @@ void DT3OpenGL::sync_state (void)
             // Copy current states
             _current_sampler_state[i] = _pending_sampler_state[i];
         }
-        
-        
+
+
         ASSERT(::glGetError() == GL_NO_ERROR);
     }
 
@@ -2450,13 +2455,13 @@ void DT3OpenGL::sync_state (void)
 }
 
 //==============================================================================
-//  _____           __                                          
-// |  __ \         / _|                                         
-// | |__) |__ _ __| |_ ___  _ __ _ __ ___   __ _ _ __   ___ ___ 
+//  _____           __
+// |  __ \         / _|
+// | |__) |__ _ __| |_ ___  _ __ _ __ ___   __ _ _ __   ___ ___
 // |  ___/ _ \ '__|  _/ _ \| '__| '_ ` _ \ / _` | '_ \ / __/ _ \
 // | |  |  __/ |  | || (_) | |  | | | | | | (_| | | | | (_|  __/
 // |_|   \___|_|  |_| \___/|_|  |_| |_| |_|\__,_|_| |_|\___\___|
-//                                                              
+//
 //==============================================================================
 
 void DT3OpenGL::begin_frame (void)

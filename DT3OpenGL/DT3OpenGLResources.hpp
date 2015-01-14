@@ -1,3 +1,4 @@
+#pragma once 
 #ifndef DT3_DT3OPENGLRESOURCES
 #define DT3_DT3OPENGLRESOURCES
 //==============================================================================

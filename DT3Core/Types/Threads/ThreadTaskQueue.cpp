@@ -1,16 +1,17 @@
 //==============================================================================
-///	
+///
 ///	File: ThreadTaskQueue.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Threads/ThreadTaskQueue.hpp"
 #include "DT3Core/Types/Utility/TimerHires.hpp"
+#include "DT3Core/System/AppConfig.hpp"
 #include <algorithm>
 
 //==============================================================================
@@ -32,13 +33,13 @@ std::list<std::shared_ptr<ThreadTaskQueue::Helper>>    ThreadTaskQueue::_threads
 std::shared_ptr<ThreadTaskRef> ThreadTaskQueue::add_task (std::shared_ptr<LatentCall> lc, DTfloat priority, DTfloat delay)
 {
     std::shared_ptr<ThreadTaskRef> ref(ThreadTaskRef::create());
-    
+
     Task t;
     t._priority = priority;
     t._delay = delay;
     t._lc = lc;
     t._ref = ref;
-    
+
     // Status is now queued
     ref->set_status(ThreadTaskRef::STATUS_QUEUED);
 
@@ -46,17 +47,17 @@ std::shared_ptr<ThreadTaskRef> ThreadTaskQueue::add_task (std::shared_ptr<Latent
     std::unique_lock<std::mutex> lock(_queue_lock);
     _queue.push_back(t);
     lock.unlock();
-    
+
     // Bump start threads
     run_queue();
-    
+
     return ref;
 }
 
 void ThreadTaskQueue::remove_task (const std::shared_ptr<ThreadTaskRef> &ref)
 {
     std::unique_lock<std::mutex> lock(_queue_lock);
-    
+
     auto e = std::remove_if(_queue.begin(), _queue.end(),
         [&ref](Task &t) {
             t._ref->set_status(ThreadTaskRef::STATUS_CANCELLED);
@@ -66,17 +67,17 @@ void ThreadTaskQueue::remove_task (const std::shared_ptr<ThreadTaskRef> &ref)
     _queue.erase(e, _queue.end());
 
 }
-    
+
 void ThreadTaskQueue::remove_all_tasks (void)
 {
     std::unique_lock<std::mutex> lock(_queue_lock);
-    
+
     for_each(_queue.begin(), _queue.end(),
         [](Task &t) {
             t._ref->set_status(ThreadTaskRef::STATUS_CANCELLED);
         }
     );
-    
+
     _queue.clear();
 }
 
@@ -94,7 +95,7 @@ void ThreadTaskQueue::set_num_threads (DTuint n)
     // Start new threads
     _threads.clear();
     _threads.resize(n);
-    
+
     std::for_each(_threads.begin(), _threads.end(),
         [](std::shared_ptr<Helper> &h) {
             h = std::shared_ptr<Helper>(new Helper());
@@ -123,7 +124,7 @@ void ThreadTaskQueue::run_queue (void)
             }
         );
     }
-    
+
 }
 
 //==============================================================================
@@ -147,7 +148,7 @@ void ThreadTaskQueue::resume (std::shared_ptr<Helper> &h)
 void ThreadTaskQueue::do_thread (std::shared_ptr<Helper> &h)
 {
     TimerHires timer;
-    
+
     while (!h->_helper_done) {
         std::unique_lock<std::mutex> lock(_queue_lock);
 
@@ -155,23 +156,23 @@ void ThreadTaskQueue::do_thread (std::shared_ptr<Helper> &h)
         std::shared_ptr<ThreadTaskRef> ref;
 
         if (ThreadTaskQueue::_queue.size() > 0) {
-        
+
             std::list<ThreadTaskQueue::Task>::iterator j = ThreadTaskQueue::_queue.end();
             DTfloat max_priorty = -std::numeric_limits<DTfloat>::infinity();
-            
+
             FOR_EACH (i,ThreadTaskQueue::_queue) {
                 DTfloat dt = static_cast<DTfloat>(timer.delta_time());
                 if (dt > DT3_MAX_TICK)
                     dt = DT3_MAX_TICK;
 
                 i->_delay -= dt;
-            
+
                 if ( (i->_delay <= 0.0F) && (i->_priority > max_priorty) ) {
                     j = i;
                     max_priorty = i->_priority;
                 }
             }
-        
+
             if (j != ThreadTaskQueue::_queue.end()) {
                 lc = j->_lc;
                 ref = j->_ref;
@@ -181,7 +182,7 @@ void ThreadTaskQueue::do_thread (std::shared_ptr<Helper> &h)
         }
 
         lock.unlock();
-        
+
         // Check if done
         if (lc) {
             // Do callback

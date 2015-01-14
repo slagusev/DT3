@@ -1,12 +1,12 @@
 //==============================================================================
-///	
+///
 ///	File: GameMainThread.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Entry/GameMainThread.hpp"
@@ -47,7 +47,7 @@
 //==============================================================================
 
 namespace DT3 {
-	
+
 //==============================================================================
 //==============================================================================
 
@@ -65,11 +65,11 @@ std::list<std::shared_ptr<LatentCall>>  GameMainThread::_event_queue;
 void GameMainThread::initialize_engine_impl (void)
 {
     LOG_DEBUG << "initialize_engine_impl called";
-    
+
     //
     // Initialize engine
     //
-    
+
 #if DTP_USE_PORTAL
     // Start portal SDK
     DTPortal::initialize(DTP_PUBLIC_ID, DTP_PRIVATE_KEY, HAL::save_dir().full_path().c_str());
@@ -77,13 +77,13 @@ void GameMainThread::initialize_engine_impl (void)
 
     // Turn off sync_with_stdio
     // http://stackoverflow.com/questions/9371238/why-is-reading-lines-from-stdin-much-slower-in-c-than-python
-    std::ios_base::sync_with_stdio(false);    
+    std::ios_base::sync_with_stdio(false);
 
     // initialize the static initializer
-	StaticInitializer::initialize();
+    StaticInitializer::initialize();
 
-	// Import a config file for the engine
-	//Configure::import_config(FilePath("{config.txt}"));
+    // Import a config file for the engine
+    //Configure::import_config(FilePath("{config.txt}"));
     std::thread import_config_thread(Configure::import_config, FilePath("{config.txt}"));
 
     // Start up thread task queue threads
@@ -91,13 +91,13 @@ void GameMainThread::initialize_engine_impl (void)
     ThreadTaskQueue::set_num_threads(HAL::num_CPU_cores());
 #endif
 
-	// Warning if in debug mode
+    // Warning if in debug mode
 #if DT3_DEBUG == 1
-	LOG_MESSAGE << "WARNING: Debug mode enabled.";
+    LOG_MESSAGE << "WARNING: Debug mode enabled.";
 #endif
 
     // Warning if next run after crash
-	DTboolean crashed = MoreStrings::cast_from_string<DTboolean>(Globals::global("SYS_CRASHED"));
+    DTboolean crashed = MoreStrings::cast_from_string<DTboolean>(Globals::global("SYS_CRASHED"));
     if (crashed) {
         LOG_MESSAGE << "WARNING: Game crashed on last run.";
         Globals::set_global("SYS_WAS_CRASHED","1",Globals::VOLATILE);
@@ -106,55 +106,55 @@ void GameMainThread::initialize_engine_impl (void)
     }
 
     // Crash detection. Save the crashed flag to a file and save it. Clear it on quit.
-	Globals::set_global("SYS_CRASHED","1",Globals::PERSISTENT);
-	Globals::save();    // Immediately save crash flag
+    Globals::set_global("SYS_CRASHED","1",Globals::PERSISTENT);
+    Globals::save();    // Immediately save crash flag
 
     // Wait for config to finish loading
     import_config_thread.join();
 
-	//
-	// Create Managers
-	//
-				
-	LOG_MESSAGE << "Creating Network Manager...";
-	std::shared_ptr<DeviceNetwork> network_manager = checked_cast<DeviceNetwork>(Factory::create_object("{CLASS_NETWORK_DEVICE}"));
+    //
+    // Create Managers
+    //
+
+    LOG_MESSAGE << "Creating Network Manager...";
+    std::shared_ptr<DeviceNetwork> network_manager = checked_cast<DeviceNetwork>(Factory::create_object("{CLASS_NETWORK_DEVICE}"));
     if (network_manager)    System::set_network_manager(network_manager);
     else                    System::set_network_manager(DeviceNetwork::create());   // Default NULL device
     LOG_MESSAGE << " Created " << System::network_manager()->class_id_child();
-	
-	LOG_MESSAGE << "Creating Input Manager...";
-	std::shared_ptr<DeviceInput> input_manager = checked_cast<DeviceInput>(Factory::create_object("{CLASS_INPUT_DEVICE}"));
+
+    LOG_MESSAGE << "Creating Input Manager...";
+    std::shared_ptr<DeviceInput> input_manager = checked_cast<DeviceInput>(Factory::create_object("{CLASS_INPUT_DEVICE}"));
     if (input_manager)      System::set_input_manager(input_manager);
     else                    System::set_input_manager(DeviceInput::create());       // Default NULL device
     LOG_MESSAGE << " Created " << System::input_manager()->class_id_child();
-	
-	LOG_MESSAGE << "Creating Music Device...";
-	std::shared_ptr<DeviceMusic> music_device = checked_cast<DeviceMusic>(Factory::create_object("{CLASS_MUSIC_DEVICE}"));
+
+    LOG_MESSAGE << "Creating Music Device...";
+    std::shared_ptr<DeviceMusic> music_device = checked_cast<DeviceMusic>(Factory::create_object("{CLASS_MUSIC_DEVICE}"));
     if (music_device)       System::set_music_renderer(music_device);
     else                    System::set_music_renderer(DeviceMusic::create());      // Default NULL device
     LOG_MESSAGE << " Created " << System::music_renderer()->class_id_child();
 
-	LOG_MESSAGE << "Creating Audio Device...";
-	std::shared_ptr<DeviceAudio> audio_device = checked_cast<DeviceAudio>(Factory::create_object("{CLASS_AUDIO_DEVICE}"));
+    LOG_MESSAGE << "Creating Audio Device...";
+    std::shared_ptr<DeviceAudio> audio_device = checked_cast<DeviceAudio>(Factory::create_object("{CLASS_AUDIO_DEVICE}"));
     if (audio_device)       System::set_audio_renderer(audio_device);
     else                    System::set_audio_renderer(DeviceAudio::create());      // Default NULL device
     LOG_MESSAGE << " Created " << System::audio_renderer()->class_id_child();
-				
-	//
-	// Application object
-	//
-	
-	// Build the application class
-	LOG_MESSAGE << "Creating Application...";
-	std::shared_ptr<Application> application = checked_cast<Application>(Factory::create_object("{CLASS_APPLICATION}"));
+
+    //
+    // Application object
+    //
+
+    // Build the application class
+    LOG_MESSAGE << "Creating Application...";
+    std::shared_ptr<Application> application = checked_cast<Application>(Factory::create_object("{CLASS_APPLICATION}"));
     if (application)        System::set_application(application);
     else                    System::set_application(Application::create());      // Default NULL device
     LOG_MESSAGE << " Created " << System::application()->class_id_child();
-    
+
     _state = STATE_INITIALIZED;
-    
-	// Setup Screen
-	LOG_DEBUG << "initialize_engine_impl done";
+
+    // Setup Screen
+    LOG_DEBUG << "initialize_engine_impl done";
 }
 
 void GameMainThread::initialize_engine (void)
@@ -176,37 +176,37 @@ void GameMainThread::destroy_engine_impl (void)
     ThreadTaskQueue::set_num_threads(0);
 #endif
 
-	//
-	// Destroy Managers
-	//
-	
-	LOG_MESSAGE << "Cleaning up Application...";
-	System::set_application(NULL);
-	
-	LOG_MESSAGE << "Cleaning up Audio Device...";
-   	System::set_audio_renderer(NULL);
-	
-	LOG_MESSAGE << "Cleaning up Music Device...";
-   	System::set_music_renderer(NULL);
-    
-	LOG_MESSAGE << "Cleaning up Input Manager...";
+    //
+    // Destroy Managers
+    //
+
+    LOG_MESSAGE << "Cleaning up Application...";
+    System::set_application(NULL);
+
+    LOG_MESSAGE << "Cleaning up Audio Device...";
+    System::set_audio_renderer(NULL);
+
+    LOG_MESSAGE << "Cleaning up Music Device...";
+    System::set_music_renderer(NULL);
+
+    LOG_MESSAGE << "Cleaning up Input Manager...";
     System::set_input_manager(NULL);
-		
-	LOG_MESSAGE << "Cleaning up Network Manager...";
-	System::set_network_manager(NULL);
-			
+
+    LOG_MESSAGE << "Cleaning up Network Manager...";
+    System::set_network_manager(NULL);
+
     // Set crashed flag. Globals get saved below in StaticInitializer::destroy()
-	Globals::set_global("SYS_CRASHED","0",Globals::PERSISTENT);
+    Globals::set_global("SYS_CRASHED","0",Globals::PERSISTENT);
 
     // Destroy statically initialized data
-	StaticInitializer::destroy();
-    
-    
+    StaticInitializer::destroy();
+
+
 #if DTP_USE_PORTAL
     // Uninitialize the portal
     DTPortal::uninitialize();
 #endif
-    
+
     LOG_DEBUG << "destroy_engine_impl done";
 }
 
@@ -242,15 +242,15 @@ void GameMainThread::process_arguments_impl (std::vector<std::string> args)
         if (args[i] == "-command" && args.size() > (i+1)) {   // Plus 1 Parameter
             CommandParams params(args[i+1]);
             i += 1; // Skip 1 parameter
-            
+
             CommandContext ctx; // Default no world, no selection
             Console::do_command(ctx, params);
             continue;
         }
-        
+
         if (args[i] == "-resolution" && args.size() > (i+1)) {   // Plus 1 Parameter
             std::vector<std::string> res = MoreStrings::split(args[i+1],"x");
-            
+
             if (res.size() == 2) {
                 Globals::set_global("PLATFORM_RES_WIDTH", res[0], Globals::PERSISTENT);
                 Globals::set_global("PLATFORM_RES_HEIGHT", res[1], Globals::PERSISTENT);
@@ -260,7 +260,7 @@ void GameMainThread::process_arguments_impl (std::vector<std::string> args)
             i += 1; // Skip 1 parameter
             continue;
         }
-        
+
     }
 }
 
@@ -282,24 +282,24 @@ void GameMainThread::show_engine_impl (DTint width, DTint height)
         std::shared_ptr<DeviceGraphics> renderer = checked_cast<DeviceGraphics>(Factory::create_object("{CLASS_RENDERER_DEVICE}"));
         if (renderer) {
             System::set_renderer(renderer);
-            
+
         } else {
-#if DT3_OS == DT3_IOS || DT3_OS == DT3_ANDROID || DT3_OS == DT3_MACOSX
+#if DT3_OS == DT3_IOS || DT3_OS == DT3_ANDROID || DT3_OS == DT3_MACOSX || DT3_OS == DT3_LINUX
             System::set_renderer(DT3OpenGL::create());    // Default OpenGL device
 #else
             System::set_renderer(DT3GLDX11::create());      // Default DX11 device
 #endif
         }
-        
+
         LOG_MESSAGE << " Created " << System::renderer()->class_id_child();
-        
+
         // Open the display
         System::renderer()->open_display(width, height);
     } else {
         // Change the display
         System::renderer()->change_display(width, height);
     }
-    
+
     _state = STATE_INITIALIZED_AND_SHOWN;
 
     LOG_DEBUG << "show_engine_impl done";
@@ -318,7 +318,7 @@ void GameMainThread::hide_engine_impl (void)
     LOG_DEBUG << "hide_engine_impl called";
 
     _state = STATE_INITIALIZED;
-    
+
     Globals::save();
 
 #if DT3_CLEAR_GRAPHICS_ON_SUSPEND
@@ -342,10 +342,10 @@ void GameMainThread::hide_engine (void)
 void GameMainThread::resize_impl (DTint width, DTint height)
 {
     LOG_DEBUG << "resize_impl called";
-    
+
     // Resize the display
     System::renderer()->change_display(width, height);
-        
+
     LOG_DEBUG << "resize_impl done";
 }
 
@@ -359,8 +359,8 @@ void GameMainThread::resize (DTint width, DTint height)
 
 void GameMainThread::touch_event_impl (TouchEvent event)
 {
-	if (System::input_manager() && System::renderer())
-		System::input_manager()->set_touch_event (&event);
+    if (System::input_manager() && System::renderer())
+        System::input_manager()->set_touch_event (&event);
 }
 
 void GameMainThread::touch_event (TouchEvent event)
@@ -373,8 +373,8 @@ void GameMainThread::touch_event (TouchEvent event)
 
 void GameMainThread::key_down_event_impl (DTuint modifiers, DTushort key)
 {
-	if (System::input_manager() && System::renderer())
-		System::input_manager()->set_key_down_event (modifiers, key);
+    if (System::input_manager() && System::renderer())
+        System::input_manager()->set_key_down_event (modifiers, key);
 }
 
 void GameMainThread::key_down_event (DTuint modifiers, DTushort key)
@@ -387,8 +387,8 @@ void GameMainThread::key_down_event (DTuint modifiers, DTushort key)
 
 void GameMainThread::key_up_event_impl (DTuint modifiers, DTushort key)
 {
-	if (System::input_manager())
-		System::input_manager()->set_key_up_event (modifiers, key);
+    if (System::input_manager())
+        System::input_manager()->set_key_up_event (modifiers, key);
 }
 
 void GameMainThread::key_up_event (DTuint modifiers, DTushort key)
@@ -401,8 +401,8 @@ void GameMainThread::key_up_event (DTuint modifiers, DTushort key)
 
 void GameMainThread::do_back_button_impl (void)
 {
-	if (System::input_manager())
-		System::input_manager()->do_back_button();
+    if (System::input_manager())
+        System::input_manager()->do_back_button();
 }
 
 void GameMainThread::do_back_button (void)
@@ -415,8 +415,8 @@ void GameMainThread::do_back_button (void)
 
 void GameMainThread::do_menu_button_impl (void)
 {
-	if (System::input_manager())
-		System::input_manager()->do_menu_button();
+    if (System::input_manager())
+        System::input_manager()->do_menu_button();
 }
 
 void GameMainThread::do_menu_button (void)
@@ -429,8 +429,8 @@ void GameMainThread::do_menu_button (void)
 
 void GameMainThread::do_accelerometer_impl (Vector3 a)
 {
-	if (System::input_manager())
-		System::input_manager()->set_acceleration_event (a);
+    if (System::input_manager())
+        System::input_manager()->set_acceleration_event (a);
 }
 
 void GameMainThread::do_accelerometer (Vector3 a)
@@ -443,8 +443,8 @@ void GameMainThread::do_accelerometer (Vector3 a)
 
 void GameMainThread::do_gyro_impl (Vector3 w)
 {
-	if (System::input_manager())
-		System::input_manager()->set_gyro_event (w);
+    if (System::input_manager())
+        System::input_manager()->set_gyro_event (w);
 }
 
 void GameMainThread::do_gyro (Vector3 w)
@@ -457,8 +457,8 @@ void GameMainThread::do_gyro (Vector3 w)
 
 void GameMainThread::do_magnetometer_impl (Vector3 m)
 {
-	if (System::input_manager())
-		System::input_manager()->set_magnetometer_event (m);
+    if (System::input_manager())
+        System::input_manager()->set_magnetometer_event (m);
 }
 
 void GameMainThread::do_magnetometer (Vector3 m)
@@ -487,12 +487,12 @@ void GameMainThread::append (std::shared_ptr<LatentCall> lc)
     // If thread is stopped, do actions sychronously
     if (_stop == true) {
         lc->fire();
-    
+
     // Add to queue
     } else {
         _event_queue_mutex.lock();
         _event_queue.push_back(lc);
-        _event_queue_mutex.unlock();        
+        _event_queue_mutex.unlock();
     }
 }
 
@@ -501,24 +501,24 @@ void GameMainThread::append (std::shared_ptr<LatentCall> lc)
 
 void GameMainThread::loop (void)
 {
-	// Are there pending events?
-	GameMainThread::_event_queue_mutex.lock();
-	while (GameMainThread::_event_queue.size() > 0) {
-		std::shared_ptr<LatentCall> lc = GameMainThread::_event_queue.front();
-		GameMainThread::_event_queue.pop_front();
+    // Are there pending events?
+    GameMainThread::_event_queue_mutex.lock();
+    while (GameMainThread::_event_queue.size() > 0) {
+        std::shared_ptr<LatentCall> lc = GameMainThread::_event_queue.front();
+        GameMainThread::_event_queue.pop_front();
 
-		lc->fire();
-	}
-	GameMainThread::_event_queue_mutex.unlock();
+        lc->fire();
+    }
+    GameMainThread::_event_queue_mutex.unlock();
 
-	// If engine is fully initialized
-	if (GameMainThread::_state == GameMainThread::STATE_INITIALIZED_AND_SHOWN) {
+    // If engine is fully initialized
+    if (GameMainThread::_state == GameMainThread::STATE_INITIALIZED_AND_SHOWN) {
         System::application()->run_event_loop ();
-		
+
 #if DTP_USE_PORTAL
-		DTPortal::pump_results();
+        DTPortal::pump_results();
 #endif
-	}
+    }
 }
 
 //==============================================================================

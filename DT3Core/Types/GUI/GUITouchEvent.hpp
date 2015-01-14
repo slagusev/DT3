@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_GUITOUCHEVENT
 #define DT3_GUITOUCHEVENT
 //==============================================================================
-///	
+///
 ///	File: GUITouchEvent.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey, Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -34,12 +35,12 @@ class GUIObject;
 class GUITouchEvent {
     public:
         DEFINE_TYPE_BASE(GUITouchEvent)
-        		
-                                    GUITouchEvent       (void);	
+
+                                    GUITouchEvent       (void);
                                     GUITouchEvent       (const GUITouchEvent &rhs);
         GUITouchEvent &             operator =          (const GUITouchEvent &rhs);
-		virtual                     ~GUITouchEvent      (void);
-  
+        virtual                     ~GUITouchEvent      (void);
+
     public:
         DEFINE_ACCESSORS(initial_position, set_initial_position, Vector2, _initial_position)
         DEFINE_ACCESSORS(position, set_position, Vector2, _position)

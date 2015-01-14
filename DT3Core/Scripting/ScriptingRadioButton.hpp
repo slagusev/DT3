@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_SCRIPTINGPAGEFLIPPER
 #define DT3_SCRIPTINGPAGEFLIPPER
 //==============================================================================
-///	
+///
 ///	File: ScriptingRadioButton.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Scripting/ScriptingBase.hpp"
@@ -29,27 +30,27 @@ namespace DT3 {
 class ScriptingRadioButton: public ScriptingBase {
     public:
         DEFINE_TYPE(ScriptingRadioButton,ScriptingBase)
-		DEFINE_CREATE_AND_CLONE
-		DEFINE_PLUG_NODE
-         
+        DEFINE_CREATE_AND_CLONE
+        DEFINE_PLUG_NODE
+
                                     ScriptingRadioButton    (void);
-									ScriptingRadioButton    (const ScriptingRadioButton &rhs);
-        ScriptingRadioButton &		operator =				(const ScriptingRadioButton &rhs);	
+                                    ScriptingRadioButton    (const ScriptingRadioButton &rhs);
+        ScriptingRadioButton &		operator =				(const ScriptingRadioButton &rhs);
         virtual                     ~ScriptingRadioButton   (void);
-    
+
         virtual void                archive                 (const std::shared_ptr<Archive> &archive);
-		
-		/// Object was added to a world
-		/// world world that object was added to
+
+        /// Object was added to a world
+        /// world world that object was added to
         virtual void                add_to_world            (World *world);
 
-		/// Object was removed from a world
+        /// Object was removed from a world
         virtual void                remove_from_world       (void);
 
-	public:
+    public:
 
-		/// Called to initialize the object
-		virtual void				initialize				(void);
+        /// Called to initialize the object
+        virtual void				initialize				(void);
 
         // Event handlers for each input
         void                        in1                     (PlugNode *sender)  {   flip(sender,&_in1);    }
@@ -73,7 +74,7 @@ class ScriptingRadioButton: public ScriptingBase {
         void                        in19                    (PlugNode *sender)  {   flip(sender,&_in19);   }
         void                        in20                    (PlugNode *sender)  {   flip(sender,&_in20);   }
 
-	private:
+    private:
         void                        flip                    (PlugNode *sender, Event *in);
 
         Event                       _in1;

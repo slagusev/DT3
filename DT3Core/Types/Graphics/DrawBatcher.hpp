@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_DRAWBATCHER
 #define DT3_DRAWBATCHER
 //==============================================================================
-///	
+///
 ///	File: DrawBatcher.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -61,39 +62,39 @@ class Color4b;
 //==============================================================================
 
 class DrawBatcher {
- 	public:
-        DEFINE_TYPE_SIMPLE_BASE(DrawBatcher)   
+    public:
+        DEFINE_TYPE_SIMPLE_BASE(DrawBatcher)
 
-							DrawBatcher			(void);
-    
+                            DrawBatcher			(void);
+
     private:
-							DrawBatcher			(const DrawBatcher &rhs);
+                            DrawBatcher			(const DrawBatcher &rhs);
         DrawBatcher &		operator =			(const DrawBatcher &rhs);
-    
+
     public:
                             ~DrawBatcher		(void);
 
-	public:
-		enum BatchFormat {
-			FMT_V = 1 << 0,
-			FMT_N = 1 << 1,
-			FMT_T0 = 1 << 2,
-			FMT_T1 = 1 << 3,
-			FMT_C = 1 << 4,
-			FMT_CF = 1 << 5,
-            
+    public:
+        enum BatchFormat {
+            FMT_V = 1 << 0,
+            FMT_N = 1 << 1,
+            FMT_T0 = 1 << 2,
+            FMT_T1 = 1 << 3,
+            FMT_C = 1 << 4,
+            FMT_CF = 1 << 5,
+
             FMT_V_C = FMT_V | FMT_C,
             FMT_V_T0 = FMT_V | FMT_T0
-		};
-        
+        };
+
         DEFINE_ACCESSORS (flush_callback, set_flush_callback, std::shared_ptr<Callback<DrawBatcher*>>, _flush_callback)
 
-		/// Begin a draw batch
-		/// \param material Material to use when drawing
-		/// \param transform Transform for drawing
-		/// \param type Batch type
-		/// \param fmt Batch format
-		void			batch_begin			(   const std::shared_ptr<CameraObject> &camera,
+        /// Begin a draw batch
+        /// \param material Material to use when drawing
+        /// \param transform Transform for drawing
+        /// \param type Batch type
+        /// \param fmt Batch format
+        void			batch_begin			(   const std::shared_ptr<CameraObject> &camera,
                                                 const std::shared_ptr<MaterialResource> &material,
                                                 const std::shared_ptr<ShaderResource> &shader,
                                                 const Matrix4 &transform,
@@ -101,14 +102,14 @@ class DrawBatcher {
                                                 DTushort fmt,
                                                 DTsize size_hint = 1024);
 
-		/// Designate a point in drawing where the batch can be split
+        /// Designate a point in drawing where the batch can be split
         void            batch_split         (void);
 
-		/// End the batch
-		void			batch_end			(void);
-    
-    
-		/// Vertex definition
+        /// End the batch
+        void			batch_end			(void);
+
+
+        /// Vertex definition
         DrawBatcher&    add (void)                                          {   ++_cur_index;   return *this;   }
 
         DrawBatcher&    v   (const Vector3 &v)                              {   ASSERT(_format & FMT_V);  ASSERT(_cur_index < _size_hint); BATCH_V[_cur_index] = v;                return *this;    }
@@ -130,27 +131,27 @@ class DrawBatcher {
         DrawBatcher&    cf  (const Color4f &c)                              {   ASSERT(_format & FMT_CF); ASSERT(_cur_index < _size_hint); BATCH_CF[_cur_index] = c;               return *this;    }
         DrawBatcher&    cf  (const Color4b &c)                              {   ASSERT(_format & FMT_CF); ASSERT(_cur_index < _size_hint); BATCH_CF[_cur_index] = Color4f(c);      return *this;    }
         DrawBatcher&    cf  (DTfloat r, DTfloat g, DTfloat b, DTfloat a)    {   ASSERT(_format & FMT_CF); ASSERT(_cur_index < _size_hint); BATCH_CF[_cur_index] = Color4f(r,g,b,a);return *this;    }
-	
-		/// Perform the drawing of the batch
-		void			draw				(DTboolean clear_when_done = true);
 
-	private:
+        /// Perform the drawing of the batch
+        void			draw				(DTboolean clear_when_done = true);
+
+    private:
         void            screen_opened       (DTuint width, DTuint height);
         void            screen_closed       (void);
 
         DTsize                                      _size_hint;
-    
-		std::shared_ptr<CameraObject>               _camera_object;
-		std::shared_ptr<MaterialResource>           _material;
+
+        std::shared_ptr<CameraObject>               _camera_object;
+        std::shared_ptr<MaterialResource>           _material;
         std::shared_ptr<ShaderResource>             _shader;
 
         Matrix4                                     _transform;
-    
-		DT3GLPrimitiveType                          _type;
-		DTushort                                    _format;
-		
-		DTshort                                     _cur_index;
-    
+
+        DT3GLPrimitiveType                          _type;
+        DTushort                                    _format;
+
+        DTshort                                     _cur_index;
+
         std::shared_ptr<Callback<DrawBatcher*>>     _flush_callback;
 
         // These are raw byte arrays
@@ -160,7 +161,7 @@ class DrawBatcher {
         std::shared_ptr<DTubyte>                    _batch_t1_raw;
         std::shared_ptr<DTubyte>                    _batch_c_raw;
         std::shared_ptr<DTubyte>                    _batch_cf_raw;
-    
+
         std::shared_ptr<DT3GLAttribBufferResource>        _batch_v_buffer;
         std::shared_ptr<DT3GLAttribBufferResource>        _batch_n_buffer;
         std::shared_ptr<DT3GLAttribBufferResource>        _batch_t0_buffer;

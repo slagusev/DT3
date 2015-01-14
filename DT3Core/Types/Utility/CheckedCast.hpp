@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_CHECKEDCAST
 #define DT3_CHECKEDCAST
 //==============================================================================
-///	
+///
 ///	File: CheckedCast.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Utility/Error.hpp"
@@ -31,19 +32,19 @@ template <class T, class U>
 std::shared_ptr<T> checked_static_cast (const std::shared_ptr<U> &o)
 {
 #ifdef DT3_DEBUG
-	if (o) {
-		if (!o->isa(TypeTraits<T>::NonPtrType::kind())) {
-			//DTcharacter* convert_to = TypeTraits<T>::NonPtrType::getClassIDStatic();
-			//DTcharacter* convert_from = o->getClassIDChild();
-                        
+    if (o) {
+        if (!o->isa(TypeTraits<T>::NonPtrType::kind())) {
+            //DTcharacter* convert_to = TypeTraits<T>::NonPtrType::getClassIDStatic();
+            //DTcharacter* convert_from = o->getClassIDChild();
+
             ERRORMSG("Inavlid type conversion");
-		}
-		return std::static_pointer_cast<T>(o);
-	} else {
-		return NULL;
-	}
+        }
+        return std::static_pointer_cast<T>(o);
+    } else {
+        return NULL;
+    }
 #else
-	return std::static_pointer_cast<T>(o);
+    return std::static_pointer_cast<T>(o);
 #endif
 }
 
@@ -54,13 +55,13 @@ std::shared_ptr<T> checked_static_cast (const std::shared_ptr<U> &o)
 template <class T, class U>
 std::shared_ptr<T> checked_cast (const std::shared_ptr<U> &o)
 {
-	if (o) {
-		if (!o->isa(TypeTraits<T>::NonPtrType::kind()))
+    if (o) {
+        if (!o->isa(TypeTraits<T>::NonPtrType::kind()))
             return NULL;
-		return std::static_pointer_cast<T>(o);
-	} else {
-		return NULL;
-	}
+        return std::static_pointer_cast<T>(o);
+    } else {
+        return NULL;
+    }
 }
 
 //==============================================================================
@@ -74,19 +75,19 @@ template <class T, class U>
 T checked_static_cast (U *o)
 {
 #ifdef DT3_DEBUG
-	if (o) {
-		if (!o->isa(TypeTraits<T>::NonPtrType::kind())) {
-			//DTcharacter* convert_to = TypeTraits<T>::NonPtrType::getClassIDStatic();
-			//DTcharacter* convert_from = o->getClassIDChild();
-                        
+    if (o) {
+        if (!o->isa(TypeTraits<T>::NonPtrType::kind())) {
+            //DTcharacter* convert_to = TypeTraits<T>::NonPtrType::getClassIDStatic();
+            //DTcharacter* convert_from = o->getClassIDChild();
+
             ERRORMSG("Inavlid type conversion");
-		}
-		return static_cast<T>(o);
-	} else {
-		return NULL;
-	}
+        }
+        return static_cast<T>(o);
+    } else {
+        return NULL;
+    }
 #else
-	return static_cast<T>(o);
+    return static_cast<T>(o);
 #endif
 }
 
@@ -97,13 +98,13 @@ T checked_static_cast (U *o)
 template <class T, class U>
 T checked_cast (U *o)
 {
-	if (o) {
-		if (!o->isa(TypeTraits<T>::NonPtrType::kind()))
+    if (o) {
+        if (!o->isa(TypeTraits<T>::NonPtrType::kind()))
             return NULL;
-		return static_cast<T>(o);
-	} else {
-		return NULL;
-	}
+        return static_cast<T>(o);
+    } else {
+        return NULL;
+    }
 }
 
 //==============================================================================

@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_FACTORY
 #define DT3_FACTORY
 //==============================================================================
-///	
+///
 ///	File: Factory.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -34,56 +35,56 @@ class FilePath;
 
 class Factory {
     private:
-								Factory						(void);	
-								Factory						(const Factory &rhs);
-		Factory &				operator =					(const Factory &rhs);		
-								~Factory					(void);
-            
+                                Factory						(void);
+                                Factory						(const Factory &rhs);
+        Factory &				operator =					(const Factory &rhs);
+                                ~Factory					(void);
+
     public:
-	
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_world                (const std::string cid);
 
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_object               (const std::string cid, DTboolean net_create = false);
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_world                (const std::string cid);
 
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_object_from_stream   (   const FilePath &pathname,
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_object               (const std::string cid, DTboolean net_create = false);
+
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_object_from_stream   (   const FilePath &pathname,
                                                                                 std::shared_ptr<Progress> progress = NULL,
                                                                                 std::shared_ptr<Callback<std::shared_ptr<BaseClass>>> obj_loaded_cb = NULL);
-				
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_importer             (const std::string ext);
 
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_unit_test            (const std::string cid);
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_importer             (const std::string ext);
 
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_command              (const std::string cid);
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_unit_test            (const std::string cid);
 
-		/// Description
-		/// \param param description
-		/// \return description
-		static std::shared_ptr<BaseClass>		create_tool                 (const std::string cid);
-        
-    
-		/// Description
-		/// \param param description
-		/// \return description
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_command              (const std::string cid);
+
+        /// Description
+        /// \param param description
+        /// \return description
+        static std::shared_ptr<BaseClass>		create_tool                 (const std::string cid);
+
+
+        /// Description
+        /// \param param description
+        /// \return description
         static void                             set_creation_callback       (std::shared_ptr<Callback<std::shared_ptr<BaseClass>>> cb)    {   _factory_created_callback = cb; }
-        
+
     private:
         static std::shared_ptr<Callback<std::shared_ptr<BaseClass>>>     _factory_created_callback;
 
@@ -94,9 +95,9 @@ class Factory {
 
 class CreatorBase {
     public:
-				CreatorBase(void)	{}
-		virtual ~CreatorBase(void)	{}
-		
+                CreatorBase(void)	{}
+        virtual ~CreatorBase(void)	{}
+
         virtual std::shared_ptr<BaseClass>      create_object (void) const = 0;
         virtual std::string                     stored_class_id (void) const = 0;
 };
@@ -105,9 +106,9 @@ class CreatorBase {
 template <typename T>
 class Creator: public CreatorBase {
     public:
-				Creator(void)	{}
-		virtual ~Creator(void)	{}
-	
+                Creator(void)	{}
+        virtual ~Creator(void)	{}
+
         virtual std::shared_ptr<BaseClass>      create_object (void) const      {   return T::create(); }
         virtual std::string                     stored_class_id (void) const    {   return std::string(T::class_id_static());       }
 };
@@ -153,7 +154,7 @@ extern std::map<std::string, std::set<std::string>>&           script_map       
             } \
         } registration_obj##Class; \
     }
-    
+
 #define IMPLEMENT_FACTORY_IMPORTER(Class,Extension)	\
     namespace { \
         struct registration_class##Class##Extension: public StaticInitializerCallback { \
@@ -195,7 +196,7 @@ extern std::map<std::string, std::set<std::string>>&           script_map       
             } \
         } registration_obj##Class; \
     }
-    
+
 #define IMPLEMENT_FACTORY_CREATION_SCRIPT(Class,Category,Adapter) \
     namespace { \
         struct registration_class##Class: public StaticInitializerCallback { \
@@ -216,8 +217,8 @@ extern std::map<std::string, std::set<std::string>>&           script_map       
                 DT3::factory_map()[Class::class_id_static()] = std::shared_ptr<CreatorBase>(new ("FactoryObjectCreator") Creator<Class>); \
             } \
         } registration_obj##Class; \
-    }					
-				
+    }
+
 //==============================================================================
 //==============================================================================
 

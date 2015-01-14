@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_TEXTSTREAM
 #define DT3_TEXTSTREAM
 //==============================================================================
-///	
+///
 ///	File: TextStream.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -30,10 +31,10 @@ namespace DT3 {
 class TextStream: public Stream {
     public:
         DEFINE_TYPE(TextStream,Stream)
-		//DEFINE_CREATE_AND_CLONE
-         
+        //DEFINE_CREATE_AND_CLONE
+
                                     TextStream		(void);
-	private:
+    private:
                                     TextStream		(const TextStream &rhs);
         TextStream &				operator =		(const TextStream &rhs);
     public:

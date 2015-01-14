@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_SCRIPTINGSOUNDBASE
 #define DT3_SCRIPTINGSOUNDBASE
 //==============================================================================
-///	
+///
 ///	File: ScriptingSoundBaseBase.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Scripting/ScriptingBase.hpp"
@@ -31,19 +32,19 @@ class SoundResource;
 class ScriptingSoundBase: public ScriptingBase {
     public:
         DEFINE_TYPE(ScriptingSoundBase,ScriptingBase)
-		DEFINE_CREATE_AND_CLONE
-		DEFINE_PLUG_NODE
-         
-                                    ScriptingSoundBase      (void);	
-									ScriptingSoundBase      (const ScriptingSoundBase &rhs);
-        ScriptingSoundBase &		operator =				(const ScriptingSoundBase &rhs);	
+        DEFINE_CREATE_AND_CLONE
+        DEFINE_PLUG_NODE
+
+                                    ScriptingSoundBase      (void);
+                                    ScriptingSoundBase      (const ScriptingSoundBase &rhs);
+        ScriptingSoundBase &		operator =				(const ScriptingSoundBase &rhs);
         virtual                     ~ScriptingSoundBase     (void);
-    
+
         virtual void                archive                 (const std::shared_ptr<Archive> &archive);
-		
-	public:
-		/// Called to initialize the object
-		virtual void				initialize				(void);
+
+    public:
+        /// Called to initialize the object
+        virtual void				initialize				(void);
 
 };
 
