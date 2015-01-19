@@ -23,10 +23,10 @@
 #include <thread>
 #include <sys/stat.h>
 #include <dirent.h>
-
-#if DT3_OS == DT3_IOS
-    #include <AVFoundation/AVFoundation.h>
-#endif
+#include <chrono>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define MAX_KEY_LENGTH 255
 #define MAX_VALUE_NAME 16383
@@ -126,15 +126,13 @@ void HAL::log (const std::string &message)
 
 DTdouble HAL::program_running_time(void)
 {
+    static auto start_time = std::chrono::high_resolution_clock::now();
+    auto new_time = std::chrono::high_resolution_clock::now();
 
-#if DT3_OS == DT3_MACOSX
-    static CFTimeInterval	start_time 	= ::CFAbsoluteTimeGetCurrent();
-    CFTimeInterval			new_time 	= ::CFAbsoluteTimeGetCurrent();
+    typedef std::chrono::milliseconds ms;
+    ms running_time = std::chrono::duration_cast<ms>(new_time - start_time);
 
-    return static_cast<DTdouble>(new_time - start_time);
-#else
-    return DTdouble();
-#endif
+    return DTdouble(running_time.count());
 }
 
 //==============================================================================
@@ -245,6 +243,7 @@ void HAL::display_modes (std::map<DTint, std::vector<DisplayMode>> &modes)
 
 void HAL::switch_display_mode (DTint display, DisplayMode mode)
 {
+
 #if DT3_OS == DT3_MACOSX
 
     CGDirectDisplayID display_array[MAX_DISPLAYS];
@@ -346,23 +345,22 @@ DTuint HAL::num_CPU_cores (void)
 //==============================================================================
 
 DTboolean HAL::move_file (const FilePath &from, const FilePath &to)
-{
-    /*
+{  
     if (link(from.full_path().c_str(), to.full_path().c_str()) == -1)
         return false;
 
     if (unlink(from.full_path().c_str()) == -1)
         return false;
-    */
+
     return true;
 }
 
 DTboolean HAL::delete_file (const FilePath &file)
 {
-    /*
+
     if (unlink(file.full_path().c_str()) == -1)
         return false;
-    */
+
     return true;
 }
 
@@ -439,6 +437,22 @@ void HAL::list_directory (const FilePath &pathname, DTboolean recursive, std::ve
 FilePath HAL::app_dir (void)
 {
     FilePath result;
+    char buffer[256];
+    ssize_t r;
+
+    r = readlink("/proc/self/exe",buffer,sizeof(buffer));
+
+    if(r == -1){
+        result = FilePath(".");
+        //ASSERT(r == -1);
+    }else{
+        std::string path_to_app  = std::string(buffer);
+        result = FilePath(FilePath::dir_from_path(path_to_app));
+    }
+
+    return result;
+
+
 
 #if DT3_OS == DT3_MACOSX
     // get Current directory
@@ -482,7 +496,6 @@ FilePath HAL::app_dir (void)
     CFRelease(mainURL);
 #endif
 
-    return result;
 }
 
 
@@ -493,6 +506,17 @@ FilePath HAL::save_dir (void)
     //
     // Determine save Files Dir
     //
+    char* home_path = getenv("HOME");
+    std::string hpath = std::string(home_path);
+
+
+    if(home_path){
+        result = FilePath(hpath+"/Documents");
+    }else{
+        result = app_dir();
+    }
+
+    return result;
 
 #if DT3_OS == DT3_MACOSX
     FSRef prefs_dir_ref;
@@ -514,8 +538,6 @@ FilePath HAL::save_dir (void)
 #elif DT3_OS == DT3_IOS
     result = FilePath("{APPDIR}/../Documents");
 #endif
-
-    return result;
 }
 
 //==============================================================================

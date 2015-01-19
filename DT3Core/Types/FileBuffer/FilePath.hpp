@@ -72,6 +72,10 @@ class FilePath {
         /// \return Path to directory
         std::string                         directory_path          (void) const;
 
+        /// Returns the directory of the given string.
+        /// \return string
+        static std::string dir_from_path(std::string& path);
+
         /// Returns name of file without extension
         /// \return Name of file without extension
         std::string                         file_name_no_ext        (void) const;

@@ -1318,7 +1318,6 @@ std::shared_ptr<DT3GLUniformResource> DT3OpenGL::create_uniform (const Vector4 &
 
     r->data.resize(sizeof(Vector4));
     ::memcpy(&r->data[0], &buffer_data, r->data.size());
-
     r->use_stamp = ++_use_stamp;
 
     return std::shared_ptr<DT3GLUniformResource>(r);

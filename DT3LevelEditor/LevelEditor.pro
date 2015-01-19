@@ -21,10 +21,18 @@ INCLUDEPATH +=  . ../../DT3 \
                    ./Tools \
                    ./World \
 
-QMAKE_CXXFLAGS+= -std=c++11 -Wunused-parameter -Wextra  \
-        -fpic -fno-short-enums -fno-strict-aliasing -finline-limit=64
+QMAKE_CXXFLAGS+= -std=c++11 -fpic -fno-short-enums -fno-strict-aliasing
 
-QMAKE_LFLAGS +=  -g -std=c++11
+QMAKE_LFLAGS +=  -std=c++11
+##
+CONFIG(debug, debug|release){
+    QMAKE_CXXFLAGS+= -Wunused-parameter -Wextra
+    QMAKE_LFLAGS +=  -g
+}
+##
+CONFIG(release, debug|release){
+    QMAKE_CXXFLAGS+= -finline-limit=64
+}
 
 # Input
 HEADERS += \

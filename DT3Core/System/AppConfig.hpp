@@ -40,7 +40,7 @@ namespace DT3 {
 #define DTP_PRIVATE_KEY "CHANGEMEIFUSINGPORTAL"
 
 // Debugging aids
-//#define DT3_GUARD_ALLOCATIONS 1
+#define DT3_GUARD_ALLOCATIONS 1
 
 // Profiler
 #if DT3_OS != DT3_ANDROID && DT3_OS != DT3_IOS

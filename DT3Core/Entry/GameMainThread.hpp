@@ -44,6 +44,11 @@ class GameMainThread {
 
     public:
 
+        //  Add the parameters which main was called with,
+        // usefull for configuring the engine
+
+        static void             set_main_parameters(char** argv);
+
         /// Initialize the engine
         static void             initialize_engine       (void);
 

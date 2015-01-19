@@ -62,6 +62,13 @@ std::list<std::shared_ptr<LatentCall>>  GameMainThread::_event_queue;
 //==============================================================================
 //==============================================================================
 
+//TODO: save them
+void GameMainThread::set_main_parameters(char **argv)
+{
+
+}
+
+
 void GameMainThread::initialize_engine_impl (void)
 {
     LOG_DEBUG << "initialize_engine_impl called";

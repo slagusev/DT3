@@ -184,6 +184,13 @@ std::string FilePath::directory_path (void) const
 	return path.substr(0, path.find_last_of( FilePath::path_separator() ) );
 }
 
+std::string FilePath::dir_from_path(string &path_url)
+{
+    std::string path = MoreStrings::filter_out(path_url,"{}");
+
+    return path.substr(0, path.find_last_of( FilePath::path_separator() ) );
+}
+
 //==============================================================================
 //==============================================================================
 
