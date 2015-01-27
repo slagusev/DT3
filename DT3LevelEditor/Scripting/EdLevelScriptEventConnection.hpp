@@ -1,14 +1,16 @@
+#pragma once
 #ifndef EDLEVELSCRIPTEVENTCONNECTION
 #define EDLEVELSCRIPTEVENTCONNECTION
 //==============================================================================
-///	
-///	File: EdLevelScriptEventConnection.hpp
-///	
-/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
+///	File: EdLevelScriptEventConnection.hpp
+///
+/// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
+///#pragma once
+
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -38,16 +40,16 @@ using namespace DT3;
 class EdLevelScriptEventConnection : public EdLevelScriptConnection
 {
     //Q_OBJECT
-    
-	public:
+
+    public:
         enum { Type = UserType + 3 };
         int type() const {  return Type;    }
-        
-	public:
+
+    public:
                                     EdLevelScriptEventConnection    (void)  {}
-									EdLevelScriptEventConnection	(   EdLevelScriptNodeStandard *node1, Event *event1,
+                                    EdLevelScriptEventConnection	(   EdLevelScriptNodeStandard *node1, Event *event1,
                                                                         EdLevelScriptNodeStandard *node2, Event *event2);
-                                                                
+
                                     ~EdLevelScriptEventConnection()  {}
 
         void                        disconnect      (void)          {   _event1 = _event2 = NULL; }
@@ -55,14 +57,14 @@ class EdLevelScriptEventConnection : public EdLevelScriptConnection
         Event*                      event1          (void) const    {   return _event1;  }
         Event*                      event2          (void) const    {   return _event2;  }
 
-	public:
+    public:
         virtual void                readjustBounds  (void);
 
-		virtual void				paint			(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        virtual void				paint			(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
         Event                       *_event1;
         Event                       *_event2;
-    
+
     private:
         static const float SHADOW_OFFSET_X;
         static const float SHADOW_OFFSET_Y;

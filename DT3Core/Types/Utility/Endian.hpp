@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_ENDIAN
 #define DT3_ENDIAN
 //==============================================================================
-///	
+///
 ///	File: Endian.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -84,80 +85,80 @@ template <> struct swapHelper<8> {
 
 class Endian {
     private:
-								Endian                  (void);	
-								Endian                  (const Endian &rhs);
-		Endian &				operator =              (const Endian &rhs);		
-								~Endian                 (void);
-            
+                                Endian                  (void);
+                                Endian                  (const Endian &rhs);
+        Endian &				operator =              (const Endian &rhs);
+                                ~Endian                 (void);
+
     public:
-		/// Swap Endianness of data
-		/// \param v value to swap
+        /// Swap Endianness of data
+        /// \param v value to swap
         template <typename T>
         static void swap   (T &v)
         {
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
         }
-		
 
-		/// Swap Endianness of data to network byte order if necessary
-		/// \param v value to swap
+
+        /// Swap Endianness of data to network byte order if necessary
+        /// \param v value to swap
         template <typename T>
         static void to_network_byte_order   (T &v)
         {
 #if DT3_BYTEORDER == DT3_LIL_ENDIAN
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
 #endif
         }
 
-		/// Swap Endianness of data from network byte order if necessary
-		/// \param v value to swap
+        /// Swap Endianness of data from network byte order if necessary
+        /// \param v value to swap
         template <typename T>
         static void from_network_byte_order (T &v)
         {
 #if DT3_BYTEORDER == DT3_LIL_ENDIAN
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
 #endif
         }
-        
-        
-		/// Convert to big endian if necessary
-		/// \param v value to swap
+
+
+        /// Convert to big endian if necessary
+        /// \param v value to swap
         template <typename T>
         static void to_big_endian   (T &v) {
 #if DT3_BYTEORDER == DT3_LIL_ENDIAN
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
 #endif
-		}
+        }
 
-		/// Convert from big endian if necessary
-		/// \param v value to swap
+        /// Convert from big endian if necessary
+        /// \param v value to swap
         template <typename T>
-		static void from_big_endian   (T &v) {
+        static void from_big_endian   (T &v) {
 #if DT3_BYTEORDER == DT3_LIL_ENDIAN
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
 #endif
-		}
+        }
 
 
-		/// Convert to little endian if necessary
-		/// \param v value to swap
+        /// Convert to little endian if necessary
+        /// \param v value to swap
        template <typename T>
        static void to_little_endian   (T &v) {
 #if DT3_BYTEORDER == DT3_BIG_ENDIAN
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
 #endif
-		}
+        }
 
-		/// Convert from little endian if necessary
-		/// \param v value to swap
+        /// Convert from little endian if necessary
+        /// \param v value to swap
         template <typename T>
-		static void from_little_endian   (T &v) {
+        static void from_little_endian   (T &v) {
 #if DT3_BYTEORDER == DT3_BIG_ENDIAN
-			EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
+            EndianInfo::swapHelper<sizeof(T)>::swap((DTubyte*)&v);
 #endif
-		}
-        
-        
+        }
+
+
 };
 
 //==============================================================================

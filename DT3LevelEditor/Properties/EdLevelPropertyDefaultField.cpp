@@ -1,13 +1,13 @@
 
 //==============================================================================
-///	
+///
 ///	File: EdLevelPropertyDefaultField.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -22,6 +22,7 @@
 // Engine includes
 #include "DT3Core/Types/FileBuffer/ArchiveData.hpp"
 #include "DT3Core/Types/Utility/MoreStrings.hpp"
+#include "DT3Core/Types/FileBuffer/TextBufferStream.hpp"
 #include "DT3Core/Types/Node/PlugNode.hpp"
 
 //==============================================================================
@@ -32,7 +33,7 @@ EdLevelPropertyDefaultField::EdLevelPropertyDefaultField (EdLevelPropertiesWindo
     //setFrameStyle(QFrame::StyledPanel | QFrame::Raised);
     _data = data;
     _node = node;
-   
+
     buildStatusButtons();
 
     QLabel *name = new QLabel(this);
@@ -43,11 +44,11 @@ EdLevelPropertyDefaultField::EdLevelPropertyDefaultField (EdLevelPropertiesWindo
     _value = new EdLevelLineEdit(this);
     _value->setObjectName("prop");
 
-	connect(	_value,         SIGNAL(editingFinished()),
-				this,           SLOT(doWriteParams())	);
-    
-	connect(	this,           SIGNAL(doCommand(QString, bool)),
-				parent,         SLOT(onCommand(QString, bool))	);
+    connect(	_value,         SIGNAL(editingFinished()),
+                this,           SLOT(doWriteParams())	);
+
+    connect(	this,           SIGNAL(doCommand(QString, bool)),
+                parent,         SLOT(onCommand(QString, bool))	);
 
     QGridLayout *layout = new QGridLayout;
     layout->setContentsMargins(0,0,0,0);
@@ -60,9 +61,9 @@ EdLevelPropertyDefaultField::EdLevelPropertyDefaultField (EdLevelPropertiesWindo
     layout->addWidget(_value,0,4);
 
     setLayout(layout);
-    
+
     setMinimumHeight(15+2);
-    
+
     doReadParams();
 }
 
@@ -83,10 +84,10 @@ void EdLevelPropertyDefaultField::doReadParams(void)
     // Has Key
     if (_data->plug()) {
         keyButton()->setIcon(QIcon(":/images/key.png"));
-                
+
         connect(    keyButton(),    SIGNAL(pressed()),
                     this,           SLOT(doKeyframePressed())    );
-                    
+
     } else {
         keyButton()->setIcon(QIcon(":/images/blank.png"));
     }
@@ -105,8 +106,8 @@ void EdLevelPropertyDefaultField::doReadParams(void)
         hasOutputButton()->setIcon(QIcon(":/images/blank.png"));
     }
 
-	TextBufferStream stream;
-	_data->value(stream);
+    TextBufferStream stream;
+    _data->value(stream);
     _value->setText( stream.buffer().c_str() );
 
     blockSignals(false);
@@ -114,11 +115,11 @@ void EdLevelPropertyDefaultField::doReadParams(void)
 
 void EdLevelPropertyDefaultField::doWriteParams(void)
 {
-	TextBufferStream stream(parseParam(_value->text().toUtf8().data()));
-    
+    TextBufferStream stream(parseParam(_value->text().toUtf8().data()));
+
     TextBufferStream oldstream;
-	_data->value(oldstream);
-    
+    _data->value(oldstream);
+
     // Only if value changed
     if (stream.buffer() != oldstream.buffer()) {
         emit doCommand(QString("SetProp \"") + _node->full_name().c_str() + "." + _data->title().c_str() + "\" \"" + stream.buffer().c_str() + "\"", _data->flags() & DATA_FLUSH_UI);
@@ -138,15 +139,15 @@ void EdLevelPropertyDefaultField::doKeyframePressed (void)
 
 std::string EdLevelPropertyDefaultField::getValueOfField (void)
 {
-	TextBufferStream stream;
-	_data->value(stream);
+    TextBufferStream stream;
+    _data->value(stream);
     return stream.buffer();
 }
-    
+
 void EdLevelPropertyDefaultField::setValueOfField (const std::string &value)
 {
-	TextBufferStream stream(value);
-	_data->set_value(stream);
+    TextBufferStream stream(value);
+    _data->set_value(stream);
 
     emit doCommand(QString("SetProp \"") + _node->full_name().c_str() + "." + _data->title().c_str() + "\" \"" + stream.buffer().c_str() + "\"", _data->flags() & DATA_FLUSH_UI);
 }

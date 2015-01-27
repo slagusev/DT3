@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_REF_COUNTER
 #define DT3_REF_COUNTER
 //==============================================================================
-///	
+///
 ///	File: Callback.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Utility/CheckedCast.hpp"
@@ -31,19 +32,19 @@ class RefCounter {
             :   _ref_count  (1),
                 _obj        (obj)
         {}
-    
+
         ~RefCounter (void)
         {}
-    
+
     public:
 
-		/// Returns managed object
-		/// \return object Object
+        /// Returns managed object
+        /// \return object Object
         const T&    get         (void) const
         {
             return _obj;
         }
-    
+
         /// Retains the object
         void        retain      (void)
         {

@@ -1,14 +1,15 @@
+#pragma once
 #ifndef EDLEVELIMAGETHUMBNAIL
 #define EDLEVELIMAGETHUMBNAIL
 //==============================================================================
-///	
+///
 ///	File: EdLevelImageThumbnail.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -37,22 +38,22 @@ class EdLevelImageThumbnail : public QWidget
 {
     Q_OBJECT
 
-	public:
+    public:
                             EdLevelImageThumbnail   (QWidget *parent);
                             ~EdLevelImageThumbnail  (void);
 
-	public:
+    public:
         void                setImage                (const FilePath &path);
-		void                paintEvent              (QPaintEvent *event);
+        void                paintEvent              (QPaintEvent *event);
 
-	private:
+    private:
         void                cache                   (void);
 
         struct Buffer {
             DTubyte b,g,r,a;
         } *_buffer;
-        
-		QImage              _image;
+
+        QImage              _image;
         FilePath            _path;
 };
 

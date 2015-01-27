@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_IMPORTERIMAGEJPG
 #define DT3_IMPORTERIMAGEJPG
 //==============================================================================
-///	
+///
 ///	File: ImporterImageJPG.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Resources/Importers/ImporterImage.hpp"
@@ -40,38 +41,38 @@ class BinaryFileStream;
 class ImporterImageJPG: public ImporterImage {
     public:
         DEFINE_TYPE(ImporterImageJPG,ImporterImage)
-		DEFINE_CREATE
-         
-									ImporterImageJPG	(void);	
-    
-	private:
-									ImporterImageJPG	(const ImporterImageJPG &rhs);
+        DEFINE_CREATE
+
+                                    ImporterImageJPG	(void);
+
+    private:
+                                    ImporterImageJPG	(const ImporterImageJPG &rhs);
         ImporterImageJPG &			operator =			(const ImporterImageJPG &rhs);
-    
+
     public:
         virtual						~ImporterImageJPG	(void);
-            
-    public:        	
-		/// Imports an image into a TextureResource2D
-		/// \param target object to import texture into
-		/// \param args arguments to importer
-        /// \return error code
-		virtual DTerr				import				(TextureResource2D *target, std::string args);
 
-		/// Imports an image into a TextureResource3D
-		/// \param target object to import texture into
-		/// \param args arguments to importer
+    public:
+        /// Imports an image into a TextureResource2D
+        /// \param target object to import texture into
+        /// \param args arguments to importer
         /// \return error code
-		virtual DTerr				import				(TextureResource3D *target, std::string args);
+        virtual DTerr				import				(TextureResource2D *target, std::string args);
 
-		/// Imports an image into a TextureResourceCube
-		/// \param target object to import texture into
-		/// \param args arguments to importer
+        /// Imports an image into a TextureResource3D
+        /// \param target object to import texture into
+        /// \param args arguments to importer
         /// \return error code
-		virtual DTerr				import				(TextureResourceCube *target, std::string args);
-    
+        virtual DTerr				import				(TextureResource3D *target, std::string args);
+
+        /// Imports an image into a TextureResourceCube
+        /// \param target object to import texture into
+        /// \param args arguments to importer
+        /// \return error code
+        virtual DTerr				import				(TextureResourceCube *target, std::string args);
+
     private:
-    
+
         DTerr                       import              (   const FilePath &pathname,
                                                             const std::string &args,
                                                             DTuint &width,
@@ -83,7 +84,7 @@ class ImporterImageJPG: public ImporterImage {
             jpeg_error_mgr pub;         //  "public" fields
             jmp_buf setjmp_buffer;      //  for return to caller
         };
-    
+
         struct ImportSource {
             jpeg_source_mgr pub;        // public fields
 
@@ -99,7 +100,7 @@ class ImporterImageJPG: public ImporterImage {
 
         static boolean              fill_input_buffer   (j_decompress_ptr cinfo);
         static void                 skip_input_data     (j_decompress_ptr cinfo, long num_bytes);
-        
+
         static void                 jpeg_stream_src     (j_decompress_ptr cinfo, BinaryFileStream &file);
 
 };

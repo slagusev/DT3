@@ -1,0 +1,230 @@
+1381
+1
+Archive {
+  obj_type=World
+  obj {
+    BaseClass {
+      unique_id=144
+    }
+    PlugNode {
+      _name=World
+      num_plugs=0
+      num_events=0
+    }
+    World {
+      node_count=5
+      ref=251
+      ref=1297
+      ref=1591
+      ref=4535
+      ref=7238
+      group_count=0
+      _default_camera=CameraObject
+      ref=0
+    }
+  }
+  obj_type=PlaceableObject
+  obj {
+    BaseClass {
+      unique_id=251
+    }
+    PlugNode {
+      _name=PlaceableObject
+      num_plugs=1
+      PlugConnection {
+        src_node_id=4535
+        dst_node_id=251
+        src_name=Out
+        dst_name=Orientation
+      }
+      num_events=0
+    }
+    WorldNode {
+      Node_Collapsed=0
+      Node_Position=395 -253 0
+      Node_Color=0.588235 0.588235 0.588235 1
+    }
+    ObjectBase {
+      num_components=9
+      ref=536
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+    }
+    PlaceableObject {
+      Pickable_In_Editor=1
+      Translation=0 0 0
+      Radius=1
+      Orientation=1 0 0 0 1 0 0 0 1
+      Scale=10 10 10
+      Velocity=0 0 0
+      Angular_Velocity=0 0 0
+    }
+  }
+  obj_type=CameraObject
+  obj {
+    BaseClass {
+      unique_id=1297
+    }
+    PlugNode {
+      _name=CameraObject
+      num_plugs=0
+      num_events=0
+    }
+    WorldNode {
+      Node_Collapsed=0
+      Node_Position=-415 -241 0
+      Node_Color=0.588235 0.588235 0.588235 1
+    }
+    ObjectBase {
+      num_components=9
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+    }
+    PlaceableObject {
+      Pickable_In_Editor=1
+      Translation=0.0200001 0 25
+      Radius=1
+      Orientation=0.99995 0 0.00999987 0 1 -0 -0.00999987 0 0.99995
+      Scale=1 1 1
+      Velocity=0 0 0
+      Angular_Velocity=0 0 0
+    }
+    CameraObject {
+      _perspective=1
+      _perspective_fill_width=0
+      _left=-1
+      _right=1
+      _top=1
+      _bottom=-1
+      _near=-100
+      _far=100
+      _post_projection=1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
+      Far_Plane=10000
+      Near_Plane=1
+      Angle=60
+      Aspect_Ratio_Mul=1
+    }
+  }
+  obj_type=ScriptingTimer
+  obj {
+    BaseClass {
+      unique_id=1591
+    }
+    PlugNode {
+      _name=Timer
+      num_plugs=0
+      num_events=0
+    }
+    WorldNode {
+      Node_Collapsed=0
+      Node_Position=-68 -82 0
+      Node_Color=0.588235 0.588235 0.588235 1
+    }
+    ScriptingBase {
+    }
+    ScriptingTimer {
+      Speed=1
+      Count_Up=1
+      Count_Down=0
+      Time=0
+    }
+  }
+  obj_type=ScriptingRotateZ
+  obj {
+    BaseClass {
+      unique_id=4535
+    }
+    PlugNode {
+      _name=RotateZ
+      num_plugs=1
+      PlugConnection {
+        src_node_id=1591
+        dst_node_id=4535
+        src_name=Time
+        dst_name=Angle
+      }
+      num_events=0
+    }
+    WorldNode {
+      Node_Collapsed=0
+      Node_Position=152 -94 0
+      Node_Color=0.588235 0.588235 0.588235 1
+    }
+    ScriptingBase {
+    }
+    ScriptingRotateZ {
+      In=1 0 0 0 1 0 0 0 1
+      Angle=0
+      Out=1 0 0 0 1 0 0 0 1
+    }
+  }
+  obj_type=HWGameController
+  obj {
+    BaseClass {
+      unique_id=7238
+    }
+    PlugNode {
+      _name=HWGameController
+      num_plugs=0
+      num_events=0
+    }
+    WorldNode {
+      Node_Collapsed=0
+      Node_Position=-79 -247 0
+      Node_Color=0.588235 0.588235 0.588235 1
+    }
+    ObjectBase {
+      num_components=9
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+      ref=0
+    }
+    GameController {
+    }
+    HWGameController {
+    }
+  }
+  obj_type=ComponentDrawImagePlane
+  obj {
+    BaseClass {
+      unique_id=536
+    }
+    PlugNode {
+      _name=ComponentDrawImagePlane
+      num_plugs=0
+      num_events=0
+    }
+    ComponentBase {
+    }
+    ComponentDrawImagePlane {
+      Material={HelloWorld.mat}
+      Shader={default.shdr}
+      Color=1 1 1 1
+      _aspect=1
+      Flip_Horz=0
+      Flip_Vert=0
+      Tex_Mul_S=1
+      Tex_Mul_T=1
+    }
+  }
+  obj_type=end
+}

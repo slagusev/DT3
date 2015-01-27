@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_SCRIPTINGMATRIX3MULTIPLY
 #define DT3_SCRIPTINGMATRIX3MULTIPLY
 //==============================================================================
-///	
+///
 ///	File: ScriptingMatrix3Multiply.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Scripting/ScriptingBase.hpp"
@@ -30,28 +31,28 @@ namespace DT3 {
 class ScriptingMatrix3Multiply: public ScriptingBase {
     public:
         DEFINE_TYPE(ScriptingMatrix3Multiply,ScriptingBase)
-		DEFINE_CREATE_AND_CLONE
-		DEFINE_PLUG_NODE
-         
-									ScriptingMatrix3Multiply    (void);
-									ScriptingMatrix3Multiply    (const ScriptingMatrix3Multiply &rhs);
+        DEFINE_CREATE_AND_CLONE
+        DEFINE_PLUG_NODE
+
+                                    ScriptingMatrix3Multiply    (void);
+                                    ScriptingMatrix3Multiply    (const ScriptingMatrix3Multiply &rhs);
         ScriptingMatrix3Multiply &  operator =                  (const ScriptingMatrix3Multiply &rhs);
         virtual						~ScriptingMatrix3Multiply   (void);
-    
-        virtual void				archive                 (const std::shared_ptr<Archive> &archive);
-		
-	public:
-		/// Called to initialize the object
-		virtual void				initialize				(void);
-				
-		/// Computes the value of the node
-		/// \param plug plug to compute
- 		DTboolean					compute					(const PlugBase *plug);
 
-	private:		
-		Plug<Matrix3>				_in1;
-		Plug<Matrix3>				_in2;
-		Plug<Matrix3>				_out;
+        virtual void				archive                 (const std::shared_ptr<Archive> &archive);
+
+    public:
+        /// Called to initialize the object
+        virtual void				initialize				(void);
+
+        /// Computes the value of the node
+        /// \param plug plug to compute
+        DTboolean					compute					(const PlugBase *plug);
+
+    private:
+        Plug<Matrix3>				_in1;
+        Plug<Matrix3>				_in2;
+        Plug<Matrix3>				_out;
 };
 
 //==============================================================================

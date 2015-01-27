@@ -1,14 +1,15 @@
+#pragma once
 #ifndef EDLEVELSOUNDTHUMBNAIL
 #define EDLEVELSOUNDTHUMBNAIL
 //==============================================================================
-///	
+///
 ///	File: EdLevelSoundThumbnail.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -37,25 +38,25 @@ class EdLevelSoundThumbnail : public QPushButton
 {
     Q_OBJECT
 
-	public:
+    public:
                             EdLevelSoundThumbnail		(QWidget *parent);
                             ~EdLevelSoundThumbnail		(void);
 
-	public:
+    public:
         void                setSound            (const FilePath &path);
-		void                paintEvent          (QPaintEvent *event);
+        void                paintEvent          (QPaintEvent *event);
 
     public slots:
         void                doPressed           (void);
 
-	private:
+    private:
         void                cache               (void);
 
         struct Buffer {
             DTubyte b,g,r,a;
         } *_buffer;
 
-		QImage              _image;
+        QImage              _image;
         FilePath            _path;
 };
 

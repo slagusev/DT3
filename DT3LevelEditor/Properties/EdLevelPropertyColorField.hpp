@@ -1,15 +1,17 @@
+#pragma once
 #ifndef EDLEVELPROPERTYCOLORFIELD
 #define EDLEVELPROPERTYCOLORFIELD
 //==============================================================================
-///	
+///
 ///	File: EdLevelPropertyColorField.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
+#include<memory>
 
 // Editor include
 #include "EdLevelPropertyBase.hpp"
@@ -47,27 +49,27 @@ class EdLevelPropertyColorField : public EdLevelPropertyBase
 {
     Q_OBJECT
 
-	public:
+    public:
                         EdLevelPropertyColorField       (EdLevelPropertiesWindow *parent, std::shared_ptr<PlugNode> node, std::shared_ptr<ArchiveData> data);
                         ~EdLevelPropertyColorField      (void);
-    
+
         /// Gets the value of the field
-		/// \return value of field
+        /// \return value of field
         virtual std::string                  getValueOfField (void);
-    
+
         /// Sets the value of the field
-		/// \param value value to set
+        /// \param value value to set
         virtual void                    setValueOfField (const std::string &value);
 
     private:
         std::shared_ptr<PlugNode>       _node;
         std::shared_ptr<ArchiveData>    _data;
         EdLevelColorSwatch              *_fill;
-        
+
         QSlider                         *_r;
         QSlider                         *_g;
         QSlider                         *_b;
-        QSlider                         *_a;    
+        QSlider                         *_a;
 
         EdLevelLineEdit                 *_r2;
         EdLevelLineEdit                 *_g2;

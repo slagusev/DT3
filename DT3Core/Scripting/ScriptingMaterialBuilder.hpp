@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_SCRIPTINGMATERIALBUILDER
 #define DT3_SCRIPTINGMATERIALBUILDER
 //==============================================================================
-///	
+///
 ///	File: ScriptingMaterialBuilder.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Scripting/ScriptingBase.hpp"
@@ -82,28 +83,28 @@ class TextureResource2D;
 class ScriptingMaterialBuilder: public ScriptingBase {
     public:
         DEFINE_TYPE(ScriptingMaterialBuilder,ScriptingBase)
-		DEFINE_CREATE_AND_CLONE
-		DEFINE_PLUG_NODE
-         
-                                    ScriptingMaterialBuilder	(void);	
-									ScriptingMaterialBuilder	(const ScriptingMaterialBuilder &rhs);
-        ScriptingMaterialBuilder &	operator =                  (const ScriptingMaterialBuilder &rhs);	
+        DEFINE_CREATE_AND_CLONE
+        DEFINE_PLUG_NODE
+
+                                    ScriptingMaterialBuilder	(void);
+                                    ScriptingMaterialBuilder	(const ScriptingMaterialBuilder &rhs);
+        ScriptingMaterialBuilder &	operator =                  (const ScriptingMaterialBuilder &rhs);
         virtual                     ~ScriptingMaterialBuilder	(void);
-    
+
         virtual void                archive                 (const std::shared_ptr<Archive> &archive);
-		
-	public:
-		/// Called to initialize the object
-		virtual void				initialize				(void);
-		
-		/// Computes the value of the node
-		/// \param plug plug to compute
- 		DTboolean					compute					(const PlugBase *plug);
-    
+
+    public:
+        /// Called to initialize the object
+        virtual void				initialize				(void);
+
+        /// Computes the value of the node
+        /// \param plug plug to compute
+        DTboolean					compute					(const PlugBase *plug);
+
         //
         // Depth Stencil State
         //
-    
+
         FORWARD_FUNCTION(set_depth_enable,depth_enable,DTboolean)
         FORWARD_FUNCTION(set_depth_write_mask,depth_write_mask,DTboolean)
         FORWARD_FUNCTION(set_depth_func,depth_func,DT3GLComparison)
@@ -154,47 +155,47 @@ class ScriptingMaterialBuilder: public ScriptingBase {
         FORWARD_UNITS(set_address_w,address_w,DT3GLAddressMode)
         FORWARD_UNITS(set_mip_lod_bias,mip_lod_bias,DTfloat)
         FORWARD_UNITS(set_max_anisotropy,max_anisotropy,DTfloat)
-    
+
         FORWARD_UNITS(set_transform,transform,Matrix4)
-    
+
         FORWARD_UNITS_SETTERS(set_rectangle, Rectangle)
-    
-    private:		
-		Plug<std::shared_ptr<MaterialResource>>	_out_material;
 
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_0;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_1;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_2;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_3;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_4;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_5;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_6;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_7;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_8;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_9;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_10;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_11;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_12;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_13;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_14;
-		Plug<std::shared_ptr<TextureResource2D>>		_tex_15;
+    private:
+        Plug<std::shared_ptr<MaterialResource>>	_out_material;
 
-		Plug<Rectangle>		_rect_0;
-		Plug<Rectangle>		_rect_1;
-		Plug<Rectangle>		_rect_2;
-		Plug<Rectangle>		_rect_3;
-		Plug<Rectangle>		_rect_4;
-		Plug<Rectangle>		_rect_5;
-		Plug<Rectangle>		_rect_6;
-		Plug<Rectangle>		_rect_7;
-		Plug<Rectangle>		_rect_8;
-		Plug<Rectangle>		_rect_9;
-		Plug<Rectangle>		_rect_10;
-		Plug<Rectangle>		_rect_11;
-		Plug<Rectangle>		_rect_12;
-		Plug<Rectangle>		_rect_13;
-		Plug<Rectangle>		_rect_14;
-		Plug<Rectangle>		_rect_15;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_0;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_1;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_2;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_3;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_4;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_5;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_6;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_7;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_8;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_9;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_10;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_11;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_12;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_13;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_14;
+        Plug<std::shared_ptr<TextureResource2D>>		_tex_15;
+
+        Plug<Rectangle>		_rect_0;
+        Plug<Rectangle>		_rect_1;
+        Plug<Rectangle>		_rect_2;
+        Plug<Rectangle>		_rect_3;
+        Plug<Rectangle>		_rect_4;
+        Plug<Rectangle>		_rect_5;
+        Plug<Rectangle>		_rect_6;
+        Plug<Rectangle>		_rect_7;
+        Plug<Rectangle>		_rect_8;
+        Plug<Rectangle>		_rect_9;
+        Plug<Rectangle>		_rect_10;
+        Plug<Rectangle>		_rect_11;
+        Plug<Rectangle>		_rect_12;
+        Plug<Rectangle>		_rect_13;
+        Plug<Rectangle>		_rect_14;
+        Plug<Rectangle>		_rect_15;
 };
 
 //==============================================================================

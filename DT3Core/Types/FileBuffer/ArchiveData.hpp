@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_ARCHIVEDATA
 #define DT3_ARCHIVEDATA
 //==============================================================================
-///	
+///
 ///	File: ArchiveData.hpp
 ///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseClass.hpp"
@@ -51,51 +52,51 @@ extern const DTint DATA_DIRTY;
 class ArchiveData: public BaseClass {
     public:
         DEFINE_TYPE(ArchiveData,BaseClass)
-		DEFINE_CLONE
-         
+        DEFINE_CLONE
+
                                         ArchiveData				(void);
                                         ArchiveData				(const ArchiveData &rhs);
         ArchiveData &                   operator =              (const ArchiveData &rhs);
-		virtual                         ~ArchiveData			(void);
-								
-	public:
-		/// Writes the value to a stream
-		/// \param s stream
-		virtual void                    value                   (Stream &s) const	{					}
+        virtual                         ~ArchiveData			(void);
 
-		/// Reads the value from a stream
-		/// \param s stream
-		virtual void                    set_value				(Stream &s) const	{					}
+    public:
+        /// Writes the value to a stream
+        /// \param s stream
+        virtual void                    value                   (Stream &s) const	{					}
+
+        /// Reads the value from a stream
+        /// \param s stream
+        virtual void                    set_value				(Stream &s) const	{					}
 
 
-		
-		/// Returns plug
-		/// \return plug
-		virtual PlugBase*               plug                    (void) const			{	return NULL;	}
 
-		/// Returns event
-		/// \return event
-		virtual Event*                  event                   (void) const			{	return NULL;	}
-    
+        /// Returns plug
+        /// \return plug
+        virtual PlugBase*               plug                    (void) const			{	return NULL;	}
 
-		/// Returns kind of data as a string
-		/// \return data kind
-		virtual const DTcharacter*      data_kind               (void) const			{	return NULL;	}
-        
-        
+        /// Returns event
+        /// \return event
+        virtual Event*                  event                   (void) const			{	return NULL;	}
+
+
+        /// Returns kind of data as a string
+        /// \return data kind
+        virtual const DTcharacter*      data_kind               (void) const			{	return NULL;	}
+
+
         //
         // Additional traits
         //
-        
+
         /// Add an enumeration for pulldown menus
         /// \param s enumeration
         /// \return this
         ArchiveData&                    add_enum                (const std::string &s);
-		
-		/// Returns if this item is an enum
-		/// \return is title
-		virtual DTboolean               is_enum                 (void) const			{	return _enums.size() > 0;	}
-        
+
+        /// Returns if this item is an enum
+        /// \return is title
+        virtual DTboolean               is_enum                 (void) const			{	return _enums.size() > 0;	}
+
         /// Returns enums
         const std::vector<std::string>& enums                   (void)                  {   return _enums;  }
 
@@ -105,11 +106,11 @@ class ArchiveData: public BaseClass {
         /// \param s enumeration
         /// \return this
         ArchiveData&                    add_range               (DTfloat range_min, DTfloat range_max);
-		
-		/// Returns if this item is an enum
-		/// \return is title
-		virtual DTboolean               is_range                (void) const			{	return (_range_max > _range_min);	}
-        
+
+        /// Returns if this item is an enum
+        /// \return is title
+        virtual DTboolean               is_range                (void) const			{	return (_range_max > _range_min);	}
+
         /// Returns minimum range
         DTfloat                         range_min               (void) const            {   return _range_min;  }
 
@@ -121,41 +122,41 @@ class ArchiveData: public BaseClass {
         /// \param s enumeration
         /// \return this
         ArchiveData&                    set_bitfield            (DTboolean bitfield);
-		
-		/// Returns if this item is an enum
-		/// \return is title
-		virtual DTboolean               is_bitfield             (void) const			{	return _bitfield;	}
 
-        
+        /// Returns if this item is an enum
+        /// \return is title
+        virtual DTboolean               is_bitfield             (void) const			{	return _bitfield;	}
+
+
         /// Add a flag
         /// \param s enumeration
         /// \return this
         ArchiveData&                    add_flags               (DTuint flags);
-		        
-		/// Returns the flags for this data
-		/// \return flags
-		DTuint                          flags                   (void) const			{	return _flags;	}
-        
-    
-    
-		/// Sets the title of this data
-		/// \param s title
-        /// \return this data
-		ArchiveData&                    set_title				(const std::string &s);
 
-		/// Returns the title of this data
-		/// \return title
-		std::string                     title                   (void) const			{	return _title;	}
+        /// Returns the flags for this data
+        /// \return flags
+        DTuint                          flags                   (void) const			{	return _flags;	}
+
+
+
+        /// Sets the title of this data
+        /// \param s title
+        /// \return this data
+        ArchiveData&                    set_title				(const std::string &s);
+
+        /// Returns the title of this data
+        /// \return title
+        std::string                     title                   (void) const			{	return _title;	}
 
 
     protected:
-		DTuint                          _flags;
-		std::string                     _title;
-    
+        DTuint                          _flags;
+        std::string                     _title;
+
         std::vector<std::string>        _enums;
         DTfloat                         _range_min;
         DTfloat                         _range_max;
-    
+
         DTboolean                       _bitfield;
 };
 
@@ -165,55 +166,55 @@ class ArchiveData: public BaseClass {
 
 template <typename T>
 class ArchiveDataVariable: public ArchiveData {
-	public:
+    public:
         DEFINE_TYPE(ArchiveDataVariable,ArchiveData)
-		DEFINE_CLONE
-		
-		ArchiveDataVariable (const ArchiveDataVariable& rhs)
-			:	ArchiveData	(rhs),
-				_data(rhs._data)
-		{
+        DEFINE_CLONE
 
-		}
-		
-		/// Constructor if data is a variable
-		/// \param title name of data
-		/// \param data reference to data
-		/// \param flags flags for data
-		ArchiveDataVariable (std::string title, T &data, DTuint flags) 
-			:	_data(&data)
-		{
+        ArchiveDataVariable (const ArchiveDataVariable& rhs)
+            :	ArchiveData	(rhs),
+                _data(rhs._data)
+        {
+
+        }
+
+        /// Constructor if data is a variable
+        /// \param title name of data
+        /// \param data reference to data
+        /// \param flags flags for data
+        ArchiveDataVariable (std::string title, T &data, DTuint flags)
+            :	_data(&data)
+        {
             set_title(title);
-			add_flags(flags);
-		}
-		
-	private:
-		ArchiveDataVariable& operator = (const ArchiveDataVariable &rhs);
+            add_flags(flags);
+        }
 
-	public:
-		
-		
-		/// Writes the value to a stream
-		/// \param s stream
-		virtual void                value                   (Stream &s) const {
-			T &data = *_data;
-			s << data;
-		}
-		
-		/// Reads the value from a stream
-		/// \param s stream
-		virtual void                set_value				(Stream &s) const {
-			s >> *_data;
-		}
+    private:
+        ArchiveDataVariable& operator = (const ArchiveDataVariable &rhs);
+
+    public:
+
+
+        /// Writes the value to a stream
+        /// \param s stream
+        virtual void                value                   (Stream &s) const {
+            T &data = *_data;
+            s << data;
+        }
+
+        /// Reads the value from a stream
+        /// \param s stream
+        virtual void                set_value				(Stream &s) const {
+            s >> *_data;
+        }
 
         /// Returns data kind
-		virtual const DTcharacter*  data_kind               (void) const        {	return TypeTraits<T>::name();	}
+        virtual const DTcharacter*  data_kind               (void) const        {	return TypeTraits<T>::name();	}
 
-	private:
-		T       *_data;
+    private:
+        T       *_data;
 };
 
-// Template specialization to make sure this isn't used for pointers, refs, 
+// Template specialization to make sure this isn't used for pointers, refs,
 // or consts.
 
 template <typename T>
@@ -234,58 +235,58 @@ class ArchiveDataVariable<const T&> {};
 
 template <typename T>
 class ArchiveDataPlug: public ArchiveData {
-	public:
+    public:
         DEFINE_TYPE(ArchiveDataPlug,ArchiveData)
-		DEFINE_CLONE
-		
-		ArchiveDataPlug (const ArchiveDataPlug& rhs)
-			:	ArchiveData	(rhs),
-				_plug(rhs._plug)
-		{
+        DEFINE_CLONE
 
-		}
-		
-		/// Constructor if data is a variable
-		/// \param title name of data
-		/// \param data reference to data
-		/// \param flags flags for data
-		ArchiveDataPlug (Plug<T> &plug, DTuint flags)
-			:	_plug(&plug)
-		{
+        ArchiveDataPlug (const ArchiveDataPlug& rhs)
+            :	ArchiveData	(rhs),
+                _plug(rhs._plug)
+        {
+
+        }
+
+        /// Constructor if data is a variable
+        /// \param title name of data
+        /// \param data reference to data
+        /// \param flags flags for data
+        ArchiveDataPlug (Plug<T> &plug, DTuint flags)
+            :	_plug(&plug)
+        {
             set_title(_plug->name());
-			add_flags(flags);
-		}
-		
-	private:
-		ArchiveDataPlug& operator = (const ArchiveDataPlug &rhs);
+            add_flags(flags);
+        }
 
-	public:
+    private:
+        ArchiveDataPlug& operator = (const ArchiveDataPlug &rhs);
 
-		/// Writes the value to a stream
-		/// \param s stream
-		virtual void                value                   (Stream &s) const {
-			T val = *_plug;
-			s << val;
-		}
-		
-		/// Reads the value from a stream
-		/// \param s stream
-		virtual void                set_value				(Stream &s) const {
-			T val = TypeTraits<typename TypeTraits<T>::BaseType>::default_value();
-			s >> val;
-			*_plug = val;
-		}
-				
-		/// Returns plug
-		/// \return plug
-		virtual PlugBase*           plug                    (void) const			{	return _plug;	}
+    public:
+
+        /// Writes the value to a stream
+        /// \param s stream
+        virtual void                value                   (Stream &s) const {
+            T val = *_plug;
+            s << val;
+        }
+
+        /// Reads the value from a stream
+        /// \param s stream
+        virtual void                set_value				(Stream &s) const {
+            T val = TypeTraits<typename TypeTraits<T>::BaseType>::default_value();
+            s >> val;
+            *_plug = val;
+        }
+
+        /// Returns plug
+        /// \return plug
+        virtual PlugBase*           plug                    (void) const			{	return _plug;	}
 
 
         /// Returns data kind
-		virtual const DTcharacter*  data_kind               (void) const			{	return TypeTraits<T>::name();	}
+        virtual const DTcharacter*  data_kind               (void) const			{	return TypeTraits<T>::name();	}
 
-	private:
-		Plug<T>   *_plug;
+    private:
+        Plug<T>   *_plug;
 };
 
 //==============================================================================
@@ -293,52 +294,52 @@ class ArchiveDataPlug: public ArchiveData {
 //==============================================================================
 
 class ArchiveDataEvent: public ArchiveData {
-	public:
+    public:
         DEFINE_TYPE(ArchiveDataEvent,ArchiveData)
-		DEFINE_CLONE
-		
-		ArchiveDataEvent (const ArchiveDataEvent& rhs)
-			:	ArchiveData	(rhs),
-				_event(rhs._event)
-		{
+        DEFINE_CLONE
 
-		}
-		
-		/// Constructor if data is a variable
-		/// \param title name of data
-		/// \param data reference to data
-		/// \param flags flags for data
-		ArchiveDataEvent (Event &event, DTuint flags) 
-			:	_event  (&event)
-		{
+        ArchiveDataEvent (const ArchiveDataEvent& rhs)
+            :	ArchiveData	(rhs),
+                _event(rhs._event)
+        {
+
+        }
+
+        /// Constructor if data is a variable
+        /// \param title name of data
+        /// \param data reference to data
+        /// \param flags flags for data
+        ArchiveDataEvent (Event &event, DTuint flags)
+            :	_event  (&event)
+        {
             set_title(_event->name());
-			add_flags(flags);
-		}
-		
-	private:
-		ArchiveDataEvent& operator = (const ArchiveDataEvent &rhs);
+            add_flags(flags);
+        }
 
-	public:
+    private:
+        ArchiveDataEvent& operator = (const ArchiveDataEvent &rhs);
 
-		/// Writes the value to a stream
-		/// \param s stream
-		virtual void                value                   (Stream &s) const {
-		}
-		
-		/// Reads the value from a stream
-		/// \param s stream
-		virtual void                set_value				(Stream &s) const {
-		}
-				
-		/// Returns event
-		/// \return event
-		virtual Event*              event                   (void) const		{	return _event;	}
+    public:
+
+        /// Writes the value to a stream
+        /// \param s stream
+        virtual void                value                   (Stream &s) const {
+        }
+
+        /// Reads the value from a stream
+        /// \param s stream
+        virtual void                set_value				(Stream &s) const {
+        }
+
+        /// Returns event
+        /// \return event
+        virtual Event*              event                   (void) const		{	return _event;	}
 
         /// Returns data kind
-		virtual const DTcharacter*  data_kind               (void) const        {	return "Event";	}
+        virtual const DTcharacter*  data_kind               (void) const        {	return "Event";	}
 
-	private:
-		Event		*_event;
+    private:
+        Event		*_event;
 };
 
 //==============================================================================
@@ -348,68 +349,68 @@ class ArchiveDataEvent: public ArchiveData {
 
 template <typename T, typename U, typename V>
 class ArchiveDataVariableAccessors: public ArchiveData {
-	public:
+    public:
         DEFINE_TYPE(ArchiveDataVariableAccessors,ArchiveData)
-		DEFINE_CLONE
+        DEFINE_CLONE
 
-	private:
-		typedef U (T::*GetFN)(void) const;
-		typedef void (T::*SetFN)(V);
-		
-	public:
+    private:
+        typedef U (T::*GetFN)(void) const;
+        typedef void (T::*SetFN)(V);
 
-		ArchiveDataVariableAccessors (const ArchiveDataVariableAccessors& rhs)
-			:	ArchiveData	(rhs),
-				_object(rhs._object),
-				_get(rhs._get),
-				_set(rhs._set)
-		{
+    public:
 
-		}
+        ArchiveDataVariableAccessors (const ArchiveDataVariableAccessors& rhs)
+            :	ArchiveData	(rhs),
+                _object(rhs._object),
+                _get(rhs._get),
+                _set(rhs._set)
+        {
 
-		/// Constructor if data is a variable
-		/// \param title name of data
-		/// \param object object for accessor functions
-		/// \param get accessor function for retrieving data
-		/// \param set accessor function for setting data
-		/// \param flags flags for data
-		ArchiveDataVariableAccessors (std::string title, T* object, GetFN get = NULL, SetFN set = NULL, DTuint flags = 0) {
-			_object = object;
+        }
+
+        /// Constructor if data is a variable
+        /// \param title name of data
+        /// \param object object for accessor functions
+        /// \param get accessor function for retrieving data
+        /// \param set accessor function for setting data
+        /// \param flags flags for data
+        ArchiveDataVariableAccessors (std::string title, T* object, GetFN get = NULL, SetFN set = NULL, DTuint flags = 0) {
+            _object = object;
             set_title(title);
-			add_flags(flags);
-	
-			_get = get;
-			_set = set;
-		}
-		
-	private:
-		ArchiveDataVariableAccessors& operator = (const ArchiveDataVariableAccessors &rhs);
+            add_flags(flags);
 
-	public:
+            _get = get;
+            _set = set;
+        }
 
-		
-		/// Writes the value to a stream
-		/// \param s stream
-		virtual void                    value				(Stream &s) const {
-			typename TypeTraits<V>::BaseType val = (U)(_object->*_get)();
-			s << val;
-		}
-		
-		/// Reads the value from a stream
-		/// \param s stream 
-		virtual void                    set_value				(Stream &s) const {
-			typename TypeTraits<V>::BaseType val = TypeTraits<typename TypeTraits<V>::BaseType>::default_value();
-			s >> val;
-			(_object->*_set)(val);
-		}
-				
+    private:
+        ArchiveDataVariableAccessors& operator = (const ArchiveDataVariableAccessors &rhs);
+
+    public:
+
+
+        /// Writes the value to a stream
+        /// \param s stream
+        virtual void                    value				(Stream &s) const {
+            typename TypeTraits<V>::BaseType val = (U)(_object->*_get)();
+            s << val;
+        }
+
+        /// Reads the value from a stream
+        /// \param s stream
+        virtual void                    set_value				(Stream &s) const {
+            typename TypeTraits<V>::BaseType val = TypeTraits<typename TypeTraits<V>::BaseType>::default_value();
+            s >> val;
+            (_object->*_set)(val);
+        }
+
         /// Returns data kind
-		virtual const DTcharacter*      data_kind        (void) const			{	return TypeTraits<U>::name();	}
+        virtual const DTcharacter*      data_kind        (void) const			{	return TypeTraits<U>::name();	}
 
-	private:
-		T           *_object;
-		GetFN       _get;
-		SetFN       _set;
+    private:
+        T           *_object;
+        GetFN       _get;
+        SetFN       _set;
 
 };
 
@@ -418,32 +419,32 @@ class ArchiveDataVariableAccessors: public ArchiveData {
 //==============================================================================
 
 class ArchiveDataIgnore: public ArchiveData {
-	public:
+    public:
         DEFINE_TYPE(ArchiveDataIgnore,ArchiveData)
-		DEFINE_CLONE
-		
-		ArchiveDataIgnore (const ArchiveDataIgnore& rhs)
-			:	ArchiveData	(rhs)
-		{
+        DEFINE_CLONE
 
-		}
-		
-		/// Constructor if data is a variable
-		/// \param title name of data
-		/// \param data reference to data
-		/// \param flags flags for data
-		ArchiveDataIgnore (std::string title) 
-		{
+        ArchiveDataIgnore (const ArchiveDataIgnore& rhs)
+            :	ArchiveData	(rhs)
+        {
+
+        }
+
+        /// Constructor if data is a variable
+        /// \param title name of data
+        /// \param data reference to data
+        /// \param flags flags for data
+        ArchiveDataIgnore (std::string title)
+        {
             set_title(title);
-			add_flags(DATA_PERSISTENT);
-		}
-		
-	private:
-		ArchiveDataIgnore& operator = (const ArchiveDataIgnore &rhs);
+            add_flags(DATA_PERSISTENT);
+        }
 
-	public:
+    private:
+        ArchiveDataIgnore& operator = (const ArchiveDataIgnore &rhs);
+
+    public:
         /// Returns data kind
-		virtual const DTcharacter*      data_kind        (void) const			{	return NULL;	}
+        virtual const DTcharacter*      data_kind        (void) const			{	return NULL;	}
 
 };
 
@@ -461,7 +462,7 @@ class ArchiveDataIgnore: public ArchiveData {
 template <typename T>
 ArchiveDataPlug<T> makeArchiveDataPlug (Plug<T> &plug, DTuint flags)
 {
-	return ArchiveDataPlug<T>(plug, flags);
+    return ArchiveDataPlug<T>(plug, flags);
 }
 
 #define ARCHIVE_PLUG(P,V)               makeArchiveDataPlug(P,V)
@@ -472,7 +473,7 @@ ArchiveDataPlug<T> makeArchiveDataPlug (Plug<T> &plug, DTuint flags)
 
 inline ArchiveDataEvent makeArchiveDataEvent (Event &event, DTuint flags)
 {
-	return ArchiveDataEvent(event, flags);
+    return ArchiveDataEvent(event, flags);
 }
 
 #define ARCHIVE_EVENT(E,V)              makeArchiveDataEvent(E,V)
@@ -480,19 +481,19 @@ inline ArchiveDataEvent makeArchiveDataEvent (Event &event, DTuint flags)
 
 //
 // Is this only a bit confusing? This function is used to build an ArchiveData
-// object that points to member functions and the type that is passed is 
-// figured out from the functions at compile time. Syntax is really goofy 
+// object that points to member functions and the type that is passed is
+// figured out from the functions at compile time. Syntax is really goofy
 // though :(
 //
 
 template<typename T, typename U, typename V>
 ArchiveDataVariableAccessors<T,U,V> makeArchiveDataVariableAccessors (      std::string title,
-																			T* object, 
-																			U (T::*get)(void) const, 
-																			void (T::*set)(V), 
-																			DTuint flags)
+                                                                            T* object,
+                                                                            U (T::*get)(void) const,
+                                                                            void (T::*set)(V),
+                                                                            DTuint flags)
 {
-	return ArchiveDataVariableAccessors<T,U,V>(title,object,get,set,flags);
+    return ArchiveDataVariableAccessors<T,U,V>(title,object,get,set,flags);
 }
 
 #define ARCHIVE_DATA_ACCESSORS(T,G,S,F) makeArchiveDataVariableAccessors(T,this,&G,&S,F)
@@ -505,7 +506,7 @@ ArchiveDataVariableAccessors<T,U,V> makeArchiveDataVariableAccessors (      std:
 template<typename T>
 ArchiveDataVariable<T> makeArchiveDataVariable (std::string title, T &data, DTuint flags)
 {
-	return ArchiveDataVariable<T>(title,data,flags);
+    return ArchiveDataVariable<T>(title,data,flags);
 }
 
 #define ARCHIVE_DATA(TYP,F)             makeArchiveDataVariable(#TYP,TYP,F)

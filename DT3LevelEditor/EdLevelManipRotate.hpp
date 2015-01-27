@@ -1,14 +1,15 @@
+#pragma once
 #ifndef EDLEVELMANIPROTATE
 #define EDLEVELMANIPROTATE
 //==============================================================================
-///	
+///
 ///	File: EdLevelManipRotate.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -44,7 +45,7 @@ using namespace DT3;
 
 class EdLevelManipRotate: public EdLevelTool
 {
-	public:
+    public:
         DEFINE_TYPE(EdLevelManipRotate, EdLevelTool)
         DEFINE_CREATE
 
@@ -53,9 +54,9 @@ class EdLevelManipRotate: public EdLevelTool
 
     public:
         virtual void    draw                    (EdLevelToolWindow *parent, const std::shared_ptr<CameraObject> &camera, DTfloat scale);
-    
+
         virtual void    doEvent                 (EdLevelToolWindow *parent, const EdLevelToolEvent &event);
-        
+
         virtual Matrix4 getManipulatorTransform (void) const;
 
     private:

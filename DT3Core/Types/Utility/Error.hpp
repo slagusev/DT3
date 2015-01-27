@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_ERROR
 #define DT3_ERROR
 //==============================================================================
-///	
+///
 ///	File: Error.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -30,18 +31,18 @@ template <typename... T> class Callback;
 //==============================================================================
 
 class ErrorImpl {
- 	private:
+    private:
                             ErrorImpl                   (void);
                             ErrorImpl                   (const ErrorImpl &rhs);
         ErrorImpl&          operator =                  (const ErrorImpl &rhs);
-		virtual             ~ErrorImpl                  (void);
+        virtual             ~ErrorImpl                  (void);
 
-	public:
-    
+    public:
+
         //
         // Callbacks
         //
-        
+
         static void         set_callback_error_msg      (std::shared_ptr<Callback<const DTcharacter*, const DTcharacter*, DTint, const DTcharacter*>> cb);
         static void         call_error_msg              (const DTcharacter* file, const DTcharacter* func, DTint line, const DTcharacter *msg);
 
@@ -53,7 +54,7 @@ class ErrorImpl {
         static std::shared_ptr<Callback<const DTcharacter*, const DTcharacter*, DTint, const DTcharacter *>>  _callback_warning_msg;
 
 };
-    
+
 //==============================================================================
 //==============================================================================
 

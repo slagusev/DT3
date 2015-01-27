@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_MEMORY
 #define DT3_MEMORY
 //==============================================================================
-///	
+///
 ///	File: Memory.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include <new>
@@ -40,29 +41,29 @@ namespace DT3 {
 //==============================================================================
 
 class Memory {
-		/// Memory Manager for managing heap allocations.
+        /// Memory Manager for managing heap allocations.
 
-	private:
-                            Memory              (void);	
+    private:
+                            Memory              (void);
                             Memory              (const Memory &rhs);
         Memory&             operator =          (const Memory &rhs);
         virtual             ~Memory             (void);
 
     public:
-    
-		/// Static initializer for memory manager
-        static void         initialize_static   (void);
-    
-		/// Static uninitializer for memory manager
-        static void         destroy_static      (void);
-    
-		/// allocate memory
-		/// \param size size of the chunk of memory to allocate
-		static void*        allocate            (const size_t size, const char *name = NULL);
 
-		/// allocate memory
-		/// \param size size of the chunk of memory to allocate
-		static void         deallocate          (void *p);
+        /// Static initializer for memory manager
+        static void         initialize_static   (void);
+
+        /// Static uninitializer for memory manager
+        static void         destroy_static      (void);
+
+        /// allocate memory
+        /// \param size size of the chunk of memory to allocate
+        static void*        allocate            (const size_t size, const char *name = NULL);
+
+        /// allocate memory
+        /// \param size size of the chunk of memory to allocate
+        static void         deallocate          (void *p);
 
 };
 

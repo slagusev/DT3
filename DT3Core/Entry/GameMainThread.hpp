@@ -1,14 +1,15 @@
+#pragma once
 #ifndef DT3_GAMEMAINTHREAD
 #define DT3_GAMEMAINTHREAD
 //==============================================================================
-///	
+///
 ///	File: GameMainThread.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Types/Base/BaseInclude.hpp"
@@ -38,17 +39,22 @@ class GameMainThread {
     private:
                                 GameMainThread          (void);
                                 GameMainThread          (const GameMainThread &rhs);
-        GameMainThread &        operator =              (const GameMainThread &rhs);	
+        GameMainThread &        operator =              (const GameMainThread &rhs);
                                 ~GameMainThread         (void);
 
     public:
+
+        //  Add the parameters which main was called with,
+        // usefull for configuring the engine
+
+        static void             set_main_parameters(char** argv);
 
         /// Initialize the engine
         static void             initialize_engine       (void);
 
         /// Destroy the engine
         static void             destroy_engine          (void);
-    
+
         /// Initialize the engine
         static void             process_arguments       (std::vector<std::string> args);
 
@@ -61,8 +67,8 @@ class GameMainThread {
 
         /// Tell the engine that the screen has been hidden
         static void             resize                  (DTint width, DTint height);
-    
-            
+
+
         /// Send a touch input event
         /// \param event Touch input event
         static void             touch_event             (TouchEvent event);
@@ -81,7 +87,7 @@ class GameMainThread {
 
         /// Send a menu button event (Android only)
         static void             do_menu_button			(void);
-    
+
 
         /// Send a orientation changed event
         /// \param orientation new orientation
@@ -100,12 +106,12 @@ class GameMainThread {
         /// \param a acceleration
         static void             do_magnetometer         (Vector3 m);
 
-    
-    
+
+
         //
         // Game thread management
         //
-    
+
         /// Start the main loop thread
         static void             start                   (void);
 
@@ -113,14 +119,14 @@ class GameMainThread {
         static void             stop                    (void);
 
 
-		//
-		// If not running in a thread
-		//
-		
+        //
+        // If not running in a thread
+        //
+
         /// Synchronous loop iteration
-		static void				loop                    (void);
-		
-    private:    
+        static void				loop                    (void);
+
+    private:
         static void             initialize_engine_impl  (void);
         static void             destroy_engine_impl     (void);
         static void             process_arguments_impl  (std::vector<std::string> args);
@@ -137,7 +143,7 @@ class GameMainThread {
         static void             do_accelerometer_impl   (Vector3 a);
         static void             do_gyro_impl            (Vector3 w);
         static void             do_magnetometer_impl    (Vector3 m);
-    
+
         static void             append                  (std::shared_ptr<LatentCall> lc);
 
         static void             do_thread               (void);
@@ -150,10 +156,10 @@ class GameMainThread {
 
         static State                                    _state;
         static DTboolean                                _stop;
-    
+
         static std::thread                              _event_queue_thread;
         static std::mutex                               _event_queue_mutex;
-    
+
         static std::list<std::shared_ptr<LatentCall>>  _event_queue;
 };
 

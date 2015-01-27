@@ -1,12 +1,12 @@
 //==============================================================================
-///	
+///
 ///	File: ImporterImageJPG.cpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 #include "DT3Core/Resources/Importers/ImporterImageJPG.hpp"
@@ -17,6 +17,7 @@
 #include "DT3Core/Types/Utility/MoreStrings.hpp"
 #include "DT3Core/System/Factory.hpp"
 #include "DT3Core/System/FileManager.hpp"
+#include <cstring>
 
 //==============================================================================
 //==============================================================================
@@ -34,12 +35,12 @@ IMPLEMENT_FACTORY_IMPORTER(ImporterImageJPG,jpg)
 //==============================================================================
 
 ImporterImageJPG::ImporterImageJPG (void)
-{    
+{
 
 }
 
 ImporterImageJPG::~ImporterImageJPG (void)
-{ 
+{
 
 }
 
@@ -49,45 +50,45 @@ ImporterImageJPG::~ImporterImageJPG (void)
 DTerr ImporterImageJPG::import (TextureResource2D *target, std::string args)
 {
     // Convert path to this platform
-	FilePath pathname(target->path());
-    
+    FilePath pathname(target->path());
+
     DTuint                      width;
     DTuint                      height;
     std::shared_ptr<DTubyte>    data;
     DT3GLTextelFormat            format;
 
     import(pathname, args, width, height, data, format);
-    
-    
+
+
     DTboolean mipmapped = (MoreStrings::lowercase(args).find("mipmapped") != std::string::npos);
 
     target->set_textels(width, height, data, format, mipmapped);
 
-	return DT3_ERR_NONE;
+    return DT3_ERR_NONE;
 }
 
 DTerr ImporterImageJPG::import (TextureResource3D *target, std::string args)
 {
     // Convert path to this platform
-	FilePath pathname(target->path());
-    
+    FilePath pathname(target->path());
+
     DTuint                      width;
     DTuint                      height;
     std::shared_ptr<DTubyte>    data;
     DT3GLTextelFormat            format;
 
     import(pathname, args, width, height, data, format);
-    
+
     // TODO: Set textels
 
-	return DT3_ERR_NONE;
+    return DT3_ERR_NONE;
 }
 
 DTerr ImporterImageJPG::import (TextureResourceCube *target, std::string args)
 {
     // Convert path to this platform
-	FilePath pathname(target->path());
-    
+    FilePath pathname(target->path());
+
     DTuint                      width;
     DTuint                      height;
     std::shared_ptr<DTubyte>    data;
@@ -97,7 +98,7 @@ DTerr ImporterImageJPG::import (TextureResourceCube *target, std::string args)
 
     // TODO: Set textels
 
-	return DT3_ERR_NONE;
+    return DT3_ERR_NONE;
 }
 
 //==============================================================================
@@ -154,7 +155,7 @@ void ImporterImageJPG::skip_input_data (j_decompress_ptr cinfo, long num_bytes)
             num_bytes -= (long) src->pub.bytes_in_buffer;
             fill_input_buffer(cinfo);
         }
-        
+
         src->pub.next_input_byte += (size_t) num_bytes;
         src->pub.bytes_in_buffer -= (size_t) num_bytes;
     }
@@ -170,9 +171,9 @@ void ImporterImageJPG::jpeg_stream_src (j_decompress_ptr cinfo, BinaryFileStream
     src->pub.skip_input_data = skip_input_data;
     src->pub.resync_to_restart = jpeg_resync_to_restart; // use default method
     src->pub.term_source = term_source;
-    
+
     src->infile = &file;
-    
+
     src->pub.bytes_in_buffer = 0;       // forces fillInputBuffer on first read
     src->pub.next_input_byte = NULL;    // until buffer loaded
 }
@@ -182,20 +183,20 @@ void ImporterImageJPG::jpeg_stream_src (j_decompress_ptr cinfo, BinaryFileStream
 
 DTerr ImporterImageJPG::import(const FilePath &pathname, const std::string &args, DTuint &width, DTuint &height, std::shared_ptr<DTubyte> &data, DT3GLTextelFormat &format)
 {
-    
-	//
-	// The following is based on the libpng manual. http://www.libpng.org/pub/png/libpng-1.2.5-manual.html#section-3.1
-	//
 
-	//
-	// Check the file header
-	//
+    //
+    // The following is based on the libpng manual. http://www.libpng.org/pub/png/libpng-1.2.5-manual.html#section-3.1
+    //
 
-	// open the file
-	BinaryFileStream file;
-	DTerr err;
-	if ((err = FileManager::open(file, pathname, true)) != DT3_ERR_NONE)
-		return err;
+    //
+    // Check the file header
+    //
+
+    // open the file
+    BinaryFileStream file;
+    DTerr err;
+    if ((err = FileManager::open(file, pathname, true)) != DT3_ERR_NONE)
+        return err;
 
     // This struct contains the JPEG decompression parameters and pointers to
     // working space (which is allocated as needed by the JPEG library).
@@ -209,7 +210,7 @@ DTerr ImporterImageJPG::import(const FilePath &pathname, const std::string &args
 
     cinfo.err = jpeg_std_error(&jerr.pub);
     jerr.pub.error_exit = ImporterImageJPG::error_handler;
-    
+
     // Establish the setjmp return context for my_error_exit to use.
     if (setjmp(jerr.setjmp_buffer)) {
         // If we get here, the JPEG code has signaled an error.
@@ -236,23 +237,23 @@ DTerr ImporterImageJPG::import(const FilePath &pathname, const std::string &args
 
     //  Step 5: Start decompressor
     jpeg_start_decompress(&cinfo);
-    
+
     ASSERT(cinfo.out_color_components == 3 && cinfo.data_precision == 8);
-    
+
     // Build a buffer for reading in the image
     width = cinfo.output_width;
     height = cinfo.output_height;
     format = DT3GL_FORMAT_RGB;
-    
+
     // Change data format to 16 bit
     data = std::shared_ptr<DTubyte>(new DTubyte[width * height * 3]);
-	DTubyte *buffer = data.get();
-    
+    DTubyte *buffer = data.get();
+
     DTint row_stride = cinfo.output_width * cinfo.output_components;
-    
+
     // Make a one-row-high sample array that will go away when done with image
     JSAMPARRAY scanline_buffer = (*cinfo.mem->alloc_sarray) ((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
-    
+
     // Step 6: while (scan lines remain to be read)
     // Here we use the library's state variable cinfo.output_scanline as the
     // loop counter, so that we don't have to keep track ourselves.
@@ -263,11 +264,11 @@ DTerr ImporterImageJPG::import(const FilePath &pathname, const std::string &args
         // more than one scanline at a time if that's more convenient.
 
         jpeg_read_scanlines(&cinfo, scanline_buffer, 1);
-        
+
         // Copy Row into buffer
         DTubyte *src_data = (DTubyte*) scanline_buffer[0];
         DTubyte *dst_data = (DTubyte*) &buffer[width * (height - cinfo.output_scanline) * 3];
-        
+
         // Copy row
         ::memcpy(dst_data, src_data, row_stride);
     }
@@ -278,10 +279,10 @@ DTerr ImporterImageJPG::import(const FilePath &pathname, const std::string &args
     // Step 8: Release JPEG decompression object
     // This is an important step since it will release a good deal of memory.
     jpeg_destroy_decompress(&cinfo);
-    
+
 //#endif
 
-	return DT3_ERR_NONE;
+    return DT3_ERR_NONE;
 }
 
 //==============================================================================

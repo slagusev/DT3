@@ -1,14 +1,15 @@
+#pragma once
 #ifndef EDLEVELMANIPPAN
 #define EDLEVELMANIPPAN
 //==============================================================================
-///	
+///
 ///	File: EdLevelManipPan.hpp
-///	
+///
 /// Copyright (C) 2000-2014 by Smells Like Donkey Software Inc. All rights reserved.
 ///
 /// This file is subject to the terms and conditions defined in
 /// file 'LICENSE.txt', which is part of this source code package.
-///	
+///
 //==============================================================================
 
 // Editor include
@@ -44,7 +45,7 @@ using namespace DT3;
 
 class EdLevelManipPan: public EdLevelTool
 {
-	public:
+    public:
         DEFINE_TYPE(EdLevelManipPan, EdLevelTool)
         DEFINE_CREATE
 
@@ -53,13 +54,13 @@ class EdLevelManipPan: public EdLevelTool
 
     public:
         virtual void    draw                    (EdLevelToolWindow *parent, const std::shared_ptr<CameraObject> &camera, DTfloat scale);
-    
+
         virtual void    doEvent                 (EdLevelToolWindow *parent, const EdLevelToolEvent &event);
-        
+
         virtual Matrix4 getManipulatorTransform (void) const;
 
 
-    private:        
+    private:
         enum {
             PLUS_X = 1,
             PLUS_Y = 2,
@@ -69,14 +70,14 @@ class EdLevelManipPan: public EdLevelTool
 
         std::shared_ptr<MaterialResource>   _tool_material;
         std::shared_ptr<ShaderResource>     _shader;
-    
-        
-        
+
+
+
         // Tracking information
         DTfloat                             _starting_location_t1;
         DTfloat                             _starting_location_t2;
         DTuint                              _starting_axis;
-        
+
 };
 
 //==============================================================================
